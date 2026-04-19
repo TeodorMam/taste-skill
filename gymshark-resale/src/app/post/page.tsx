@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { getSupabase, BUCKET } from "@/lib/supabase";
+import { BUCKET } from "@/lib/supabase";
+import { createClient } from "@/utils/supabase/client";
 
 const CONDITIONS = ["New with tags", "Like new", "Good", "Fair"] as const;
 const OSLO_AREAS = [
@@ -47,7 +48,7 @@ export default function PostPage() {
 
     setSubmitting(true);
     try {
-      const sb = getSupabase();
+      const sb = createClient();
       let image_url: string | null = null;
       if (file) {
         const ext = file.name.split(".").pop() || "jpg";

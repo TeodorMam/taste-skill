@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getSupabase, type Item } from "@/lib/supabase";
+import { type Item } from "@/lib/supabase";
+import { createClient } from "@/utils/supabase/client";
 
 export default function ItemPage() {
   const params = useParams<{ id: string }>();
@@ -14,25 +15,23 @@ export default function ItemPage() {
 
   useEffect(() => {
     if (!params.id) return;
-    try {
-      getSupabase()
-        .from("items")
-        .select("*")
-        .eq("id", params.id)
-        .single()
-        .then(({ data, error }) => {
-          if (error) setError(error.message);
-          else setItem(data as Item);
-        });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    }
+    const supabase = createClient();
+    supabase
+      .from("items")
+      .select("*")
+      .eq("id", params.id)
+      .single()
+      .then(({ data, error }) => {
+        if (error) setError(error.message);
+        else setItem(data as Item);
+      });
   }, [params.id]);
 
   async function toggleSold() {
     if (!item) return;
     setSaving(true);
-    const { data, error } = await getSupabase()
+    const supabase = createClient();
+    const { data, error } = await supabase
       .from("items")
       .update({ is_sold: !item.is_sold })
       .eq("id", item.id)
