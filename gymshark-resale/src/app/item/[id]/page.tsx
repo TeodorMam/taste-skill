@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { supabase, type Item } from "@/lib/supabase";
+import { getSupabase, type Item } from "@/lib/supabase";
 
 export default function ItemPage() {
   const params = useParams<{ id: string }>();
@@ -14,21 +14,25 @@ export default function ItemPage() {
 
   useEffect(() => {
     if (!params.id) return;
-    supabase
-      .from("items")
-      .select("*")
-      .eq("id", params.id)
-      .single()
-      .then(({ data, error }) => {
-        if (error) setError(error.message);
-        else setItem(data as Item);
-      });
+    try {
+      getSupabase()
+        .from("items")
+        .select("*")
+        .eq("id", params.id)
+        .single()
+        .then(({ data, error }) => {
+          if (error) setError(error.message);
+          else setItem(data as Item);
+        });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
   }, [params.id]);
 
   async function toggleSold() {
     if (!item) return;
     setSaving(true);
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from("items")
       .update({ is_sold: !item.is_sold })
       .eq("id", item.id)

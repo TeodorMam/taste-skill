@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { supabase, BUCKET } from "@/lib/supabase";
+import { getSupabase, BUCKET } from "@/lib/supabase";
 
 const CONDITIONS = ["New with tags", "Like new", "Good", "Fair"] as const;
 const OSLO_AREAS = [
@@ -47,19 +47,20 @@ export default function PostPage() {
 
     setSubmitting(true);
     try {
+      const sb = getSupabase();
       let image_url: string | null = null;
       if (file) {
         const ext = file.name.split(".").pop() || "jpg";
         const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error: upErr } = await supabase.storage
+        const { error: upErr } = await sb.storage
           .from(BUCKET)
           .upload(path, file, { cacheControl: "3600", upsert: false });
         if (upErr) throw upErr;
-        const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+        const { data } = sb.storage.from(BUCKET).getPublicUrl(path);
         image_url = data.publicUrl;
       }
 
-      const { data, error: insertErr } = await supabase
+      const { data, error: insertErr } = await sb
         .from("items")
         .insert({
           title: title.trim(),

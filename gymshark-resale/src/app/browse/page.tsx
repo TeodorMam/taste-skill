@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase, type Item } from "@/lib/supabase";
+import { getSupabase, type Item } from "@/lib/supabase";
 import { ItemCard } from "@/components/ItemCard";
 
 export default function BrowsePage() {
@@ -9,14 +9,18 @@ export default function BrowsePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase
-      .from("items")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (error) setError(error.message);
-        else setItems((data ?? []) as Item[]);
-      });
+    try {
+      getSupabase()
+        .from("items")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .then(({ data, error }) => {
+          if (error) setError(error.message);
+          else setItems((data ?? []) as Item[]);
+        });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
   }, []);
 
   return (
