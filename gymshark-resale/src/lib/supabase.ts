@@ -7,7 +7,17 @@ export type Item = {
   condition: string;
   location: string;
   contact: string;
+  seller_id: string | null;
   is_sold: boolean;
+  created_at: string;
+};
+
+export type Message = {
+  id: string;
+  item_id: string;
+  buyer_id: string;
+  sender_id: string;
+  body: string;
   created_at: string;
 };
 

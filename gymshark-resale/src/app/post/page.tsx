@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { BUCKET } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 
@@ -27,6 +28,12 @@ export default function PostPage() {
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -70,6 +77,7 @@ export default function PostPage() {
           condition,
           location,
           contact: contact.trim(),
+          seller_id: userId,
           image_url,
         })
         .select("id")
@@ -81,6 +89,26 @@ export default function PostPage() {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setSubmitting(false);
     }
+  }
+
+  if (userId === undefined) {
+    return <p className="py-6 text-sm text-neutral-500">Loading…</p>;
+  }
+  if (userId === null) {
+    return (
+      <section className="space-y-4 py-10">
+        <h1 className="text-2xl font-semibold tracking-tight">Sign in to post</h1>
+        <p className="text-sm text-neutral-600">
+          You need a quick magic-link sign-in so buyers can message you about your item.
+        </p>
+        <Link
+          href="/login?next=/post"
+          className="inline-block rounded-full bg-black px-5 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+        >
+          Sign in
+        </Link>
+      </section>
+    );
   }
 
   return (
