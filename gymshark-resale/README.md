@@ -56,10 +56,10 @@ Open http://localhost:3000.
 
 Environment variables:
 
-| Variable                        | Where to find it                            |
-| ------------------------------- | ------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase → Settings → API → Project URL     |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Settings → API → anon public key |
+| Variable                               | Where to find it                                  |
+| -------------------------------------- | ------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Supabase → Settings → API → Project URL           |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase → Settings → API → `publishable` API key |
 
 ## 4. Deploy to Vercel
 
