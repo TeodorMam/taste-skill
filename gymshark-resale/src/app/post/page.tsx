@@ -3,21 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BUCKET, BRANDS } from "@/lib/supabase";
+import { BUCKET, BRANDS, SIZES, CONDITIONS, AREAS } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
-
-const CONDITIONS = ["Ny med merkelapp", "Som ny", "God", "Brukt"] as const;
-const AREAS = [
-  "Oslo",
-  "Bergen",
-  "Trondheim",
-  "Stavanger",
-  "Tromsø",
-  "Kristiansand",
-  "Drammen",
-  "Bodø",
-  "Annet",
-];
 
 export default function PostPage() {
   const router = useRouter();
@@ -26,7 +13,7 @@ export default function PostPage() {
   const [size, setSize] = useState("M");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState<(typeof CONDITIONS)[number]>("God");
-  const [location, setLocation] = useState(AREAS[0]);
+  const [location, setLocation] = useState<string>(AREAS[0]);
   const [contact, setContact] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -169,7 +156,7 @@ export default function PostPage() {
         <div className="grid grid-cols-2 gap-3">
           <Field label="Størrelse">
             <select value={size} onChange={(e) => setSize(e.target.value)} className={input}>
-              {["XS", "S", "M", "L", "XL", "XXL"].map((s) => (
+              {SIZES.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>

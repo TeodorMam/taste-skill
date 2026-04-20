@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { type Item } from "@/lib/supabase";
+import { type Item, formatPrice } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { ChatPanel } from "@/components/ChatPanel";
+import { ItemCard } from "@/components/ItemCard";
 
 export default function ItemPage() {
   const params = useParams<{ id: string }>();
@@ -17,6 +18,8 @@ export default function ItemPage() {
 
   const [buyerThreads, setBuyerThreads] = useState<string[]>([]);
   const [activeBuyer, setActiveBuyer] = useState<string | null>(null);
+
+  const [similar, setSimilar] = useState<Item[]>([]);
 
   useEffect(() => {
     if (!params.id) return;
@@ -57,6 +60,16 @@ export default function ItemPage() {
       });
   }, [item, isSeller, supabase]);
 
+  useEffect(() => {
+    if (!item) return;
+    const base = supabase.from("items").select("*").neq("id", item.id).limit(24);
+    const query = item.brand ? base.eq("brand", item.brand) : base;
+    query.then(({ data }) => {
+      const rows = ((data ?? []) as Item[]).filter((i) => !i.is_sold);
+      setSimilar(rows.slice(0, 6));
+    });
+  }, [item, supabase]);
+
   async function toggleSold() {
     if (!item) return;
     setSaving(true);
@@ -81,7 +94,7 @@ export default function ItemPage() {
   }
 
   return (
-    <article className="space-y-6">
+    <article className="space-y-8">
       <Link href="/browse" className="text-sm text-stone-500 hover:text-black">
         ← Tilbake
       </Link>
@@ -111,7 +124,7 @@ export default function ItemPage() {
         <div className="space-y-5 p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <h1 className="text-2xl font-semibold tracking-tight">{item.title}</h1>
-            <p className="text-2xl font-semibold">{item.price} kr</p>
+            <p className="text-2xl font-semibold">{formatPrice(item.price)}</p>
           </div>
 
           <dl className="grid grid-cols-2 gap-y-2 text-sm">
@@ -215,6 +228,29 @@ export default function ItemPage() {
           )}
         </div>
       </div>
+
+      {similar.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-end justify-between">
+            <h2 className="text-lg font-semibold tracking-tight">
+              {item.brand ? `Flere fra ${item.brand}` : "Lignende varer"}
+            </h2>
+            {item.brand && (
+              <Link
+                href={`/browse?brand=${encodeURIComponent(item.brand)}`}
+                className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]"
+              >
+                Se alle →
+              </Link>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {similar.map((s) => (
+              <ItemCard key={s.id} item={s} />
+            ))}
+          </div>
+        </section>
+      )}
     </article>
   );
 }

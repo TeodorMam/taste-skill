@@ -1,14 +1,58 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { type Item, BRANDS } from "@/lib/supabase";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  type Item,
+  BRANDS,
+  SIZES,
+  CONDITIONS,
+  AREAS,
+  PRICE_BUCKETS,
+  type PriceBucketKey,
+} from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { ItemCard } from "@/components/ItemCard";
+import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
+
+type Sort = "newest" | "price_asc" | "price_desc";
 
 export default function BrowsePage() {
+  return (
+    <Suspense fallback={<SkeletonGrid />}>
+      <BrowseInner />
+    </Suspense>
+  );
+}
+
+function BrowseInner() {
+  const router = useRouter();
+  const params = useSearchParams();
+
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [brand, setBrand] = useState<string>("");
+
+  const q = params.get("q") ?? "";
+  const brand = params.get("brand") ?? "";
+  const size = params.get("size") ?? "";
+  const condition = params.get("condition") ?? "";
+  const location = params.get("location") ?? "";
+  const price = (params.get("price") ?? "") as PriceBucketKey | "";
+  const sort = (params.get("sort") as Sort) ?? "newest";
+  const hideSold = params.get("sold") !== "1";
+
+  function setParam(key: string, value: string) {
+    const next = new URLSearchParams(params.toString());
+    if (value) next.set(key, value);
+    else next.delete(key);
+    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, {
+      scroll: false,
+    });
+  }
+
+  function clearAll() {
+    router.replace("/browse", { scroll: false });
+  }
 
   useEffect(() => {
     const supabase = createClient();
@@ -24,9 +68,25 @@ export default function BrowsePage() {
 
   const filtered = useMemo(() => {
     if (!items) return null;
-    if (!brand) return items;
-    return items.filter((i) => i.brand === brand);
-  }, [items, brand]);
+    const needle = q.trim().toLowerCase();
+    const bucket = PRICE_BUCKETS.find((b) => b.key === price);
+    let out = items.filter((i) => {
+      if (hideSold && i.is_sold) return false;
+      if (brand && i.brand !== brand) return false;
+      if (size && i.size !== size) return false;
+      if (condition && i.condition !== condition) return false;
+      if (location && i.location !== location) return false;
+      if (bucket && (i.price < bucket.min || i.price >= bucket.max)) return false;
+      if (needle) {
+        const hay = `${i.title} ${i.brand ?? ""}`.toLowerCase();
+        if (!hay.includes(needle)) return false;
+      }
+      return true;
+    });
+    if (sort === "price_asc") out = [...out].sort((a, b) => a.price - b.price);
+    else if (sort === "price_desc") out = [...out].sort((a, b) => b.price - a.price);
+    return out;
+  }, [items, q, brand, size, condition, location, price, sort, hideSold]);
 
   const availableBrands = useMemo(() => {
     if (!items) return [] as string[];
@@ -34,6 +94,11 @@ export default function BrowsePage() {
     for (const i of items) if (i.brand) set.add(i.brand);
     return BRANDS.filter((b) => set.has(b));
   }, [items]);
+
+  const hasActiveFilter =
+    !!(q || brand || size || condition || location || price) ||
+    sort !== "newest" ||
+    !hideSold;
 
   return (
     <section className="space-y-5">
@@ -44,32 +109,124 @@ export default function BrowsePage() {
         </p>
       </div>
 
-      {availableBrands.length > 0 && (
-        <div className="-mx-4 overflow-x-auto px-4">
-          <div className="flex gap-2 pb-1">
-            <Chip active={brand === ""} onClick={() => setBrand("")}>
-              Alle
+      <div className="space-y-3">
+        <input
+          type="search"
+          value={q}
+          onChange={(e) => setParam("q", e.target.value)}
+          placeholder="Søk tittel eller merke…"
+          className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
+        />
+
+        {availableBrands.length > 0 && (
+          <Row>
+            <Chip active={brand === ""} onClick={() => setParam("brand", "")}>
+              Alle merker
             </Chip>
             {availableBrands.map((b) => (
-              <Chip key={b} active={brand === b} onClick={() => setBrand(b)}>
+              <Chip key={b} active={brand === b} onClick={() => setParam("brand", b)}>
                 {b}
               </Chip>
             ))}
-          </div>
+          </Row>
+        )}
+
+        <Row>
+          <Chip active={size === ""} onClick={() => setParam("size", "")}>
+            Alle str.
+          </Chip>
+          {SIZES.map((s) => (
+            <Chip key={s} active={size === s} onClick={() => setParam("size", s)}>
+              {s}
+            </Chip>
+          ))}
+        </Row>
+
+        <Row>
+          <Chip active={price === ""} onClick={() => setParam("price", "")}>
+            Alle priser
+          </Chip>
+          {PRICE_BUCKETS.map((b) => (
+            <Chip
+              key={b.key}
+              active={price === b.key}
+              onClick={() => setParam("price", b.key)}
+            >
+              {b.label}
+            </Chip>
+          ))}
+        </Row>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={condition}
+            onChange={(e) => setParam("condition", e.target.value)}
+            className={select}
+          >
+            <option value="">Alle tilstander</option>
+            {CONDITIONS.map((c) => (
+              <option key={c}>{c}</option>
+            ))}
+          </select>
+          <select
+            value={location}
+            onChange={(e) => setParam("location", e.target.value)}
+            className={select}
+          >
+            <option value="">Hele Norge</option>
+            {AREAS.map((a) => (
+              <option key={a}>{a}</option>
+            ))}
+          </select>
+          <select
+            value={sort}
+            onChange={(e) =>
+              setParam("sort", e.target.value === "newest" ? "" : e.target.value)
+            }
+            className={select}
+          >
+            <option value="newest">Nyeste først</option>
+            <option value="price_asc">Pris lav → høy</option>
+            <option value="price_desc">Pris høy → lav</option>
+          </select>
+          <label className="inline-flex cursor-pointer select-none items-center gap-2 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700">
+            <input
+              type="checkbox"
+              checked={hideSold}
+              onChange={(e) => setParam("sold", e.target.checked ? "" : "1")}
+              className="h-3.5 w-3.5 accent-[#5a6b32]"
+            />
+            Skjul solgte
+          </label>
+          {hasActiveFilter && (
+            <button
+              onClick={clearAll}
+              className="ml-auto text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+            >
+              Nullstill
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {error && (
         <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
       )}
 
-      {filtered === null && !error && (
-        <p className="text-sm text-stone-500">Laster…</p>
-      )}
+      {filtered === null && !error && <SkeletonGrid />}
 
       {filtered && filtered.length === 0 && (
         <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
-          Ingen varer å vise enda. Bli den første til å legge ut.
+          <p className="font-medium text-stone-700">Ingen treff</p>
+          <p className="mt-1">Prøv å nullstille filtrene eller søke bredere.</p>
+          {hasActiveFilter && (
+            <button
+              onClick={clearAll}
+              className="mt-4 rounded-full bg-stone-900 px-4 py-2 text-xs font-medium text-stone-50 hover:bg-black"
+            >
+              Nullstill filtre
+            </button>
+          )}
         </div>
       )}
 
@@ -81,6 +238,24 @@ export default function BrowsePage() {
         </div>
       )}
     </section>
+  );
+}
+
+function SkeletonGrid() {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <ItemCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
+function Row({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="-mx-4 overflow-x-auto px-4">
+      <div className="flex gap-2 pb-1">{children}</div>
+    </div>
   );
 }
 
@@ -106,3 +281,6 @@ function Chip({
     </button>
   );
 }
+
+const select =
+  "rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 outline-none focus:border-[#5a6b32]";
