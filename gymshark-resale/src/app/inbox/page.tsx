@@ -36,7 +36,6 @@ export default function InboxPage() {
         return;
       }
       const messages = (msgs ?? []) as Message[];
-      // Keep only most recent message per (item_id, buyer_id)
       const byThread = new Map<string, Message>();
       for (const m of messages) {
         const key = `${m.item_id}:${m.buyer_id}`;
@@ -74,18 +73,18 @@ export default function InboxPage() {
   }, [userId, supabase]);
 
   if (userId === undefined) {
-    return <p className="py-6 text-sm text-neutral-500">Loading…</p>;
+    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
   }
   if (userId === null) {
     return (
       <section className="space-y-3 py-10">
-        <h1 className="text-2xl font-semibold tracking-tight">Inbox</h1>
-        <p className="text-sm text-neutral-600">Sign in to see your messages.</p>
+        <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
+        <p className="text-sm text-stone-600">Logg inn for å se meldingene dine.</p>
         <Link
           href="/login?next=/inbox"
-          className="inline-block rounded-full bg-black px-5 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
         >
-          Sign in
+          Logg inn
         </Link>
       </section>
     );
@@ -93,27 +92,27 @@ export default function InboxPage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-semibold tracking-tight">Inbox</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
       {error && (
         <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
       )}
       {threads === null && !error && (
-        <p className="text-sm text-neutral-500">Loading…</p>
+        <p className="text-sm text-stone-500">Laster…</p>
       )}
       {threads && threads.length === 0 && (
-        <div className="rounded-xl border border-dashed border-neutral-300 p-8 text-center text-sm text-neutral-500">
-          No conversations yet. Message a seller from any item page.
+        <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
+          Ingen samtaler enda. Send melding til en selger fra en annonse.
         </div>
       )}
       {threads && threads.length > 0 && (
-        <ul className="divide-y divide-neutral-200 overflow-hidden rounded-xl border border-neutral-200 bg-white">
+        <ul className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
           {threads.map(({ item, lastMessage, role }) => (
             <li key={`${item.id}:${lastMessage.buyer_id}`}>
               <Link
                 href={`/item/${item.id}`}
-                className="flex items-center gap-3 p-3 hover:bg-neutral-50"
+                className="flex items-center gap-3 p-3 hover:bg-stone-50"
               >
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-stone-100">
                   {item.image_url && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -126,12 +125,12 @@ export default function InboxPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="truncate text-sm font-medium">{item.title}</p>
-                    <span className="shrink-0 text-[10px] uppercase tracking-wider text-neutral-500">
-                      {role}
+                    <span className="shrink-0 text-[10px] uppercase tracking-wider text-[#5a6b32]">
+                      {role === "seller" ? "Selger" : "Kjøper"}
                     </span>
                   </div>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-neutral-500">
-                    {lastMessage.sender_id === userId ? "You: " : ""}
+                  <p className="mt-0.5 line-clamp-1 text-xs text-stone-500">
+                    {lastMessage.sender_id === userId ? "Du: " : ""}
                     {lastMessage.body}
                   </p>
                 </div>

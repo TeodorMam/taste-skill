@@ -90,16 +90,16 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
   }
 
   return (
-    <div className="flex flex-col rounded-xl border border-neutral-200 bg-white">
+    <div className="flex flex-col rounded-2xl border border-stone-200 bg-white">
       <div
         ref={listRef}
         className="max-h-72 min-h-32 space-y-2 overflow-y-auto p-3"
       >
         {messages.length === 0 && (
-          <p className="py-6 text-center text-xs text-neutral-400">
+          <p className="py-6 text-center text-xs text-stone-400">
             {meId === sellerId
-              ? "No messages yet from this buyer."
-              : "Say hi — ask about size, pickup, or condition."}
+              ? "Ingen meldinger fra denne kjøperen enda."
+              : "Si hei — spør om størrelse, henting eller tilstand."}
           </p>
         )}
         {messages.map((m) => {
@@ -112,8 +112,8 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
               <div
                 className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
                   mine
-                    ? "bg-black text-white"
-                    : "bg-neutral-100 text-neutral-900"
+                    ? "bg-stone-900 text-stone-50"
+                    : "bg-stone-100 text-stone-900"
                 }`}
               >
                 {m.body}
@@ -122,23 +122,23 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
           );
         })}
       </div>
-      <form onSubmit={send} className="flex gap-2 border-t border-neutral-200 p-2">
+      <form onSubmit={send} className="flex gap-2 border-t border-stone-200 p-2">
         <input
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Write a message…"
-          className="min-w-0 flex-1 rounded-full border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-black"
+          placeholder="Skriv en melding…"
+          className="min-w-0 flex-1 rounded-full border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32]"
         />
         <button
           type="submit"
           disabled={sending || !body.trim()}
-          className="shrink-0 rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-40"
+          className="shrink-0 rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-40"
         >
           Send
         </button>
       </form>
       {error && (
-        <p className="border-t border-neutral-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+        <p className="border-t border-stone-200 bg-red-50 px-3 py-2 text-xs text-red-700">
           {error}
         </p>
       )}

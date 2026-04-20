@@ -3,27 +3,30 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BUCKET } from "@/lib/supabase";
+import { BUCKET, BRANDS } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 
-const CONDITIONS = ["New with tags", "Like new", "Good", "Fair"] as const;
-const OSLO_AREAS = [
-  "Oslo — Sentrum",
-  "Oslo — Grünerløkka",
-  "Oslo — Frogner",
-  "Oslo — Majorstuen",
-  "Oslo — Grønland",
-  "Oslo — St. Hanshaugen",
-  "Oslo — Other",
+const CONDITIONS = ["Ny med merkelapp", "Som ny", "God", "Brukt"] as const;
+const AREAS = [
+  "Oslo",
+  "Bergen",
+  "Trondheim",
+  "Stavanger",
+  "Tromsø",
+  "Kristiansand",
+  "Drammen",
+  "Bodø",
+  "Annet",
 ];
 
 export default function PostPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [brand, setBrand] = useState("");
   const [size, setSize] = useState("M");
   const [price, setPrice] = useState("");
-  const [condition, setCondition] = useState<(typeof CONDITIONS)[number]>("Good");
-  const [location, setLocation] = useState(OSLO_AREAS[0]);
+  const [condition, setCondition] = useState<(typeof CONDITIONS)[number]>("God");
+  const [location, setLocation] = useState(AREAS[0]);
   const [contact, setContact] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -39,17 +42,21 @@ export default function PostPage() {
     e.preventDefault();
     setError(null);
 
-    if (!/gymshark/i.test(title)) {
-      setError("Only Gymshark items allowed");
+    if (!title.trim()) {
+      setError("Skriv inn en tittel");
+      return;
+    }
+    if (!brand.trim()) {
+      setError("Velg et merke");
       return;
     }
     const priceNum = Number(price);
     if (!Number.isFinite(priceNum) || priceNum < 0) {
-      setError("Please enter a valid price");
+      setError("Ugyldig pris");
       return;
     }
     if (!contact.trim()) {
-      setError("Add an Instagram handle or phone number");
+      setError("Legg til Instagram eller telefonnummer");
       return;
     }
 
@@ -72,6 +79,7 @@ export default function PostPage() {
         .from("items")
         .insert({
           title: title.trim(),
+          brand: brand.trim(),
           size,
           price: priceNum,
           condition,
@@ -86,26 +94,26 @@ export default function PostPage() {
 
       router.push(`/item/${data.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Noe gikk galt");
       setSubmitting(false);
     }
   }
 
   if (userId === undefined) {
-    return <p className="py-6 text-sm text-neutral-500">Loading…</p>;
+    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
   }
   if (userId === null) {
     return (
       <section className="space-y-4 py-10">
-        <h1 className="text-2xl font-semibold tracking-tight">Sign in to post</h1>
-        <p className="text-sm text-neutral-600">
-          You need a quick magic-link sign-in so buyers can message you about your item.
+        <h1 className="text-3xl font-semibold tracking-tight">Logg inn for å selge</h1>
+        <p className="text-sm text-stone-600">
+          Du trenger en kort innlogging så kjøpere kan sende deg melding.
         </p>
         <Link
           href="/login?next=/post"
-          className="inline-block rounded-full bg-black px-5 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
         >
-          Sign in
+          Logg inn
         </Link>
       </section>
     );
@@ -114,42 +122,59 @@ export default function PostPage() {
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Post item</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Gymshark only. Title must include the word &ldquo;Gymshark&rdquo;.
+        <h1 className="text-3xl font-semibold tracking-tight">Legg ut vare</h1>
+        <p className="mt-1 text-sm text-stone-500">
+          Bare treningsklær. Fyll inn under ett minutt.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Photo">
+        <Field label="Bilde">
           <input
             type="file"
             accept="image/*"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-black file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-neutral-800"
+            className="block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-stone-900 file:px-4 file:py-2 file:text-sm file:font-medium file:text-stone-50 hover:file:bg-black"
           />
         </Field>
 
-        <Field label="Title">
+        <Field label="Tittel">
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Gymshark Vital Seamless Hoodie"
+            placeholder="f.eks. Vital Seamless Hoodie"
             className={input}
             required
           />
         </Field>
 
+        <Field label="Merke">
+          <input
+            type="text"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+            list="brand-options"
+            placeholder="Søk eller velg…"
+            className={input}
+            required
+          />
+          <datalist id="brand-options">
+            {BRANDS.map((b) => (
+              <option key={b} value={b} />
+            ))}
+          </datalist>
+        </Field>
+
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Size">
+          <Field label="Størrelse">
             <select value={size} onChange={(e) => setSize(e.target.value)} className={input}>
               {["XS", "S", "M", "L", "XL", "XXL"].map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>
           </Field>
-          <Field label="Price (NOK)">
+          <Field label="Pris (NOK)">
             <input
               type="number"
               min={0}
@@ -163,7 +188,7 @@ export default function PostPage() {
           </Field>
         </div>
 
-        <Field label="Condition">
+        <Field label="Tilstand">
           <select
             value={condition}
             onChange={(e) => setCondition(e.target.value as (typeof CONDITIONS)[number])}
@@ -175,20 +200,20 @@ export default function PostPage() {
           </select>
         </Field>
 
-        <Field label="Location (Oslo area)">
+        <Field label="Sted">
           <select value={location} onChange={(e) => setLocation(e.target.value)} className={input}>
-            {OSLO_AREAS.map((a) => (
+            {AREAS.map((a) => (
               <option key={a}>{a}</option>
             ))}
           </select>
         </Field>
 
-        <Field label="Contact (Instagram handle or phone)">
+        <Field label="Kontakt (Instagram eller telefon)">
           <input
             type="text"
             value={contact}
             onChange={(e) => setContact(e.target.value)}
-            placeholder="@yourhandle or +47 ..."
+            placeholder="@brukernavn eller +47 ..."
             className={input}
             required
           />
@@ -201,9 +226,9 @@ export default function PostPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-full bg-black px-5 py-3 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+          className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
         >
-          {submitting ? "Posting…" : "Post item"}
+          {submitting ? "Legger ut…" : "Legg ut"}
         </button>
       </form>
     </section>
@@ -213,11 +238,11 @@ export default function PostPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block space-y-1.5">
-      <span className="block text-sm font-medium text-neutral-800">{label}</span>
+      <span className="block text-sm font-medium text-stone-800">{label}</span>
       {children}
     </label>
   );
 }
 
 const input =
-  "block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-black";
+  "block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30";

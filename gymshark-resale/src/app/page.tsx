@@ -2,29 +2,30 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <section className="flex flex-col items-start gap-6 py-10 sm:py-20">
-      <span className="rounded-full border border-neutral-300 px-3 py-1 text-xs uppercase tracking-wider text-neutral-600">
-        Oslo only — Gymshark only
+    <section className="flex flex-col items-start gap-7 py-12 sm:py-24">
+      <span className="rounded-full border border-[#5a6b32]/30 bg-[#5a6b32]/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-[#5a6b32]">
+        Treningsklær · Norge
       </span>
-      <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-        Buy and sell Gymshark in Oslo.
+      <h1 className="text-5xl font-semibold tracking-tight text-stone-900 sm:text-6xl">
+        Brukte treningsklær, <br className="hidden sm:inline" />
+        <span className="text-[#5a6b32]">bedre priser.</span>
       </h1>
-      <p className="max-w-xl text-neutral-600">
-        A dedicated, no-noise place to trade pre-loved Gymshark pieces with other
-        lifters in the city. Post an item in under a minute — no account needed.
+      <p className="max-w-xl text-base text-stone-600 sm:text-lg">
+        Kjøp og selg brukte treningsklær fra Gymshark, Nike, Lululemon, Alphalete
+        og flere. Ett minutt å legge ut — gratis å bruke.
       </p>
       <div className="flex flex-wrap gap-3">
         <Link
           href="/post"
-          className="rounded-full bg-black px-5 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+          className="rounded-full bg-stone-900 px-6 py-3 text-sm font-medium text-stone-50 hover:bg-black"
         >
-          Post item
+          Legg ut vare
         </Link>
         <Link
           href="/browse"
-          className="rounded-full border border-neutral-300 bg-white px-5 py-3 text-sm font-medium text-neutral-900 hover:border-neutral-500"
+          className="rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-medium text-stone-900 hover:border-stone-500"
         >
-          Browse items
+          Utforsk
         </Link>
       </div>
     </section>

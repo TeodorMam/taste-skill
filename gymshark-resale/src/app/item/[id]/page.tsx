@@ -77,64 +77,75 @@ export default function ItemPage() {
     );
   }
   if (!item) {
-    return <p className="text-sm text-neutral-500">Loading…</p>;
+    return <p className="text-sm text-stone-500">Laster…</p>;
   }
 
   return (
     <article className="space-y-6">
-      <Link href="/browse" className="text-sm text-neutral-500 hover:text-black">
-        ← Back to browse
+      <Link href="/browse" className="text-sm text-stone-500 hover:text-black">
+        ← Tilbake
       </Link>
 
-      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
-        <div className="relative aspect-square w-full bg-neutral-100">
+      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
+        <div className="relative aspect-square w-full bg-stone-100">
           {item.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={item.image_url} alt={item.title} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm text-neutral-400">
-              No image
+            <div className="flex h-full w-full items-center justify-center text-sm text-stone-400">
+              Ingen bilde
+            </div>
+          )}
+          {item.brand && (
+            <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-[#5a6b32] backdrop-blur">
+              {item.brand}
             </div>
           )}
           {item.is_sold && (
-            <div className="absolute left-3 top-3 rounded-full bg-black px-3 py-1 text-xs font-medium text-white">
-              Sold
+            <div className="absolute right-3 top-3 rounded-full bg-stone-900 px-3 py-1 text-xs font-medium text-stone-50">
+              Solgt
             </div>
           )}
         </div>
 
-        <div className="space-y-4 p-4 sm:p-6">
+        <div className="space-y-5 p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <h1 className="text-xl font-semibold tracking-tight">{item.title}</h1>
-            <p className="text-xl font-semibold">{item.price} kr</p>
+            <h1 className="text-2xl font-semibold tracking-tight">{item.title}</h1>
+            <p className="text-2xl font-semibold">{item.price} kr</p>
           </div>
 
           <dl className="grid grid-cols-2 gap-y-2 text-sm">
-            <dt className="text-neutral-500">Size</dt>
+            {item.brand && (
+              <>
+                <dt className="text-stone-500">Merke</dt>
+                <dd className="text-right font-medium">{item.brand}</dd>
+              </>
+            )}
+            <dt className="text-stone-500">Størrelse</dt>
             <dd className="text-right">{item.size}</dd>
-            <dt className="text-neutral-500">Condition</dt>
+            <dt className="text-stone-500">Tilstand</dt>
             <dd className="text-right">{item.condition}</dd>
-            <dt className="text-neutral-500">Location</dt>
+            <dt className="text-stone-500">Sted</dt>
             <dd className="text-right">{item.location}</dd>
-            <dt className="text-neutral-500">Posted</dt>
+            <dt className="text-stone-500">Lagt ut</dt>
             <dd className="text-right">
-              {new Date(item.created_at).toLocaleDateString()}
+              {new Date(item.created_at).toLocaleDateString("no-NO")}
             </dd>
           </dl>
 
           {userId === null && (
             <Link
               href={`/login?next=/item/${item.id}`}
-              className="block w-full rounded-full bg-black px-5 py-3 text-center text-sm font-medium text-white hover:bg-neutral-800"
+              className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black"
             >
-              Sign in to chat with seller
+              Logg inn for å chatte med selger
             </Link>
           )}
 
           {userId && !item.seller_id && (
             <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
-              This listing was posted before accounts existed, so chat isn&rsquo;t
-              available. Use the contact field below instead.
+              Denne annonsen ble lagt ut før brukerkontoer, så chat er ikke
+              tilgjengelig. Bruk kontaktinfo nedenfor i stedet.
             </p>
           )}
 
@@ -149,10 +160,10 @@ export default function ItemPage() {
 
           {isSeller && item.seller_id && (
             <div className="space-y-3">
-              <h2 className="text-sm font-medium text-neutral-800">
+              <h2 className="text-sm font-medium text-stone-800">
                 {buyerThreads.length
-                  ? `Conversations (${buyerThreads.length})`
-                  : "No buyer messages yet"}
+                  ? `Samtaler (${buyerThreads.length})`
+                  : "Ingen meldinger enda"}
               </h2>
               {buyerThreads.length > 1 && (
                 <div className="flex flex-wrap gap-2">
@@ -162,11 +173,11 @@ export default function ItemPage() {
                       onClick={() => setActiveBuyer(b)}
                       className={`rounded-full border px-3 py-1 text-xs ${
                         activeBuyer === b
-                          ? "border-black bg-black text-white"
-                          : "border-neutral-300 text-neutral-700 hover:border-neutral-500"
+                          ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                          : "border-stone-300 text-stone-700 hover:border-stone-500"
                       }`}
                     >
-                      Buyer {i + 1}
+                      Kjøper {i + 1}
                     </button>
                   ))}
                 </div>
@@ -182,9 +193,9 @@ export default function ItemPage() {
             </div>
           )}
 
-          <details className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm">
-            <summary className="cursor-pointer text-neutral-600">
-              Off-platform contact
+          <details className="rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm">
+            <summary className="cursor-pointer text-stone-600">
+              Kontakt utenfor Aktivbruk
             </summary>
             <p className="mt-2 break-all font-medium">{item.contact}</p>
           </details>
@@ -193,13 +204,13 @@ export default function ItemPage() {
             <button
               onClick={toggleSold}
               disabled={saving}
-              className="w-full rounded-full border border-neutral-300 bg-white px-5 py-3 text-sm font-medium hover:border-neutral-500 disabled:opacity-50"
+              className="w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium hover:border-stone-500 disabled:opacity-50"
             >
               {saving
-                ? "Saving…"
+                ? "Lagrer…"
                 : item.is_sold
-                  ? "Mark as available"
-                  : "Mark as sold"}
+                  ? "Marker som tilgjengelig"
+                  : "Marker som solgt"}
             </button>
           )}
         </div>

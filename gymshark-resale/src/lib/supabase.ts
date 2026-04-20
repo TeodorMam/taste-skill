@@ -7,6 +7,7 @@ export type Item = {
   condition: string;
   location: string;
   contact: string;
+  brand: string | null;
   seller_id: string | null;
   is_sold: boolean;
   created_at: string;
@@ -22,3 +23,26 @@ export type Message = {
 };
 
 export const BUCKET = "item-images";
+
+export const BRANDS = [
+  "Gymshark",
+  "NVGTN",
+  "Alphalete",
+  "Nike",
+  "Lululemon",
+  "Adidas",
+  "Under Armour",
+  "Puma",
+  "Reebok",
+  "New Balance",
+  "ASICS",
+  "Vuori",
+  "TALA",
+  "YoungLA",
+  "Castore",
+  "Björn Borg",
+  "H&M Move",
+  "Everlast",
+  "Fabletics",
+  "Other",
+] as const;
