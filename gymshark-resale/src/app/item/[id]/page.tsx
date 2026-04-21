@@ -317,12 +317,14 @@ export default function ItemPage() {
             />
           )}
 
-          <details className="rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm">
-            <summary className="cursor-pointer text-stone-600">
-              Kontakt utenfor Aktivbruk
-            </summary>
-            <p className="mt-2 break-all font-medium">{item.contact}</p>
-          </details>
+          {item.contact && (
+            <details className="rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm">
+              <summary className="cursor-pointer text-stone-600">
+                Kontakt utenfor Aktivbruk (eldre annonse)
+              </summary>
+              <p className="mt-2 break-all font-medium">{item.contact}</p>
+            </details>
+          )}
 
           {isSeller && (
             <div className="space-y-2">

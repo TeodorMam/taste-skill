@@ -31,7 +31,6 @@ export default function EditItemPage() {
   const [condition, setCondition] = useState<string>("God");
   const [location, setLocation] = useState<string>(AREAS[0]);
   const [description, setDescription] = useState("");
-  const [contact, setContact] = useState("");
   const [shipping, setShipping] = useState<string>(SHIPPING_OPTIONS[0].value);
 
   const [saving, setSaving] = useState(false);
@@ -63,7 +62,6 @@ export default function EditItemPage() {
         setCondition(it.condition);
         setLocation(it.location);
         setDescription(it.description ?? "");
-        setContact(it.contact);
         setShipping(it.shipping ?? SHIPPING_OPTIONS[0].value);
       });
   }, [params.id, supabase]);
@@ -78,7 +76,6 @@ export default function EditItemPage() {
     if (!brand.trim()) return setError("Velg et merke");
     const priceNum = Number(price);
     if (!Number.isFinite(priceNum) || priceNum < 0) return setError("Ugyldig pris");
-    if (!contact.trim()) return setError("Legg til Instagram eller telefonnummer");
 
     setSaving(true);
     const { error: upErr } = await supabase
@@ -92,7 +89,6 @@ export default function EditItemPage() {
         condition,
         location,
         description: description.trim() || null,
-        contact: contact.trim(),
         shipping,
       })
       .eq("id", params.id);
@@ -255,16 +251,6 @@ export default function EditItemPage() {
             ))}
           </div>
         </div>
-
-        <Field label="Kontakt (Instagram eller telefon)">
-          <input
-            type="text"
-            value={contact}
-            onChange={(e) => setContact(e.target.value)}
-            className={input}
-            required
-          />
-        </Field>
 
         {error && (
           <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>

@@ -9,7 +9,7 @@ export type Item = {
   condition: string;
   category: string | null;
   location: string;
-  contact: string;
+  contact: string | null;
   brand: string | null;
   seller_id: string | null;
   is_sold: boolean;

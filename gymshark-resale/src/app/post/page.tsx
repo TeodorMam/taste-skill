@@ -35,7 +35,6 @@ export default function PostPage() {
   const [condition, setCondition] = useState<(typeof CONDITIONS)[number]>("God");
   const [location, setLocation] = useState<string>(AREAS[0]);
   const [description, setDescription] = useState("");
-  const [contact, setContact] = useState("");
   const [slots, setSlots] = useState<Slot[]>([]);
   const [shipping, setShipping] = useState<string>(SHIPPING_OPTIONS[0].value);
   const [submitting, setSubmitting] = useState(false);
@@ -89,7 +88,6 @@ export default function PostPage() {
     if (!brand.trim()) return setError("Velg et merke");
     const priceNum = Number(price);
     if (!Number.isFinite(priceNum) || priceNum < 0) return setError("Ugyldig pris");
-    if (!contact.trim()) return setError("Legg til Instagram eller telefonnummer");
 
     setSubmitting(true);
     try {
@@ -120,7 +118,7 @@ export default function PostPage() {
           condition,
           location,
           description: description.trim() || null,
-          contact: contact.trim(),
+          contact: null,
           seller_id: userId,
           image_url,
           image_urls,
@@ -346,17 +344,6 @@ export default function PostPage() {
             ))}
           </div>
         </div>
-
-        <Field label="Kontakt (Instagram eller telefon)">
-          <input
-            type="text"
-            value={contact}
-            onChange={(e) => setContact(e.target.value)}
-            placeholder="@brukernavn eller +47 ..."
-            className={input}
-            required
-          />
-        </Field>
 
         {error && (
           <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
