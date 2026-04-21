@@ -1,10 +1,27 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { BUCKET, BRANDS, SIZES, CONDITIONS, AREAS } from "@/lib/supabase";
+import {
+  BUCKET,
+  BRANDS,
+  SIZES,
+  CONDITIONS,
+  AREAS,
+  MAX_IMAGES,
+} from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
+
+type Slot = { id: string; file: File; preview: string };
+
+function makeSlot(file: File): Slot {
+  return {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    file,
+    preview: URL.createObjectURL(file),
+  };
+}
 
 export default function PostPage() {
   const router = useRouter();
@@ -15,7 +32,7 @@ export default function PostPage() {
   const [condition, setCondition] = useState<(typeof CONDITIONS)[number]>("God");
   const [location, setLocation] = useState<string>(AREAS[0]);
   const [contact, setContact] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [slots, setSlots] = useState<Slot[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
@@ -25,42 +42,67 @@ export default function PostPage() {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
   }, []);
 
+  useEffect(() => {
+    return () => {
+      slots.forEach((s) => URL.revokeObjectURL(s.preview));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const remaining = useMemo(() => MAX_IMAGES - slots.length, [slots.length]);
+
+  function addFiles(picked: FileList | null) {
+    if (!picked || picked.length === 0) return;
+    const toAdd = Array.from(picked).slice(0, remaining).map(makeSlot);
+    setSlots((prev) => [...prev, ...toAdd]);
+  }
+
+  function removeSlot(id: string) {
+    setSlots((prev) => {
+      const found = prev.find((s) => s.id === id);
+      if (found) URL.revokeObjectURL(found.preview);
+      return prev.filter((s) => s.id !== id);
+    });
+  }
+
+  function moveSlot(id: string, dir: -1 | 1) {
+    setSlots((prev) => {
+      const i = prev.findIndex((s) => s.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= prev.length) return prev;
+      const next = [...prev];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!title.trim()) {
-      setError("Skriv inn en tittel");
-      return;
-    }
-    if (!brand.trim()) {
-      setError("Velg et merke");
-      return;
-    }
+    if (!title.trim()) return setError("Skriv inn en tittel");
+    if (!brand.trim()) return setError("Velg et merke");
     const priceNum = Number(price);
-    if (!Number.isFinite(priceNum) || priceNum < 0) {
-      setError("Ugyldig pris");
-      return;
-    }
-    if (!contact.trim()) {
-      setError("Legg til Instagram eller telefonnummer");
-      return;
-    }
+    if (!Number.isFinite(priceNum) || priceNum < 0) return setError("Ugyldig pris");
+    if (!contact.trim()) return setError("Legg til Instagram eller telefonnummer");
 
     setSubmitting(true);
     try {
       const sb = createClient();
-      let image_url: string | null = null;
-      if (file) {
-        const ext = file.name.split(".").pop() || "jpg";
+      const uploaded: string[] = [];
+      for (const slot of slots) {
+        const ext = slot.file.name.split(".").pop() || "jpg";
         const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const { error: upErr } = await sb.storage
           .from(BUCKET)
-          .upload(path, file, { cacheControl: "3600", upsert: false });
+          .upload(path, slot.file, { cacheControl: "3600", upsert: false });
         if (upErr) throw upErr;
         const { data } = sb.storage.from(BUCKET).getPublicUrl(path);
-        image_url = data.publicUrl;
+        uploaded.push(data.publicUrl);
       }
+
+      const image_url = uploaded[0] ?? null;
+      const image_urls = uploaded.length > 0 ? uploaded : null;
 
       const { data, error: insertErr } = await sb
         .from("items")
@@ -74,6 +116,7 @@ export default function PostPage() {
           contact: contact.trim(),
           seller_id: userId,
           image_url,
+          image_urls,
         })
         .select("id")
         .single();
@@ -116,13 +159,79 @@ export default function PostPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Bilde">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-stone-900 file:px-4 file:py-2 file:text-sm file:font-medium file:text-stone-50 hover:file:bg-black"
-          />
+        <Field label={`Bilder (opp til ${MAX_IMAGES})`}>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            {slots.map((s, i) => (
+              <div
+                key={s.id}
+                className="group relative aspect-square overflow-hidden rounded-lg border border-stone-200 bg-stone-100"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={s.preview}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+                {i === 0 && (
+                  <span className="absolute left-1 top-1 rounded-full bg-[#5a6b32] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-white">
+                    Cover
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeSlot(s.id)}
+                  aria-label="Fjern"
+                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-xs text-white transition hover:bg-black"
+                >
+                  ✕
+                </button>
+                <div className="absolute bottom-1 left-1 flex gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => moveSlot(s.id, -1)}
+                    disabled={i === 0}
+                    aria-label="Flytt venstre"
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-xs text-stone-800 shadow-sm disabled:opacity-30"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveSlot(s.id, 1)}
+                    disabled={i === slots.length - 1}
+                    aria-label="Flytt høyre"
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-xs text-stone-800 shadow-sm disabled:opacity-30"
+                  >
+                    ›
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {remaining > 0 && (
+              <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-stone-300 bg-stone-50 text-stone-500 transition hover:border-[#5a6b32] hover:text-[#5a6b32]">
+                <span className="text-2xl leading-none">＋</span>
+                <span className="text-[10px] font-medium">
+                  {slots.length === 0 ? "Legg til bilder" : `${remaining} igjen`}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    addFiles(e.target.files);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            )}
+          </div>
+          {slots.length > 1 && (
+            <p className="mt-1.5 text-xs text-stone-500">
+              Første bilde blir coverbildet. Bruk piltastene for å sortere.
+            </p>
+          )}
         </Field>
 
         <Field label="Tittel">

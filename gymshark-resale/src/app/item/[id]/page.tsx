@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { type Item, formatPrice } from "@/lib/supabase";
+import { type Item, formatPrice, itemImages } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { ChatPanel } from "@/components/ChatPanel";
 import { ItemCard } from "@/components/ItemCard";
+import { Carousel } from "@/components/Carousel";
 
 export default function ItemPage() {
   const params = useParams<{ id: string }>();
@@ -100,22 +101,15 @@ export default function ItemPage() {
       </Link>
 
       <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
-        <div className="relative aspect-square w-full bg-stone-100">
-          {item.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={item.image_url} alt={item.title} className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm text-stone-400">
-              Ingen bilde
-            </div>
-          )}
+        <div className="relative">
+          <Carousel images={itemImages(item)} alt={item.title} />
           {item.brand && (
-            <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-[#5a6b32] backdrop-blur">
+            <div className="pointer-events-none absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-[#5a6b32] backdrop-blur">
               {item.brand}
             </div>
           )}
           {item.is_sold && (
-            <div className="absolute right-3 top-3 rounded-full bg-stone-900 px-3 py-1 text-xs font-medium text-stone-50">
+            <div className="pointer-events-none absolute left-3 bottom-3 rounded-full bg-stone-900 px-3 py-1 text-xs font-medium text-stone-50">
               Solgt
             </div>
           )}

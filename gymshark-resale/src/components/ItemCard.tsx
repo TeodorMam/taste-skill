@@ -1,17 +1,19 @@
 import Link from "next/link";
-import { type Item, formatPrice } from "@/lib/supabase";
+import { type Item, formatPrice, itemImages } from "@/lib/supabase";
 
 export function ItemCard({ item }: { item: Item }) {
+  const images = itemImages(item);
+  const cover = images[0] ?? null;
   return (
     <Link
       href={`/item/${item.id}`}
       className="group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow-md"
     >
       <div className="relative aspect-square w-full overflow-hidden bg-stone-100">
-        {item.image_url ? (
+        {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={item.image_url}
+            src={cover}
             alt={item.title}
             className={`h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] ${
               item.is_sold ? "opacity-60 grayscale" : ""
@@ -25,6 +27,25 @@ export function ItemCard({ item }: { item: Item }) {
         {item.brand && (
           <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#5a6b32] backdrop-blur">
             {item.brand}
+          </div>
+        )}
+        {images.length > 1 && (
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/65 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <rect x="3" y="3" width="14" height="14" rx="2" />
+              <path d="M7 7h14v14H7" />
+            </svg>
+            {images.length}
           </div>
         )}
         {item.is_sold && (
