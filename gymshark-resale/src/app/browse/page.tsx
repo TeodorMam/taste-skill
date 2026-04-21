@@ -10,6 +10,7 @@ import {
   AREAS,
   PRICE_BUCKETS,
   type PriceBucketKey,
+  SHIPPING_OPTIONS,
 } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { ItemCard } from "@/components/ItemCard";
@@ -40,6 +41,7 @@ function BrowseInner() {
   const price = (params.get("price") ?? "") as PriceBucketKey | "";
   const sort = (params.get("sort") as Sort) ?? "newest";
   const hideSold = params.get("sold") !== "1";
+  const shipping = params.get("shipping") ?? "";
 
   function setParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -76,6 +78,7 @@ function BrowseInner() {
       if (size && i.size !== size) return false;
       if (condition && i.condition !== condition) return false;
       if (location && i.location !== location) return false;
+      if (shipping === "sendes" && i.shipping === "Kun henting") return false;
       if (bucket && (i.price < bucket.min || i.price >= bucket.max)) return false;
       if (needle) {
         const hay = `${i.title} ${i.brand ?? ""}`.toLowerCase();
@@ -86,7 +89,7 @@ function BrowseInner() {
     if (sort === "price_asc") out = [...out].sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") out = [...out].sort((a, b) => b.price - a.price);
     return out;
-  }, [items, q, brand, size, condition, location, price, sort, hideSold]);
+  }, [items, q, brand, size, condition, location, price, sort, hideSold, shipping]);
 
   const availableBrands = useMemo(() => {
     if (!items) return [] as string[];
@@ -96,7 +99,7 @@ function BrowseInner() {
   }, [items]);
 
   const hasActiveFilter =
-    !!(q || brand || size || condition || location || price) ||
+    !!(q || brand || size || condition || location || price || shipping) ||
     sort !== "newest" ||
     !hideSold;
 
@@ -155,6 +158,15 @@ function BrowseInner() {
               {b.label}
             </Chip>
           ))}
+        </Row>
+
+        <Row>
+          <Chip active={shipping === ""} onClick={() => setParam("shipping", "")}>
+            Alle
+          </Chip>
+          <Chip active={shipping === "sendes"} onClick={() => setParam("shipping", "sendes")}>
+            📦 Kan sendes
+          </Chip>
         </Row>
 
         <div className="flex flex-wrap items-center gap-2">

@@ -11,8 +11,15 @@ export type Item = {
   brand: string | null;
   seller_id: string | null;
   is_sold: boolean;
+  shipping: string | null;
   created_at: string;
 };
+
+export const SHIPPING_OPTIONS = [
+  { value: "Kan sendes", label: "📦 Kan sendes", hint: "Kjøper betaler frakt" },
+  { value: "Kun henting", label: "🤝 Kun henting", hint: "Møtes lokalt" },
+  { value: "Begge", label: "📦🤝 Begge", hint: "Fleksibel" },
+] as const;
 
 export type Message = {
   id: string;

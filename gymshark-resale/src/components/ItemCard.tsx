@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { type Item, formatPrice, itemImages } from "@/lib/supabase";
 
+function shippingIcon(s: string | null) {
+  if (!s || s === "Kun henting") return null;
+  return "📦";
+}
+
 export function ItemCard({ item }: { item: Item }) {
   const images = itemImages(item);
   const cover = images[0] ?? null;
@@ -59,9 +64,16 @@ export function ItemCard({ item }: { item: Item }) {
           <p className="line-clamp-1 text-sm font-medium">{item.title}</p>
           <p className="shrink-0 text-sm font-semibold">{formatPrice(item.price)}</p>
         </div>
-        <p className="text-xs text-stone-500">
-          Str. {item.size} · {item.condition} · {item.location}
-        </p>
+        <div className="flex items-center justify-between gap-1">
+          <p className="text-xs text-stone-500">
+            Str. {item.size} · {item.condition} · {item.location}
+          </p>
+          {shippingIcon(item.shipping) && (
+            <span className="shrink-0 text-xs" title={item.shipping ?? ""}>
+              {shippingIcon(item.shipping)}
+            </span>
+          )}
+        </div>
       </div>
     </Link>
   );

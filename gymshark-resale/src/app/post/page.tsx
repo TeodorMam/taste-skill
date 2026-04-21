@@ -10,6 +10,7 @@ import {
   CONDITIONS,
   AREAS,
   MAX_IMAGES,
+  SHIPPING_OPTIONS,
 } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 
@@ -33,6 +34,7 @@ export default function PostPage() {
   const [location, setLocation] = useState<string>(AREAS[0]);
   const [contact, setContact] = useState("");
   const [slots, setSlots] = useState<Slot[]>([]);
+  const [shipping, setShipping] = useState<string>(SHIPPING_OPTIONS[0].value);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
@@ -117,6 +119,7 @@ export default function PostPage() {
           seller_id: userId,
           image_url,
           image_urls,
+          shipping,
         })
         .select("id")
         .single();
@@ -303,6 +306,27 @@ export default function PostPage() {
             ))}
           </select>
         </Field>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Frakt</span>
+          <div className="grid grid-cols-3 gap-2">
+            {SHIPPING_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setShipping(opt.value)}
+                className={`rounded-xl border p-3 text-left transition ${
+                  shipping === opt.value
+                    ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]"
+                    : "border-stone-200 bg-white hover:border-stone-400"
+                }`}
+              >
+                <p className="text-sm font-medium">{opt.label}</p>
+                <p className="mt-0.5 text-[11px] text-stone-500">{opt.hint}</p>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <Field label="Kontakt (Instagram eller telefon)">
           <input

@@ -138,7 +138,39 @@ export default function ItemPage() {
             <dd className="text-right">
               {new Date(item.created_at).toLocaleDateString("no-NO")}
             </dd>
+            {item.shipping && (
+              <>
+                <dt className="text-stone-500">Frakt</dt>
+                <dd className="text-right font-medium">{item.shipping}</dd>
+              </>
+            )}
           </dl>
+
+          {item.shipping && item.shipping !== "Kun henting" && (
+            <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm">
+              <p className="font-medium text-stone-800">📦 Fraktestimater</p>
+              <p className="mt-0.5 text-xs text-stone-500">
+                Kjøper betaler frakt. Avtal betalingsmetode (Vipps) i chatten.
+              </p>
+              <ul className="mt-3 space-y-2 text-xs text-stone-700">
+                <li className="flex items-center justify-between">
+                  <span>Posten Servicepakke (opp til 5 kg)</span>
+                  <span className="font-semibold">ca. 99 kr</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span>Posten ePakke (opp til 20 kg)</span>
+                  <span className="font-semibold">ca. 129 kr</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span>PostNord MyPack Collect</span>
+                  <span className="font-semibold">ca. 89 kr</span>
+                </li>
+              </ul>
+              <p className="mt-3 text-[11px] text-stone-400">
+                Selger dropper pakken på nærmeste Posten/PostNord-punkt etter betaling.
+              </p>
+            </div>
+          )}
 
           {userId === null && (
             <Link
