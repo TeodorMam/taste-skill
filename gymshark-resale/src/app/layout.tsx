@@ -34,6 +34,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <Link href="/inbox" className="text-stone-700 hover:text-black">
                     Innboks
                   </Link>
+                  <Link href="/mine" className="text-stone-700 hover:text-black">
+                    Mine
+                  </Link>
                   <Link
                     href="/post"
                     className="rounded-full bg-stone-900 px-3 py-1.5 font-medium text-stone-50 hover:bg-black"
