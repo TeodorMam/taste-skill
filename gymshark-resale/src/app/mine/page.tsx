@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { type Item, formatPrice } from "@/lib/supabase";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
+import { PasswordSetter } from "@/components/PasswordSetter";
 
 type Tab = "active" | "sold" | "all";
 
@@ -135,6 +136,8 @@ export default function MinePage() {
         <Stat label="Solgt" value={counts.sold} />
         <Stat label="Omsetning" value={formatPrice(totalRevenue)} />
       </div>
+
+      <PasswordSetter />
 
       <div className="flex gap-2">
         <TabChip active={tab === "active"} onClick={() => setTab("active")}>

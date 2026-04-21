@@ -12,55 +12,75 @@ export default function LoginPage() {
   );
 }
 
+type Mode = "code" | "password";
+
 function LoginInner() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") ?? "/";
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<Mode>("code");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function sendCode() {
     setError(null);
     setInfo(null);
-
-    if (password.length < 6) {
-      setError("Passordet må være minst 6 tegn");
+    if (!email) {
+      setError("Skriv inn e-posten din");
       return;
     }
-
     setSubmitting(true);
     const supabase = createClient();
-
-    if (mode === "signup") {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-        },
-      });
-      setSubmitting(false);
-      if (error) {
-        setError(error.message);
-        return;
-      }
-      if (data.session) {
-        router.push(next);
-        router.refresh();
-      } else {
-        setInfo(
-          "Vi sendte en bekreftelseslenke til e-posten din. Åpne den for å fullføre registreringen.",
-        );
-      }
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true },
+    });
+    setSubmitting(false);
+    if (error) {
+      setError(error.message);
       return;
     }
+    setCodeSent(true);
+    setInfo("Vi sendte en 6-sifret kode til e-posten din. Den gjelder i 60 minutter.");
+  }
 
+  async function verifyCode() {
+    setError(null);
+    const trimmed = code.trim();
+    if (trimmed.length < 6) {
+      setError("Skriv inn den 6-sifrede koden");
+      return;
+    }
+    setSubmitting(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token: trimmed,
+      type: "email",
+    });
+    setSubmitting(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    router.push(next);
+    router.refresh();
+  }
+
+  async function signInPassword() {
+    setError(null);
+    if (!email || password.length < 6) {
+      setError("E-post og passord (minst 6 tegn) kreves");
+      return;
+    }
+    setSubmitting(true);
+    const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
     if (error) {
@@ -71,99 +91,154 @@ function LoginInner() {
     router.refresh();
   }
 
-  async function handleMagicLink() {
-    if (!email) {
-      setError("Skriv inn e-posten din først");
-      return;
-    }
+  function switchMode(m: Mode) {
+    setMode(m);
     setError(null);
     setInfo(null);
-    setSubmitting(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-      },
-    });
-    setSubmitting(false);
-    if (error) setError(error.message);
-    else setInfo("Sjekk e-posten din for en engangslenke.");
+    setCode("");
+    setCodeSent(false);
   }
 
   return (
-    <section className="space-y-5 py-10">
+    <section className="space-y-5 py-8">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {mode === "signin" ? "Logg inn" : "Opprett konto"}
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Logg inn</h1>
         <p className="mt-1 text-sm text-stone-500">
-          {mode === "signin"
-            ? "Med e-post og passord. Du forblir innlogget på denne enheten."
-            : "Velg et passord du husker — ingen e-postbekreftelse nødvendig hvis vi slår det av."}
+          {mode === "code"
+            ? "Få en engangskode på e-post. Fungerer på tvers av enheter."
+            : "Med e-post og passord."}
         </p>
       </div>
 
       <div className="flex gap-2">
-        <TabChip active={mode === "signin"} onClick={() => setMode("signin")}>
-          Logg inn
+        <TabChip active={mode === "code"} onClick={() => switchMode("code")}>
+          Kode på e-post
         </TabChip>
-        <TabChip active={mode === "signup"} onClick={() => setMode("signup")}>
-          Opprett konto
+        <TabChip active={mode === "password"} onClick={() => switchMode("password")}>
+          Passord
         </TabChip>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="deg@eksempel.no"
-          required
-          autoComplete="email"
-          className={input}
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Passord (minst 6 tegn)"
-          required
-          minLength={6}
-          autoComplete={mode === "signup" ? "new-password" : "current-password"}
-          className={input}
-        />
-
-        {error && (
-          <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
-        )}
-        {info && (
-          <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{info}</p>
-        )}
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+      {mode === "code" && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            codeSent ? verifyCode() : sendCode();
+          }}
+          className="space-y-3"
         >
-          {submitting
-            ? "Et øyeblikk…"
-            : mode === "signin"
-              ? "Logg inn"
-              : "Opprett konto"}
-        </button>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="deg@eksempel.no"
+            required
+            disabled={codeSent}
+            autoComplete="email"
+            className={`${input} disabled:bg-stone-100`}
+          />
 
-        {mode === "signin" && (
+          {codeSent && (
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="6-sifret kode"
+              autoFocus
+              autoComplete="one-time-code"
+              className={`${input} text-center text-lg tracking-[0.4em]`}
+            />
+          )}
+
+          {error && (
+            <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+          )}
+          {info && (
+            <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{info}</p>
+          )}
+
           <button
-            type="button"
-            onClick={handleMagicLink}
+            type="submit"
             disabled={submitting}
-            className="w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-700 hover:border-stone-500 disabled:opacity-50"
+            className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
           >
-            Glemt passord? Send engangslenke
+            {submitting
+              ? "Et øyeblikk…"
+              : codeSent
+                ? "Verifiser kode"
+                : "Send kode"}
           </button>
-        )}
-      </form>
+
+          {codeSent && (
+            <button
+              type="button"
+              onClick={() => {
+                setCodeSent(false);
+                setCode("");
+                setInfo(null);
+              }}
+              className="w-full text-center text-xs text-stone-500 hover:text-black"
+            >
+              Bruk en annen e-post
+            </button>
+          )}
+        </form>
+      )}
+
+      {mode === "password" && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            signInPassword();
+          }}
+          className="space-y-3"
+        >
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="deg@eksempel.no"
+            required
+            autoComplete="email"
+            className={input}
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Passord"
+            required
+            minLength={6}
+            autoComplete="current-password"
+            className={input}
+          />
+
+          {error && (
+            <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+          >
+            {submitting ? "Et øyeblikk…" : "Logg inn"}
+          </button>
+
+          <p className="text-center text-xs text-stone-500">
+            Har du ikke satt passord enda?{" "}
+            <button
+              type="button"
+              onClick={() => switchMode("code")}
+              className="font-medium text-[#5a6b32] hover:text-[#435022]"
+            >
+              Logg inn med kode
+            </button>
+          </p>
+        </form>
+      )}
     </section>
   );
 }
