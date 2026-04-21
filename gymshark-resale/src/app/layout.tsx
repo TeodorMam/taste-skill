@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { NavLinks } from "@/components/NavLinks";
 
 export const metadata: Metadata = {
   title: "Aktivbruk — bruktbørs for treningsklær",
@@ -25,43 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               aktivbruk
               <span className="text-[#5a6b32]">.</span>
             </Link>
-            <nav className="flex items-center gap-3 text-sm">
-              <Link href="/browse" className="text-stone-700 hover:text-black">
-                Utforsk
-              </Link>
-              {user ? (
-                <>
-                  <Link href="/inbox" className="text-stone-700 hover:text-black">
-                    Innboks
-                  </Link>
-                  <Link href="/mine" className="text-stone-700 hover:text-black">
-                    Mine annonser
-                  </Link>
-                  <Link
-                    href="/post"
-                    className="rounded-full bg-stone-900 px-3 py-1.5 font-medium text-stone-50 hover:bg-black"
-                  >
-                    Selg
-                  </Link>
-                  <form action="/auth/signout" method="post">
-                    <button
-                      type="submit"
-                      className="text-xs text-stone-500 hover:text-black"
-                      title={user.email ?? undefined}
-                    >
-                      Logg ut
-                    </button>
-                  </form>
-                </>
-              ) : (
-                <Link
-                  href="/login"
-                  className="rounded-full bg-stone-900 px-3 py-1.5 font-medium text-stone-50 hover:bg-black"
-                >
-                  Logg inn
-                </Link>
-              )}
-            </nav>
+            <NavLinks isLoggedIn={!!user} />
           </div>
         </header>
         <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
