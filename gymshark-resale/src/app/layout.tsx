@@ -35,7 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     Innboks
                   </Link>
                   <Link href="/mine" className="text-stone-700 hover:text-black">
-                    Mine
+                    Mine annonser
                   </Link>
                   <Link
                     href="/post"
