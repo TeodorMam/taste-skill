@@ -26,14 +26,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
           <Link href="/mine" className={textCls("/mine")}>
             Mine annonser
           </Link>
-          <Link
-            href="/post"
-            className={`rounded-full px-3 py-1.5 font-medium transition ${
-              path === "/post"
-                ? "bg-[#5a6b32] text-white"
-                : "bg-stone-900 text-stone-50 hover:bg-black"
-            }`}
-          >
+          <Link href="/post" className={textCls("/post")}>
             Selg
           </Link>
           <form action="/auth/signout" method="post">
