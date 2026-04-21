@@ -32,6 +32,23 @@ export type Message = {
   created_at: string;
 };
 
+export type Review = {
+  id: string;
+  item_id: string;
+  reviewer_id: string;
+  seller_id: string;
+  is_positive: boolean;
+  comment: string | null;
+  created_at: string;
+};
+
+export function summarizeReviews(reviews: Review[]) {
+  const total = reviews.length;
+  const positive = reviews.filter((r) => r.is_positive).length;
+  const pct = total === 0 ? 0 : Math.round((positive / total) * 100);
+  return { total, positive, negative: total - positive, pct };
+}
+
 export const BUCKET = "item-images";
 
 export const MAX_IMAGES = 10;

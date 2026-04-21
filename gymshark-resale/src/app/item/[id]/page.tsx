@@ -9,6 +9,8 @@ import { ChatPanel } from "@/components/ChatPanel";
 import { ItemCard } from "@/components/ItemCard";
 import { Carousel } from "@/components/Carousel";
 import { ShareButton } from "@/components/ShareButton";
+import { SellerRating } from "@/components/SellerRating";
+import { ReviewForm } from "@/components/ReviewForm";
 
 export default function ItemPage() {
   const params = useParams<{ id: string }>();
@@ -22,6 +24,7 @@ export default function ItemPage() {
 
   const [buyerThreads, setBuyerThreads] = useState<string[]>([]);
   const [activeBuyer, setActiveBuyer] = useState<string | null>(null);
+  const [hasChatted, setHasChatted] = useState(false);
 
   const [similar, setSimilar] = useState<Item[]>([]);
   const [shareUrl, setShareUrl] = useState<string>("");
@@ -80,6 +83,17 @@ export default function ItemPage() {
       setSimilar(rows.slice(0, 6));
     });
   }, [item, supabase]);
+
+  useEffect(() => {
+    if (!item || !userId || isSeller) return;
+    supabase
+      .from("messages")
+      .select("id")
+      .eq("item_id", item.id)
+      .eq("buyer_id", userId)
+      .limit(1)
+      .then(({ data }) => setHasChatted((data ?? []).length > 0));
+  }, [item, userId, isSeller, supabase]);
 
   async function toggleSold() {
     if (!item) return;
@@ -198,12 +212,15 @@ export default function ItemPage() {
           </dl>
 
           {item.seller_id && !isSeller && (
-            <Link
-              href={`/seller/${item.seller_id}`}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#5a6b32] hover:text-[#435022]"
-            >
-              Se flere annonser fra denne selgeren →
-            </Link>
+            <div className="flex flex-wrap items-center gap-2">
+              <SellerRating sellerId={item.seller_id} size="md" linkToProfile />
+              <Link
+                href={`/seller/${item.seller_id}`}
+                className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]"
+              >
+                Se flere annonser fra denne selgeren →
+              </Link>
+            </div>
           )}
 
           {item.shipping && item.shipping !== "Kun henting" && (
@@ -290,6 +307,14 @@ export default function ItemPage() {
                 />
               )}
             </div>
+          )}
+
+          {item.is_sold && userId && !isSeller && hasChatted && item.seller_id && (
+            <ReviewForm
+              itemId={item.id}
+              reviewerId={userId}
+              sellerId={item.seller_id}
+            />
           )}
 
           <details className="rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm">

@@ -4,16 +4,23 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { type Item, formatPrice } from "@/lib/supabase";
+import {
+  type Item,
+  type Review,
+  formatPrice,
+  summarizeReviews,
+} from "@/lib/supabase";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
+import { ReviewList } from "@/components/ReviewList";
 
 export default function SellerPage() {
   const params = useParams<{ id: string }>();
   const supabase = useMemo(() => createClient(), []);
   const [items, setItems] = useState<Item[] | null>(null);
+  const [reviews, setReviews] = useState<Review[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<"active" | "sold">("active");
+  const [tab, setTab] = useState<"active" | "sold" | "reviews">("active");
 
   useEffect(() => {
     if (!params.id) return;
@@ -26,6 +33,12 @@ export default function SellerPage() {
         if (error) setError(error.message);
         else setItems((data ?? []) as Item[]);
       });
+    supabase
+      .from("reviews")
+      .select("*")
+      .eq("seller_id", params.id)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => setReviews((data ?? []) as Review[]));
   }, [params.id, supabase]);
 
   const counts = useMemo(() => {
@@ -39,9 +52,14 @@ export default function SellerPage() {
     };
   }, [items]);
 
-  const filtered = useMemo(() => {
+  const summary = useMemo(
+    () => (reviews ? summarizeReviews(reviews) : null),
+    [reviews],
+  );
+
+  const filteredItems = useMemo(() => {
     if (!items) return null;
-    return items.filter((i) => (tab === "active" ? !i.is_sold : i.is_sold));
+    return items.filter((i) => (tab === "sold" ? i.is_sold : !i.is_sold));
   }, [items, tab]);
 
   const firstDate = useMemo(() => {
@@ -65,7 +83,7 @@ export default function SellerPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#5a6b32]/10 text-lg font-semibold text-[#5a6b32]">
             {shortId.slice(0, 2).toUpperCase()}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-lg font-semibold tracking-tight">
               Selger #{shortId}
             </p>
@@ -78,6 +96,24 @@ export default function SellerPage() {
                 : "Ny selger"}
             </p>
           </div>
+          {summary && summary.total > 0 && (
+            <div className="text-right">
+              <p
+                className={`text-lg font-semibold ${
+                  summary.pct >= 80
+                    ? "text-emerald-700"
+                    : summary.pct >= 50
+                      ? "text-amber-700"
+                      : "text-red-700"
+                }`}
+              >
+                {summary.pct}%
+              </p>
+              <p className="text-[10px] text-stone-500">
+                {summary.total} vurdering{summary.total === 1 ? "" : "er"}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-2">
@@ -94,34 +130,41 @@ export default function SellerPage() {
         <TabChip active={tab === "sold"} onClick={() => setTab("sold")}>
           Solgt ({counts.sold})
         </TabChip>
+        <TabChip active={tab === "reviews"} onClick={() => setTab("reviews")}>
+          Vurderinger ({summary?.total ?? 0})
+        </TabChip>
       </div>
 
       {error && (
         <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
       )}
 
-      {filtered === null && !error && (
+      {tab === "reviews" ? (
+        reviews === null ? (
+          <p className="text-sm text-stone-500">Laster…</p>
+        ) : (
+          <ReviewList reviews={reviews} />
+        )
+      ) : filteredItems === null && !error ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <ItemCardSkeleton key={i} />
           ))}
         </div>
-      )}
-
-      {filtered && filtered.length === 0 && (
+      ) : filteredItems && filteredItems.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
           {tab === "active"
             ? "Ingen aktive annonser."
             : "Ingen solgte annonser enda."}
         </div>
-      )}
-
-      {filtered && filtered.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {filtered.map((item) => (
-            <ItemCard key={item.id} item={item} />
-          ))}
-        </div>
+      ) : (
+        filteredItems && (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {filteredItems.map((item) => (
+              <ItemCard key={item.id} item={item} />
+            ))}
+          </div>
+        )
       )}
     </section>
   );
