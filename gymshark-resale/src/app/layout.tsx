@@ -4,11 +4,26 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { NavLinks } from "@/components/NavLinks";
+import { BottomNav } from "@/components/BottomNav";
 
 export const metadata: Metadata = {
   title: "Aktivbruk — bruktbørs for treningsklær",
   description:
     "Kjøp og selg brukte treningsklær i Norge. Gymshark, Nike, Lululemon, Alphalete og mer.",
+  openGraph: {
+    title: "Aktivbruk — bruktbørs for treningsklær",
+    description:
+      "Kjøp og selg brukte treningsklær i Norge. Gymshark, Nike, Lululemon, Alphalete og mer.",
+    type: "website",
+    locale: "nb_NO",
+    siteName: "Aktivbruk",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Aktivbruk — bruktbørs for treningsklær",
+    description:
+      "Kjøp og selg brukte treningsklær i Norge.",
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -26,14 +41,42 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               aktivbruk
               <span className="text-[#5a6b32]">.</span>
             </Link>
-            <NavLinks isLoggedIn={!!user} />
+            <div className="hidden sm:block">
+              <NavLinks isLoggedIn={!!user} />
+            </div>
+            {!user && (
+              <Link
+                href="/login"
+                className="rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-50 hover:bg-black sm:hidden"
+              >
+                Logg inn
+              </Link>
+            )}
+            {user && (
+              <form action="/auth/signout" method="post" className="sm:hidden">
+                <button
+                  type="submit"
+                  className="text-xs text-stone-500 hover:text-black"
+                >
+                  Logg ut
+                </button>
+              </form>
+            )}
           </div>
         </header>
-        <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
-        <footer className="mx-auto max-w-3xl px-4 py-10 text-xs text-stone-500">
-          Aktivbruk — bruktbørs for treningsklær. Et uavhengig prosjekt, ikke
-          tilknyttet noen merkevare.
+        <main className="mx-auto max-w-3xl px-4 pb-24 pt-6 sm:pb-10">{children}</main>
+        <footer className="mx-auto max-w-3xl px-4 pb-24 pt-4 text-xs text-stone-500 sm:pb-10">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p>
+              Aktivbruk — bruktbørs for treningsklær. Et uavhengig prosjekt, ikke
+              tilknyttet noen merkevare.
+            </p>
+            <Link href="/about" className="text-stone-500 underline hover:text-black">
+              Om & FAQ
+            </Link>
+          </div>
         </footer>
+        <BottomNav isLoggedIn={!!user} />
       </body>
     </html>
   );

@@ -10,7 +10,7 @@ import {
   AREAS,
   PRICE_BUCKETS,
   type PriceBucketKey,
-  SHIPPING_OPTIONS,
+  CATEGORIES,
 } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { ItemCard } from "@/components/ItemCard";
@@ -35,6 +35,7 @@ function BrowseInner() {
 
   const q = params.get("q") ?? "";
   const brand = params.get("brand") ?? "";
+  const category = params.get("category") ?? "";
   const size = params.get("size") ?? "";
   const condition = params.get("condition") ?? "";
   const location = params.get("location") ?? "";
@@ -75,6 +76,7 @@ function BrowseInner() {
     let out = items.filter((i) => {
       if (hideSold && i.is_sold) return false;
       if (brand && i.brand !== brand) return false;
+      if (category && i.category !== category) return false;
       if (size && i.size !== size) return false;
       if (condition && i.condition !== condition) return false;
       if (location && i.location !== location) return false;
@@ -89,7 +91,7 @@ function BrowseInner() {
     if (sort === "price_asc") out = [...out].sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") out = [...out].sort((a, b) => b.price - a.price);
     return out;
-  }, [items, q, brand, size, condition, location, price, sort, hideSold, shipping]);
+  }, [items, q, brand, category, size, condition, location, price, sort, hideSold, shipping]);
 
   const availableBrands = useMemo(() => {
     if (!items) return [] as string[];
@@ -99,7 +101,7 @@ function BrowseInner() {
   }, [items]);
 
   const hasActiveFilter =
-    !!(q || brand || size || condition || location || price || shipping) ||
+    !!(q || brand || category || size || condition || location || price || shipping) ||
     sort !== "newest" ||
     !hideSold;
 
@@ -133,6 +135,17 @@ function BrowseInner() {
             ))}
           </Row>
         )}
+
+        <Row>
+          <Chip active={category === ""} onClick={() => setParam("category", "")}>
+            Alle kategorier
+          </Chip>
+          {CATEGORIES.map((c) => (
+            <Chip key={c} active={category === c} onClick={() => setParam("category", c)}>
+              {c}
+            </Chip>
+          ))}
+        </Row>
 
         <Row>
           <Chip active={size === ""} onClick={() => setParam("size", "")}>

@@ -1,26 +1,36 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { type Item, formatPrice, itemImages } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { ChatPanel } from "@/components/ChatPanel";
 import { ItemCard } from "@/components/ItemCard";
 import { Carousel } from "@/components/Carousel";
+import { ShareButton } from "@/components/ShareButton";
 
 export default function ItemPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [item, setItem] = useState<Item | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
 
   const [buyerThreads, setBuyerThreads] = useState<string[]>([]);
   const [activeBuyer, setActiveBuyer] = useState<string | null>(null);
 
   const [similar, setSimilar] = useState<Item[]>([]);
+  const [shareUrl, setShareUrl] = useState<string>("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setShareUrl(window.location.href);
+    }
+  }, [params.id]);
 
   useEffect(() => {
     if (!params.id) return;
@@ -85,6 +95,22 @@ export default function ItemPage() {
     else if (data) setItem(data as Item);
   }
 
+  async function onDelete() {
+    if (!item) return;
+    const ok = window.confirm(
+      "Er du sikker på at du vil slette denne annonsen? Dette kan ikke angres.",
+    );
+    if (!ok) return;
+    setDeleting(true);
+    const { error } = await supabase.from("items").delete().eq("id", item.id);
+    if (error) {
+      setDeleting(false);
+      setError(error.message);
+      return;
+    }
+    router.push("/mine");
+  }
+
   if (error) {
     return (
       <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
@@ -117,15 +143,40 @@ export default function ItemPage() {
 
         <div className="space-y-5 p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{item.title}</h1>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-semibold tracking-tight">{item.title}</h1>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {shareUrl && <ShareButton url={shareUrl} title={item.title} />}
+                {isSeller && (
+                  <Link
+                    href={`/item/${item.id}/edit`}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500"
+                  >
+                    ✎ Rediger
+                  </Link>
+                )}
+              </div>
+            </div>
             <p className="text-2xl font-semibold">{formatPrice(item.price)}</p>
           </div>
+
+          {item.description && (
+            <p className="whitespace-pre-line text-sm leading-relaxed text-stone-700">
+              {item.description}
+            </p>
+          )}
 
           <dl className="grid grid-cols-2 gap-y-2 text-sm">
             {item.brand && (
               <>
                 <dt className="text-stone-500">Merke</dt>
                 <dd className="text-right font-medium">{item.brand}</dd>
+              </>
+            )}
+            {item.category && (
+              <>
+                <dt className="text-stone-500">Kategori</dt>
+                <dd className="text-right">{item.category}</dd>
               </>
             )}
             <dt className="text-stone-500">Størrelse</dt>
@@ -145,6 +196,15 @@ export default function ItemPage() {
               </>
             )}
           </dl>
+
+          {item.seller_id && !isSeller && (
+            <Link
+              href={`/seller/${item.seller_id}`}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#5a6b32] hover:text-[#435022]"
+            >
+              Se flere annonser fra denne selgeren →
+            </Link>
+          )}
 
           {item.shipping && item.shipping !== "Kun henting" && (
             <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm">
@@ -240,17 +300,26 @@ export default function ItemPage() {
           </details>
 
           {isSeller && (
-            <button
-              onClick={toggleSold}
-              disabled={saving}
-              className="w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium hover:border-stone-500 disabled:opacity-50"
-            >
-              {saving
-                ? "Lagrer…"
-                : item.is_sold
-                  ? "Marker som tilgjengelig"
-                  : "Marker som solgt"}
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={toggleSold}
+                disabled={saving || deleting}
+                className="w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium hover:border-stone-500 disabled:opacity-50"
+              >
+                {saving
+                  ? "Lagrer…"
+                  : item.is_sold
+                    ? "Marker som tilgjengelig"
+                    : "Marker som solgt"}
+              </button>
+              <button
+                onClick={onDelete}
+                disabled={saving || deleting}
+                className="w-full rounded-full border border-red-200 bg-white px-5 py-3 text-sm font-medium text-red-700 hover:border-red-400 hover:bg-red-50 disabled:opacity-50"
+              >
+                {deleting ? "Sletter…" : "Slett annonsen"}
+              </button>
+            </div>
           )}
         </div>
       </div>

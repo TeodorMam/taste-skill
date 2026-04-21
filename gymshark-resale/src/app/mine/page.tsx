@@ -15,6 +15,7 @@ export default function MinePage() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("active");
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
@@ -58,6 +59,39 @@ export default function MinePage() {
         : 0,
     [items],
   );
+
+  async function toggleSold(item: Item) {
+    setBusyId(item.id);
+    const { data, error } = await supabase
+      .from("items")
+      .update({ is_sold: !item.is_sold })
+      .eq("id", item.id)
+      .select("*")
+      .single();
+    setBusyId(null);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    if (data) {
+      setItems((prev) =>
+        (prev ?? []).map((i) => (i.id === item.id ? (data as Item) : i)),
+      );
+    }
+  }
+
+  async function deleteItem(item: Item) {
+    const ok = window.confirm(`Slette "${item.title}"? Dette kan ikke angres.`);
+    if (!ok) return;
+    setBusyId(item.id);
+    const { error } = await supabase.from("items").delete().eq("id", item.id);
+    setBusyId(null);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setItems((prev) => (prev ?? []).filter((i) => i.id !== item.id));
+  }
 
   if (userId === undefined) {
     return <p className="py-6 text-sm text-stone-500">Laster…</p>;
@@ -148,7 +182,36 @@ export default function MinePage() {
       {filtered && filtered.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {filtered.map((item) => (
-            <ItemCard key={item.id} item={item} />
+            <div key={item.id} className="space-y-2">
+              <ItemCard item={item} />
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => toggleSold(item)}
+                  disabled={busyId === item.id}
+                  className="flex-1 rounded-full border border-stone-300 bg-white px-2 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500 disabled:opacity-50"
+                >
+                  {busyId === item.id
+                    ? "…"
+                    : item.is_sold
+                      ? "Gjør aktiv"
+                      : "Marker solgt"}
+                </button>
+                <Link
+                  href={`/item/${item.id}/edit`}
+                  className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
+                >
+                  ✎
+                </Link>
+                <button
+                  onClick={() => deleteItem(item)}
+                  disabled={busyId === item.id}
+                  className="rounded-full border border-red-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-red-700 hover:border-red-400 hover:bg-red-50 disabled:opacity-50"
+                  aria-label="Slett"
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       )}

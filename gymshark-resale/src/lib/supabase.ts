@@ -1,11 +1,13 @@
 export type Item = {
   id: string;
   title: string;
+  description: string | null;
   image_url: string | null;
   image_urls: string[] | null;
   size: string;
   price: number;
   condition: string;
+  category: string | null;
   location: string;
   contact: string;
   brand: string | null;
@@ -248,6 +250,19 @@ export const BRANDS = [
   "Zella",
   "Zoot",
   "Other",
+] as const;
+
+export const CATEGORIES = [
+  "Overdel",
+  "Sports-BH",
+  "Tights",
+  "Shorts",
+  "Joggebukse",
+  "Jakke",
+  "Sko",
+  "Sokker",
+  "Tilbehør",
+  "Sett",
 ] as const;
 
 export const SIZES = ["XS", "S", "M", "L", "XL", "XXL"] as const;

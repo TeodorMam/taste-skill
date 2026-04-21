@@ -11,6 +11,7 @@ import {
   AREAS,
   MAX_IMAGES,
   SHIPPING_OPTIONS,
+  CATEGORIES,
 } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 
@@ -28,10 +29,12 @@ export default function PostPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [brand, setBrand] = useState("");
+  const [category, setCategory] = useState("");
   const [size, setSize] = useState("M");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState<(typeof CONDITIONS)[number]>("God");
   const [location, setLocation] = useState<string>(AREAS[0]);
+  const [description, setDescription] = useState("");
   const [contact, setContact] = useState("");
   const [slots, setSlots] = useState<Slot[]>([]);
   const [shipping, setShipping] = useState<string>(SHIPPING_OPTIONS[0].value);
@@ -111,10 +114,12 @@ export default function PostPage() {
         .insert({
           title: title.trim(),
           brand: brand.trim(),
+          category: category || null,
           size,
           price: priceNum,
           condition,
           location,
+          description: description.trim() || null,
           contact: contact.trim(),
           seller_id: userId,
           image_url,
@@ -170,11 +175,7 @@ export default function PostPage() {
                 className="group relative aspect-square overflow-hidden rounded-lg border border-stone-200 bg-stone-100"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={s.preview}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
+                <img src={s.preview} alt="" className="h-full w-full object-cover" />
                 {i === 0 && (
                   <span className="absolute left-1 top-1 rounded-full bg-[#5a6b32] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-white">
                     Cover
@@ -210,7 +211,6 @@ export default function PostPage() {
                 </div>
               </div>
             ))}
-
             {remaining > 0 && (
               <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-stone-300 bg-stone-50 text-stone-500 transition hover:border-[#5a6b32] hover:text-[#5a6b32]">
                 <span className="text-2xl leading-none">＋</span>
@@ -222,10 +222,7 @@ export default function PostPage() {
                   accept="image/*"
                   multiple
                   className="hidden"
-                  onChange={(e) => {
-                    addFiles(e.target.files);
-                    e.target.value = "";
-                  }}
+                  onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
                 />
               </label>
             )}
@@ -259,18 +256,34 @@ export default function PostPage() {
             required
           />
           <datalist id="brand-options">
-            {BRANDS.map((b) => (
-              <option key={b} value={b} />
-            ))}
+            {BRANDS.map((b) => <option key={b} value={b} />)}
           </datalist>
         </Field>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Kategori</span>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCategory(category === c ? "" : c)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  category === c
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Størrelse">
             <select value={size} onChange={(e) => setSize(e.target.value)} className={input}>
-              {SIZES.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
+              {SIZES.map((s) => <option key={s}>{s}</option>)}
             </select>
           </Field>
           <Field label="Pris (NOK)">
@@ -293,18 +306,24 @@ export default function PostPage() {
             onChange={(e) => setCondition(e.target.value as (typeof CONDITIONS)[number])}
             className={input}
           >
-            {CONDITIONS.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
+            {CONDITIONS.map((c) => <option key={c}>{c}</option>)}
           </select>
         </Field>
 
         <Field label="Sted">
           <select value={location} onChange={(e) => setLocation(e.target.value)} className={input}>
-            {AREAS.map((a) => (
-              <option key={a}>{a}</option>
-            ))}
+            {AREAS.map((a) => <option key={a}>{a}</option>)}
           </select>
+        </Field>
+
+        <Field label="Beskrivelse (valgfritt)">
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Fortell om varen — størrelse, bruk, tilstand, grunnen til salg…"
+            rows={3}
+            className={`${input} resize-none`}
+          />
         </Field>
 
         <div className="space-y-1.5">
