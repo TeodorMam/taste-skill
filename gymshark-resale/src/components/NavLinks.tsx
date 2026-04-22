@@ -20,6 +20,9 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
       </Link>
       {isLoggedIn ? (
         <>
+          <Link href="/favoritter" className={textCls("/favoritter")}>
+            Favoritter
+          </Link>
           <Link href="/inbox" className={textCls("/inbox")}>
             Innboks
           </Link>

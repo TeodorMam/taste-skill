@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { type Item, formatPrice, itemImages } from "@/lib/supabase";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 function shippingIcon(s: string | null) {
   if (!s || s === "Kun henting") return null;
@@ -29,6 +30,7 @@ export function ItemCard({ item }: { item: Item }) {
             Ingen bilde
           </div>
         )}
+        <FavoriteButton itemId={item.id} />
         {item.brand && (
           <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#5a6b32] backdrop-blur">
             {item.brand}
@@ -54,7 +56,7 @@ export function ItemCard({ item }: { item: Item }) {
           </div>
         )}
         {item.is_sold && (
-          <div className="absolute right-2 top-2 rounded-full bg-stone-900 px-2 py-0.5 text-xs font-medium text-stone-50">
+          <div className="absolute bottom-2 left-2 rounded-full bg-stone-900 px-2 py-0.5 text-xs font-medium text-stone-50">
             Solgt
           </div>
         )}
