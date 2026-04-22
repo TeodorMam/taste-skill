@@ -92,14 +92,14 @@ function LoginInner() {
     setSubmitting(false);
     if (error) return setError(error.message);
     setForgotStage("sent");
-    setInfo("Vi sendte en 6-sifret kode til e-posten din.");
+    setInfo("Vi sendte koden til e-posten din.");
   }
 
   async function verifyForgotCode(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     const token = code.trim();
-    if (token.length < 6) return setError("Skriv inn den 6-sifrede koden");
+    if (token.length < 6) return setError("Skriv inn hele koden");
     setSubmitting(true);
     const sb = createClient();
     const { error } = await sb.auth.verifyOtp({
@@ -141,7 +141,7 @@ function LoginInner() {
           <h1 className="text-3xl font-semibold tracking-tight">Glemt passord</h1>
           <p className="mt-1 text-sm text-stone-500">
             {forgotStage === "idle" &&
-              "Skriv inn e-posten din — vi sender en 6-sifret kode."}
+              "Skriv inn e-posten din — vi sender en engangskode."}
             {forgotStage === "sent" && "Skriv inn koden fra e-posten."}
             {forgotStage === "verified" && "Velg et nytt passord."}
           </p>
@@ -177,12 +177,12 @@ function LoginInner() {
               pattern="[0-9]*"
               value={code}
               onChange={(e) =>
-                setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                setCode(e.target.value.replace(/\D/g, "").slice(0, 10))
               }
-              placeholder="6-sifret kode"
+              placeholder="Engangskode"
               autoFocus
               autoComplete="one-time-code"
-              className={`${input} text-center text-lg tracking-[0.4em]`}
+              className={`${input} text-center text-lg tracking-[0.3em]`}
             />
             {info && (
               <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">
