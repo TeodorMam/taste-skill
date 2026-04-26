@@ -3,7 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { type Item, formatPrice, itemImages } from "@/lib/supabase";
+import {
+  type Item,
+  type Profile,
+  formatPrice,
+  itemImages,
+  profileDisplayName,
+  profileInitials,
+} from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { ChatPanel } from "@/components/ChatPanel";
 import { ItemCard } from "@/components/ItemCard";
@@ -28,6 +35,8 @@ export default function ItemPage() {
   const [hasChatted, setHasChatted] = useState(false);
 
   const [similar, setSimilar] = useState<Item[]>([]);
+  const [similarSellers, setSimilarSellers] = useState<Record<string, Profile>>({});
+  const [seller, setSeller] = useState<Profile | null>(null);
   const [shareUrl, setShareUrl] = useState<string>("");
 
   useEffect(() => {
@@ -76,12 +85,39 @@ export default function ItemPage() {
   }, [item, isSeller, supabase]);
 
   useEffect(() => {
+    if (!item?.seller_id) {
+      setSeller(null);
+      return;
+    }
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", item.seller_id)
+      .maybeSingle()
+      .then(({ data }) => setSeller((data ?? null) as Profile | null));
+  }, [item?.seller_id, supabase]);
+
+  useEffect(() => {
     if (!item) return;
     const base = supabase.from("items").select("*").neq("id", item.id).limit(24);
     const query = item.brand ? base.eq("brand", item.brand) : base;
     query.then(({ data }) => {
       const rows = ((data ?? []) as Item[]).filter((i) => !i.is_sold);
-      setSimilar(rows.slice(0, 6));
+      const slice = rows.slice(0, 6);
+      setSimilar(slice);
+      const ids = Array.from(
+        new Set(slice.map((r) => r.seller_id).filter((x): x is string => !!x)),
+      );
+      if (ids.length === 0) return;
+      supabase
+        .from("profiles")
+        .select("*")
+        .in("user_id", ids)
+        .then(({ data: pData }) => {
+          const map: Record<string, Profile> = {};
+          for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
+          setSimilarSellers(map);
+        });
     });
   }, [item, supabase]);
 
@@ -214,15 +250,32 @@ export default function ItemPage() {
           </dl>
 
           {item.seller_id && !isSeller && (
-            <div className="flex flex-wrap items-center gap-2">
-              <SellerRating sellerId={item.seller_id} size="md" linkToProfile />
-              <Link
-                href={`/seller/${item.seller_id}`}
-                className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]"
-              >
-                Se flere annonser fra denne selgeren →
-              </Link>
-            </div>
+            <Link
+              href={`/seller/${item.seller_id}`}
+              className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 transition hover:border-stone-400"
+            >
+              {seller?.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={seller.avatar_url}
+                  alt=""
+                  className="h-10 w-10 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#5a6b32]/10 text-sm font-semibold text-[#5a6b32]">
+                  {profileInitials(seller, item.seller_id)}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">
+                  {profileDisplayName(seller, item.seller_id)}
+                </p>
+                <p className="text-xs text-stone-500">
+                  Se profil og flere annonser →
+                </p>
+              </div>
+              <SellerRating sellerId={item.seller_id} size="md" />
+            </Link>
           )}
 
           {item.shipping && item.shipping !== "Kun henting" && (
@@ -370,7 +423,11 @@ export default function ItemPage() {
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {similar.map((s) => (
-              <ItemCard key={s.id} item={s} />
+              <ItemCard
+                key={s.id}
+                item={s}
+                seller={s.seller_id ? similarSellers[s.seller_id] : null}
+              />
             ))}
           </div>
         </section>

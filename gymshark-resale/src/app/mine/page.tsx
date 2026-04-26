@@ -7,6 +7,7 @@ import { type Item, formatPrice } from "@/lib/supabase";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 import { PasswordSetter } from "@/components/PasswordSetter";
+import { ProfileEditor } from "@/components/ProfileEditor";
 
 type Tab = "active" | "sold" | "all";
 
@@ -137,6 +138,8 @@ export default function MinePage() {
         <Stat label="Omsetning" value={formatPrice(totalRevenue)} />
       </div>
 
+      <ProfileEditor />
+
       <PasswordSetter />
 
       <div className="flex gap-2">
@@ -186,7 +189,7 @@ export default function MinePage() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {filtered.map((item) => (
             <div key={item.id} className="space-y-2">
-              <ItemCard item={item} />
+              <ItemCard item={item} hideSeller />
               <div className="flex gap-1.5">
                 <button
                   onClick={() => toggleSold(item)}

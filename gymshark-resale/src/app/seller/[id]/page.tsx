@@ -6,8 +6,11 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import {
   type Item,
+  type Profile,
   type Review,
   formatPrice,
+  profileDisplayName,
+  profileInitials,
   summarizeReviews,
 } from "@/lib/supabase";
 import { ItemCard } from "@/components/ItemCard";
@@ -19,6 +22,7 @@ export default function SellerPage() {
   const supabase = useMemo(() => createClient(), []);
   const [items, setItems] = useState<Item[] | null>(null);
   const [reviews, setReviews] = useState<Review[] | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"active" | "sold" | "reviews">("active");
 
@@ -39,6 +43,12 @@ export default function SellerPage() {
       .eq("seller_id", params.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => setReviews((data ?? []) as Review[]));
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", params.id)
+      .maybeSingle()
+      .then(({ data }) => setProfile((data ?? null) as Profile | null));
   }, [params.id, supabase]);
 
   const counts = useMemo(() => {
@@ -63,14 +73,17 @@ export default function SellerPage() {
   }, [items, tab]);
 
   const firstDate = useMemo(() => {
+    if (profile?.created_at) return new Date(profile.created_at);
     if (!items || items.length === 0) return null;
     const oldest = items.reduce((acc, i) =>
       new Date(i.created_at) < new Date(acc.created_at) ? i : acc,
     );
     return new Date(oldest.created_at);
-  }, [items]);
+  }, [items, profile]);
 
-  const shortId = params.id ? params.id.slice(0, 6) : "";
+  const sellerId = params.id ?? null;
+  const displayName = profileDisplayName(profile, sellerId);
+  const initials = profileInitials(profile, sellerId);
 
   return (
     <section className="space-y-5">
@@ -80,12 +93,21 @@ export default function SellerPage() {
 
       <div className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#5a6b32]/10 text-lg font-semibold text-[#5a6b32]">
-            {shortId.slice(0, 2).toUpperCase()}
-          </div>
+          {profile?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profile.avatar_url}
+              alt=""
+              className="h-12 w-12 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#5a6b32]/10 text-lg font-semibold text-[#5a6b32]">
+              {initials}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-lg font-semibold tracking-tight">
-              Selger #{shortId}
+              {displayName}
             </p>
             <p className="text-xs text-stone-500">
               {firstDate
@@ -94,6 +116,7 @@ export default function SellerPage() {
                     year: "numeric",
                   })}`
                 : "Ny selger"}
+              {profile?.location ? ` · ${profile.location}` : ""}
             </p>
           </div>
           {summary && summary.total > 0 && (
@@ -115,6 +138,12 @@ export default function SellerPage() {
             </div>
           )}
         </div>
+
+        {profile?.bio && (
+          <p className="mt-3 whitespace-pre-line text-sm text-stone-700">
+            {profile.bio}
+          </p>
+        )}
 
         <div className="mt-4 grid grid-cols-3 gap-2">
           <Stat label="Aktive" value={counts.active} />
@@ -161,7 +190,7 @@ export default function SellerPage() {
         filteredItems && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {filteredItems.map((item) => (
-              <ItemCard key={item.id} item={item} />
+              <ItemCard key={item.id} item={item} hideSeller />
             ))}
           </div>
         )

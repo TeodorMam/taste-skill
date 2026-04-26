@@ -11,7 +11,9 @@ import {
   AREAS,
   MAX_IMAGES,
   SHIPPING_OPTIONS,
-  CATEGORIES,
+  CATEGORY_TREE,
+  CATEGORY_PARENTS,
+  type CategoryParent,
 } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 
@@ -29,6 +31,7 @@ export default function PostPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [brand, setBrand] = useState("");
+  const [categoryParent, setCategoryParent] = useState<CategoryParent | "">("");
   const [category, setCategory] = useState("");
   const [size, setSize] = useState("M");
   const [price, setPrice] = useState("");
@@ -261,21 +264,49 @@ export default function PostPage() {
         <div className="space-y-1.5">
           <span className="block text-sm font-medium text-stone-800">Kategori</span>
           <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((c) => (
+            {CATEGORY_PARENTS.map((p) => (
               <button
-                key={c}
+                key={p}
                 type="button"
-                onClick={() => setCategory(category === c ? "" : c)}
+                onClick={() => {
+                  if (categoryParent === p) {
+                    setCategoryParent("");
+                    setCategory("");
+                  } else {
+                    setCategoryParent(p);
+                    setCategory("");
+                  }
+                }}
                 className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                  category === c
+                  categoryParent === p
                     ? "border-[#5a6b32] bg-[#5a6b32] text-white"
                     : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
                 }`}
               >
-                {c}
+                {p}
               </button>
             ))}
           </div>
+          {categoryParent && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {CATEGORY_TREE.find((g) => g.name === categoryParent)?.children.map(
+                (c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setCategory(category === c ? "" : c)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                      category === c
+                        ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                        : "border-stone-300 bg-stone-50 text-stone-700 hover:border-stone-500"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ),
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">

@@ -4,13 +4,17 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   type Item,
+  type Profile,
   BRANDS,
   SIZES,
   CONDITIONS,
   AREAS,
   PRICE_BUCKETS,
   type PriceBucketKey,
-  CATEGORIES,
+  CATEGORY_TREE,
+  CATEGORY_PARENTS,
+  type CategoryParent,
+  categoryMatchesParent,
 } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { ItemCard } from "@/components/ItemCard";
@@ -31,11 +35,13 @@ function BrowseInner() {
   const params = useSearchParams();
 
   const [items, setItems] = useState<Item[] | null>(null);
+  const [sellers, setSellers] = useState<Record<string, Profile>>({});
   const [error, setError] = useState<string | null>(null);
 
   const q = params.get("q") ?? "";
   const brand = params.get("brand") ?? "";
-  const category = params.get("category") ?? "";
+  const cat = params.get("cat") ?? ""; // parent (broad) category
+  const sub = params.get("sub") ?? ""; // specific subcategory
   const size = params.get("size") ?? "";
   const condition = params.get("condition") ?? "";
   const location = params.get("location") ?? "";
@@ -53,6 +59,16 @@ function BrowseInner() {
     });
   }
 
+  function setCat(value: string) {
+    const next = new URLSearchParams(params.toString());
+    if (value) next.set("cat", value);
+    else next.delete("cat");
+    next.delete("sub");
+    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, {
+      scroll: false,
+    });
+  }
+
   function clearAll() {
     router.replace("/browse", { scroll: false });
   }
@@ -64,10 +80,34 @@ function BrowseInner() {
       .select("*")
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
-        if (error) setError(error.message);
-        else setItems((data ?? []) as Item[]);
+        if (error) {
+          setError(error.message);
+          return;
+        }
+        const rows = (data ?? []) as Item[];
+        setItems(rows);
+        const ids = Array.from(
+          new Set(rows.map((r) => r.seller_id).filter((x): x is string => !!x)),
+        );
+        if (ids.length === 0) return;
+        supabase
+          .from("profiles")
+          .select("*")
+          .in("user_id", ids)
+          .then(({ data: pData }) => {
+            const map: Record<string, Profile> = {};
+            for (const p of (pData ?? []) as Profile[]) {
+              map[p.user_id] = p;
+            }
+            setSellers(map);
+          });
       });
   }, []);
+
+  const activeParent = (cat || null) as CategoryParent | null;
+  const activeGroup = activeParent
+    ? CATEGORY_TREE.find((g) => g.name === activeParent)
+    : null;
 
   const filtered = useMemo(() => {
     if (!items) return null;
@@ -76,7 +116,11 @@ function BrowseInner() {
     let out = items.filter((i) => {
       if (hideSold && i.is_sold) return false;
       if (brand && i.brand !== brand) return false;
-      if (category && i.category !== category) return false;
+      if (sub) {
+        if (i.category !== sub) return false;
+      } else if (activeParent) {
+        if (!categoryMatchesParent(i.category, activeParent)) return false;
+      }
       if (size && i.size !== size) return false;
       if (condition && i.condition !== condition) return false;
       if (location && i.location !== location) return false;
@@ -91,7 +135,7 @@ function BrowseInner() {
     if (sort === "price_asc") out = [...out].sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") out = [...out].sort((a, b) => b.price - a.price);
     return out;
-  }, [items, q, brand, category, size, condition, location, price, sort, hideSold, shipping]);
+  }, [items, q, brand, sub, activeParent, size, condition, location, price, sort, hideSold, shipping]);
 
   const availableBrands = useMemo(() => {
     if (!items) return [] as string[];
@@ -101,7 +145,7 @@ function BrowseInner() {
   }, [items]);
 
   const hasActiveFilter =
-    !!(q || brand || category || size || condition || location || price || shipping) ||
+    !!(q || brand || cat || sub || size || condition || location || price || shipping) ||
     sort !== "newest" ||
     !hideSold;
 
@@ -137,15 +181,28 @@ function BrowseInner() {
         )}
 
         <Row>
-          <Chip active={category === ""} onClick={() => setParam("category", "")}>
+          <Chip active={cat === ""} onClick={() => setCat("")}>
             Alle kategorier
           </Chip>
-          {CATEGORIES.map((c) => (
-            <Chip key={c} active={category === c} onClick={() => setParam("category", c)}>
+          {CATEGORY_PARENTS.map((c) => (
+            <Chip key={c} active={cat === c} onClick={() => setCat(c)}>
               {c}
             </Chip>
           ))}
         </Row>
+
+        {activeGroup && (
+          <Row>
+            <Chip active={sub === ""} onClick={() => setParam("sub", "")}>
+              Alle i {activeGroup.name.toLowerCase()}
+            </Chip>
+            {activeGroup.children.map((c) => (
+              <Chip key={c} active={sub === c} onClick={() => setParam("sub", c)}>
+                {c}
+              </Chip>
+            ))}
+          </Row>
+        )}
 
         <Row>
           <Chip active={size === ""} onClick={() => setParam("size", "")}>
@@ -258,7 +315,11 @@ function BrowseInner() {
       {filtered && filtered.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {filtered.map((item) => (
-            <ItemCard key={item.id} item={item} />
+            <ItemCard
+              key={item.id}
+              item={item}
+              seller={item.seller_id ? sellers[item.seller_id] : null}
+            />
           ))}
         </div>
       )}
