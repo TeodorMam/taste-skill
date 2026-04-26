@@ -53,8 +53,12 @@ function LoginInner() {
     setSubmitting(true);
     const sb = createClient();
     const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      setSubmitting(false);
+      return setError(error.message);
+    }
+    await sb.auth.updateUser({ data: { has_password: true } });
     setSubmitting(false);
-    if (error) return setError(error.message);
     router.push(next);
     router.refresh();
   }
@@ -66,7 +70,11 @@ function LoginInner() {
     if (password !== confirmPassword) return setError("Passordene er ikke like");
     setSubmitting(true);
     const sb = createClient();
-    const { data, error } = await sb.auth.signUp({ email, password });
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { data: { has_password: true } },
+    });
     setSubmitting(false);
     if (error) return setError(error.message);
     if (data.session) {
@@ -120,7 +128,10 @@ function LoginInner() {
     if (password !== confirmPassword) return setError("Passordene er ikke like");
     setSubmitting(true);
     const sb = createClient();
-    const { error } = await sb.auth.updateUser({ password });
+    const { error } = await sb.auth.updateUser({
+      password,
+      data: { has_password: true },
+    });
     setSubmitting(false);
     if (error) return setError(error.message);
     router.push(next);

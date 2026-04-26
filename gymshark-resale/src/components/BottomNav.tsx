@@ -12,7 +12,8 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
         { href: "/favoritter", label: "Favoritter", icon: HeartIcon },
         { href: "/post", label: "Selg", icon: PlusIcon },
         { href: "/inbox", label: "Innboks", icon: InboxIcon },
-        { href: "/mine", label: "Mine", icon: UserIcon },
+        { href: "/mine", label: "Mine", icon: TagIcon },
+        { href: "/profil", label: "Profil", icon: UserIcon },
       ]
     : [
         { href: "/browse", label: "Utforsk", icon: SearchIcon },
@@ -115,6 +116,25 @@ function HeartIcon({ active }: { active: boolean }) {
       aria-hidden
     >
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
+
+function TagIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={active ? 2.4 : 2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+      <line x1="7" y1="7" x2="7.01" y2="7" />
     </svg>
   );
 }

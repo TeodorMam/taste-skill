@@ -32,14 +32,9 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
           <Link href="/post" className={textCls("/post")}>
             Selg
           </Link>
-          <form action="/auth/signout" method="post">
-            <button
-              type="submit"
-              className="text-xs text-stone-500 hover:text-black"
-            >
-              Logg ut
-            </button>
-          </form>
+          <Link href="/profil" className={textCls("/profil")}>
+            Min profil
+          </Link>
         </>
       ) : (
         <Link

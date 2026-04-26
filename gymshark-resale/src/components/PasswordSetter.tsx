@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
 export function PasswordSetter() {
+  const [hasPassword, setHasPassword] = useState<boolean | null>(null);
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      const flag = data.user?.user_metadata?.has_password === true;
+      setHasPassword(flag);
+    });
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,16 +33,23 @@ export function PasswordSetter() {
     }
     setSaving(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await supabase.auth.updateUser({
+      password,
+      data: { has_password: true },
+    });
     setSaving(false);
     if (error) {
       setError(error.message);
       return;
     }
     setDone(true);
+    setHasPassword(true);
     setPassword("");
     setConfirm("");
   }
+
+  if (hasPassword === null) return null;
+  if (hasPassword && !done) return null;
 
   if (done) {
     return (
