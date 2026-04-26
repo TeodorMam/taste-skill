@@ -19,6 +19,7 @@ import { ShareButton } from "@/components/ShareButton";
 import { SellerRating } from "@/components/SellerRating";
 import { ReviewForm } from "@/components/ReviewForm";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { FirstListingSuccess } from "@/components/FirstListingSuccess";
 
 export default function ItemPage() {
   const params = useParams<{ id: string }>();
@@ -173,6 +174,12 @@ export default function ItemPage() {
 
   return (
     <article className="space-y-8">
+      <FirstListingSuccess
+        itemId={item.id}
+        itemTitle={item.title}
+        shareUrl={shareUrl}
+        isSeller={isSeller}
+      />
       <Link href="/browse" className="text-sm text-stone-500 hover:text-black">
         ← Tilbake
       </Link>

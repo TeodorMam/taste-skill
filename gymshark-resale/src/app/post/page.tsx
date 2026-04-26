@@ -16,6 +16,7 @@ import {
   type CategoryParent,
 } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
+import { FirstListingTips } from "@/components/FirstListingTips";
 
 type Slot = { id: string; file: File; preview: string };
 
@@ -131,7 +132,7 @@ export default function PostPage() {
         .single();
       if (insertErr) throw insertErr;
 
-      router.push(`/item/${data.id}`);
+      router.push(`/item/${data.id}?welcome=1`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Noe gikk galt");
       setSubmitting(false);
@@ -166,6 +167,8 @@ export default function PostPage() {
           Bare treningsklær. Fyll inn under ett minutt.
         </p>
       </div>
+
+      <FirstListingTips userId={userId} />
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label={`Bilder (opp til ${MAX_IMAGES})`}>
