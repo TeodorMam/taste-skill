@@ -148,7 +148,7 @@ export default function InboxPage() {
                       {lastMessage.body}
                     </p>
                     <span className="shrink-0 text-[10px] uppercase tracking-wider text-[#5a6b32]">
-                      {role === "seller" ? "Selger" : "Kjøper"}
+                      {role === "seller" ? "Du selger" : "Du kjøper"}
                     </span>
                   </div>
                 </div>
