@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { type Item, formatPrice } from "@/lib/supabase";
@@ -16,6 +16,8 @@ export default function MinePage() {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("active");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
@@ -80,9 +82,15 @@ export default function MinePage() {
     }
   }
 
+  function askDelete(itemId: string) {
+    if (confirmTimer.current) clearTimeout(confirmTimer.current);
+    setConfirmId(itemId);
+    confirmTimer.current = setTimeout(() => setConfirmId(null), 3000);
+  }
+
   async function deleteItem(item: Item) {
-    const ok = window.confirm(`Slette "${item.title}"? Dette kan ikke angres.`);
-    if (!ok) return;
+    if (confirmTimer.current) clearTimeout(confirmTimer.current);
+    setConfirmId(null);
     setBusyId(item.id);
     const { error } = await supabase.from("items").delete().eq("id", item.id);
     setBusyId(null);
@@ -185,31 +193,53 @@ export default function MinePage() {
             <div key={item.id} className="space-y-2">
               <ItemCard item={item} hideSeller />
               <div className="flex gap-1.5">
-                <button
-                  onClick={() => toggleSold(item)}
-                  disabled={busyId === item.id}
-                  className="flex-1 rounded-full border border-stone-300 bg-white px-2 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500 disabled:opacity-50"
-                >
-                  {busyId === item.id
-                    ? "…"
-                    : item.is_sold
-                      ? "Gjør aktiv"
-                      : "Marker solgt"}
-                </button>
-                <Link
-                  href={`/item/${item.id}/edit`}
-                  className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
-                >
-                  ✎
-                </Link>
-                <button
-                  onClick={() => deleteItem(item)}
-                  disabled={busyId === item.id}
-                  className="rounded-full border border-red-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-red-700 hover:border-red-400 hover:bg-red-50 disabled:opacity-50"
-                  aria-label="Slett"
-                >
-                  🗑
-                </button>
+                {confirmId === item.id ? (
+                  <>
+                    <span className="flex-1 rounded-full border border-red-200 bg-red-50 px-2 py-1.5 text-center text-[11px] font-medium text-red-700">
+                      Sikker?
+                    </span>
+                    <button
+                      onClick={() => deleteItem(item)}
+                      className="flex-1 rounded-full border border-red-500 bg-red-600 px-2 py-1.5 text-[11px] font-medium text-white hover:bg-red-700"
+                    >
+                      Slett
+                    </button>
+                    <button
+                      onClick={() => setConfirmId(null)}
+                      className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
+                    >
+                      Avbryt
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => toggleSold(item)}
+                      disabled={busyId === item.id}
+                      className="flex-1 rounded-full border border-stone-300 bg-white px-2 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500 disabled:opacity-50"
+                    >
+                      {busyId === item.id
+                        ? "…"
+                        : item.is_sold
+                          ? "Gjør aktiv"
+                          : "Marker solgt"}
+                    </button>
+                    <Link
+                      href={`/item/${item.id}/edit`}
+                      className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
+                    >
+                      ✎
+                    </Link>
+                    <button
+                      onClick={() => askDelete(item.id)}
+                      disabled={busyId === item.id}
+                      className="rounded-full border border-red-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-red-700 hover:border-red-400 hover:bg-red-50 disabled:opacity-50"
+                      aria-label="Slett"
+                    >
+                      🗑
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}

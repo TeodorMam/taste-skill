@@ -5,6 +5,19 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import type { Item, Message } from "@/lib/supabase";
 
+function fmtThreadTime(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterdayStart = new Date(todayStart.getTime() - 86400000);
+  if (d >= todayStart)
+    return d.toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" });
+  if (d >= yesterdayStart) return "I går";
+  if (now.getFullYear() === d.getFullYear())
+    return d.toLocaleDateString("nb-NO", { day: "numeric", month: "short" });
+  return d.toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" });
+}
+
 type ThreadRow = {
   item: Item;
   lastMessage: Message;
@@ -125,14 +138,19 @@ export default function InboxPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="truncate text-sm font-medium">{item.title}</p>
+                    <span className="shrink-0 text-[10px] text-stone-400">
+                      {fmtThreadTime(lastMessage.created_at)}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 flex items-center justify-between gap-2">
+                    <p className="line-clamp-1 text-xs text-stone-500">
+                      {lastMessage.sender_id === userId ? "Du: " : ""}
+                      {lastMessage.body}
+                    </p>
                     <span className="shrink-0 text-[10px] uppercase tracking-wider text-[#5a6b32]">
                       {role === "seller" ? "Selger" : "Kjøper"}
                     </span>
                   </div>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-stone-500">
-                    {lastMessage.sender_id === userId ? "Du: " : ""}
-                    {lastMessage.body}
-                  </p>
                 </div>
               </Link>
             </li>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   type Item,
@@ -39,6 +39,7 @@ function BrowseInner() {
   const [total, setTotal] = useState<number | null>(null);
   const [offset, setOffset] = useState(0);
   const [initialLoading, setInitialLoading] = useState(true);
+  const isFirstLoad = useRef(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
@@ -144,6 +145,7 @@ function BrowseInner() {
       setTotal(count ?? null);
       setOffset(PAGE_SIZE);
       setInitialLoading(false);
+      isFirstLoad.current = false;
 
       const ids = Array.from(
         new Set(rows.map((r) => r.seller_id).filter((x): x is string => !!x)),
@@ -212,7 +214,10 @@ function BrowseInner() {
     <section className="space-y-5">
       <div className="flex items-end justify-between">
         <h1 className="text-3xl font-semibold tracking-tight">Utforsk</h1>
-        <p className="text-xs text-stone-500">
+        <p className="flex items-center gap-1.5 text-xs text-stone-500">
+          {initialLoading && !isFirstLoad.current && (
+            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
+          )}
           {total !== null ? `${total} vare${total === 1 ? "" : "r"}` : ""}
         </p>
       </div>
@@ -353,7 +358,7 @@ function BrowseInner() {
         <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
       )}
 
-      {initialLoading && <SkeletonGrid />}
+      {initialLoading && isFirstLoad.current && <SkeletonGrid />}
 
       {!initialLoading && items.length === 0 && (
         <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
@@ -372,7 +377,7 @@ function BrowseInner() {
 
       {items.length > 0 && (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 transition-opacity duration-200 ${initialLoading && !isFirstLoad.current ? "opacity-40 pointer-events-none" : ""}`}>
             {items.map((item) => (
               <ItemCard
                 key={item.id}

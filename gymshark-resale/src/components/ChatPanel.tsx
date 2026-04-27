@@ -4,6 +4,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import type { Message } from "@/lib/supabase";
 
+function fmtTime(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterdayStart = new Date(todayStart.getTime() - 86400000);
+  const hm = d.toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" });
+  if (d >= todayStart) return hm;
+  if (d >= yesterdayStart) return `I går ${hm}`;
+  return d.toLocaleDateString("nb-NO", { day: "numeric", month: "short" }) + ` ${hm}`;
+}
+
 type Props = {
   itemId: string;
   buyerId: string;
@@ -107,7 +118,7 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
           return (
             <div
               key={m.id}
-              className={`flex ${mine ? "justify-end" : "justify-start"}`}
+              className={`flex flex-col ${mine ? "items-end" : "items-start"}`}
             >
               <div
                 className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
@@ -118,6 +129,9 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
               >
                 {m.body}
               </div>
+              <span className="mt-0.5 px-1 text-[10px] text-stone-400">
+                {fmtTime(m.created_at)}
+              </span>
             </div>
           );
         })}
