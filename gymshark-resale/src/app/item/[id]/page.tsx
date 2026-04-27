@@ -9,8 +9,8 @@ import {
   formatPrice,
   itemImages,
   profileDisplayName,
-  profileInitials,
 } from "@/lib/supabase";
+import { Avatar } from "@/components/Avatar";
 import { createClient } from "@/utils/supabase/client";
 import { ChatPanel } from "@/components/ChatPanel";
 import { ItemCard } from "@/components/ItemCard";
@@ -317,18 +317,7 @@ export default function ItemPage() {
               href={`/seller/${item.seller_id}`}
               className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 transition hover:border-stone-400"
             >
-              {seller?.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={seller.avatar_url}
-                  alt=""
-                  className="h-10 w-10 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#5a6b32]/10 text-sm font-semibold text-[#5a6b32]">
-                  {profileInitials(seller, item.seller_id)}
-                </div>
-              )}
+              <Avatar profile={seller} size="md" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">
                   {profileDisplayName(seller, item.seller_id)}

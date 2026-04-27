@@ -5,9 +5,9 @@ import {
   formatPrice,
   itemImages,
   profileDisplayName,
-  profileInitials,
 } from "@/lib/supabase";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { Avatar } from "@/components/Avatar";
 
 function shippingIcon(s: string | null) {
   if (!s || s === "Kun henting") return null;
@@ -27,7 +27,6 @@ export function ItemCard({
   const cover = images[0] ?? null;
   const showSeller = !hideSeller && !!item.seller_id;
   const sellerName = profileDisplayName(seller, item.seller_id);
-  const sellerInitials = profileInitials(seller, item.seller_id);
 
   return (
     <Link
@@ -97,18 +96,7 @@ export function ItemCard({
         </div>
         {showSeller && (
           <div className="flex items-center gap-1.5 pt-1">
-            {seller?.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={seller.avatar_url}
-                alt=""
-                className="h-5 w-5 shrink-0 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#5a6b32]/10 text-[8px] font-semibold text-[#5a6b32]">
-                {sellerInitials}
-              </div>
-            )}
+            <Avatar profile={seller} size="xs" />
             <span className="line-clamp-1 text-[11px] text-stone-500">
               {sellerName}
             </span>

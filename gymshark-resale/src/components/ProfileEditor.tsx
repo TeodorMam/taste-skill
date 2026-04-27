@@ -7,7 +7,6 @@ import {
   AVATAR_BUCKET,
   type Profile,
   profileDisplayName,
-  profileInitials,
 } from "@/lib/supabase";
 
 export function ProfileEditor() {
@@ -47,7 +46,6 @@ export function ProfileEditor() {
 
   if (!userId) return null;
 
-  const initials = profileInitials(profile, userId);
   const name = profileDisplayName(profile, userId);
 
   async function onAvatarFile(file: File) {
@@ -96,7 +94,7 @@ export function ProfileEditor() {
     return (
       <div className="rounded-2xl border border-stone-200 bg-white p-4">
         <div className="flex items-center gap-3">
-          <Avatar url={avatarUrl} initials={initials} />
+          <Avatar url={avatarUrl} displayName={displayName} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold tracking-tight">{name}</p>
             <p className="truncate text-xs text-stone-500">
@@ -131,7 +129,7 @@ export function ProfileEditor() {
       </div>
 
       <div className="flex items-center gap-3">
-        <Avatar url={avatarUrl} initials={initials} />
+        <Avatar url={avatarUrl} displayName={displayName} />
         <div className="space-y-1.5">
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500">
             {uploading ? "Laster opp…" : avatarUrl ? "Bytt bilde" : "Last opp bilde"}
@@ -214,7 +212,7 @@ export function ProfileEditor() {
   );
 }
 
-function Avatar({ url, initials }: { url: string | null; initials: string }) {
+function Avatar({ url, displayName }: { url: string | null; displayName: string }) {
   if (url) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
@@ -225,9 +223,20 @@ function Avatar({ url, initials }: { url: string | null; initials: string }) {
       />
     );
   }
+  const hasName = !!displayName.trim();
+  const initials = hasName
+    ? displayName.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase()
+    : null;
   return (
-    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#5a6b32]/10 text-base font-semibold text-[#5a6b32]">
-      {initials}
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#5a6b32]/10">
+      {initials ? (
+        <span className="text-base font-semibold text-[#5a6b32]">{initials}</span>
+      ) : (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-400" aria-hidden>
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      )}
     </div>
   );
 }

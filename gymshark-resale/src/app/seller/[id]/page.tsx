@@ -10,12 +10,12 @@ import {
   type Review,
   formatPrice,
   profileDisplayName,
-  profileInitials,
   summarizeReviews,
 } from "@/lib/supabase";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 import { ReviewList } from "@/components/ReviewList";
+import { Avatar } from "@/components/Avatar";
 
 export default function SellerPage() {
   const params = useParams<{ id: string }>();
@@ -83,7 +83,6 @@ export default function SellerPage() {
 
   const sellerId = params.id ?? null;
   const displayName = profileDisplayName(profile, sellerId);
-  const initials = profileInitials(profile, sellerId);
 
   return (
     <section className="space-y-5">
@@ -93,18 +92,7 @@ export default function SellerPage() {
 
       <div className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6">
         <div className="flex items-center gap-3">
-          {profile?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profile.avatar_url}
-              alt=""
-              className="h-12 w-12 shrink-0 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#5a6b32]/10 text-lg font-semibold text-[#5a6b32]">
-              {initials}
-            </div>
-          )}
+          <Avatar profile={profile} size="lg" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-lg font-semibold tracking-tight">
               {displayName}

@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { type Profile, profileInitials } from "@/lib/supabase";
+import { type Profile } from "@/lib/supabase";
 import { useInboxDot } from "@/hooks/useInboxDot";
+import { Avatar } from "@/components/Avatar";
 
 export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
@@ -53,14 +54,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
             Selg
           </Link>
           <Link href="/profil" className={`flex items-center gap-2 ${textCls("/profil")}`}>
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-[11px] font-semibold text-stone-700">
-              {profile?.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                profileInitials(profile, null)
-              )}
-            </span>
+            <Avatar profile={profile} size="sm" />
             Min profil
           </Link>
         </>
