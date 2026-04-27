@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import type { Item, Message } from "@/lib/supabase";
+import { type Item, type Message, type Profile, profileDisplayName } from "@/lib/supabase";
 
 function fmtThreadTime(iso: string): string {
   const d = new Date(iso);
@@ -29,6 +29,7 @@ export default function InboxPage() {
   const supabase = useMemo(() => createClient(), []);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
   const [threads, setThreads] = useState<ThreadRow[] | null>(null);
+  const [otherProfiles, setOtherProfiles] = useState<Record<string, Profile>>({});
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -83,6 +84,15 @@ export default function InboxPage() {
           new Date(a.lastMessage.created_at).getTime(),
       );
       setThreads(rows);
+
+      const otherIds = Array.from(new Set(rows.map((r) =>
+        r.role === "seller" ? r.buyerId : r.item.seller_id
+      ).filter((x): x is string => !!x)));
+      if (otherIds.length === 0) return;
+      const { data: pData } = await supabase.from("profiles").select("*").in("user_id", otherIds);
+      const pMap: Record<string, Profile> = {};
+      for (const p of (pData ?? []) as Profile[]) pMap[p.user_id] = p;
+      setOtherProfiles(pMap);
     })();
   }, [userId, supabase]);
 
@@ -120,42 +130,50 @@ export default function InboxPage() {
       )}
       {threads && threads.length > 0 && (
         <ul className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
-          {threads.map(({ item, lastMessage, role }) => (
-            <li key={`${item.id}:${lastMessage.buyer_id}`}>
-              <Link
-                href={`/item/${item.id}`}
-                className="flex items-center gap-3 p-3 hover:bg-stone-50"
-              >
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-stone-100">
-                  {item.image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      className="h-full w-full object-cover"
-                    />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className="truncate text-sm font-medium">{item.title}</p>
-                    <span className="shrink-0 text-[10px] text-stone-400">
-                      {fmtThreadTime(lastMessage.created_at)}
-                    </span>
+          {threads.map(({ item, lastMessage, role, buyerId }) => {
+            const otherId = role === "seller" ? buyerId : item.seller_id;
+            const otherName = otherId
+              ? profileDisplayName(otherProfiles[otherId], otherId)
+              : "";
+            const senderPrefix =
+              lastMessage.sender_id === userId ? "Du" : otherName;
+            return (
+              <li key={`${item.id}:${lastMessage.buyer_id}`}>
+                <Link
+                  href={`/item/${item.id}`}
+                  className="flex items-center gap-3 p-3 hover:bg-stone-50"
+                >
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                    {item.image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        className="h-full w-full object-cover"
+                      />
+                    )}
                   </div>
-                  <div className="mt-0.5 flex items-center justify-between gap-2">
-                    <p className="line-clamp-1 text-xs text-stone-500">
-                      {lastMessage.sender_id === userId ? "Du: " : ""}
-                      {lastMessage.body}
-                    </p>
-                    <span className="shrink-0 text-[10px] uppercase tracking-wider text-[#5a6b32]">
-                      {role === "seller" ? "Du selger" : "Du kjøper"}
-                    </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <p className="truncate text-sm font-medium">{item.title}</p>
+                      <span className="shrink-0 text-[10px] text-stone-400">
+                        {fmtThreadTime(lastMessage.created_at)}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 flex items-center justify-between gap-2">
+                      <p className="line-clamp-1 text-xs text-stone-500">
+                        <span className="font-medium text-stone-700">{senderPrefix}:</span>{" "}
+                        {lastMessage.body}
+                      </p>
+                      <span className="shrink-0 text-[10px] uppercase tracking-wider text-[#5a6b32]">
+                        {role === "seller" ? "Du selger" : "Du kjøper"}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </li>
-          ))}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

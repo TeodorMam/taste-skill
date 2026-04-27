@@ -47,6 +47,7 @@ export default function ItemPage() {
   const [buyerThreads, setBuyerThreads] = useState<string[]>([]);
   const [buyerLastMsg, setBuyerLastMsg] = useState<Record<string, string>>({});
   const [buyerProfiles, setBuyerProfiles] = useState<Record<string, Profile>>({});
+  const [showSoldPicker, setShowSoldPicker] = useState(false);
   const [activeBuyer, setActiveBuyer] = useState<string | null>(null);
   const [hasChatted, setHasChatted] = useState(false);
 
@@ -411,13 +412,61 @@ export default function ItemPage() {
                 />
               )}
               {!item.is_sold && (
-                <button
-                  onClick={toggleSold}
-                  disabled={saving}
-                  className="w-full rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
-                >
-                  {saving ? "Lagrer…" : "Marker som solgt"}
-                </button>
+                showSoldPicker ? (
+                  <div className="space-y-2 rounded-xl border border-stone-200 bg-stone-50 p-3">
+                    <p className="text-xs font-medium text-stone-700">Hvem kjøpte varen?</p>
+                    {buyerThreads.map((b) => (
+                      <button
+                        key={b}
+                        onClick={async () => {
+                          setActiveBuyer(b);
+                          await toggleSold();
+                          setShowSoldPicker(false);
+                        }}
+                        disabled={saving}
+                        className="w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-left text-sm font-medium text-stone-800 hover:border-[#5a6b32] hover:bg-[#5a6b32]/5 disabled:opacity-50"
+                      >
+                        {profileDisplayName(buyerProfiles[b], b)}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setShowSoldPicker(false)}
+                      className="w-full text-center text-xs text-stone-400 hover:text-stone-600"
+                    >
+                      Avbryt
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (buyerThreads.length > 1) setShowSoldPicker(true);
+                      else toggleSold();
+                    }}
+                    disabled={saving}
+                    className="w-full rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+                  >
+                    {saving ? "Lagrer…" : "Marker som solgt"}
+                  </button>
+                )
+              )}
+
+              {item.is_sold && buyerThreads.length > 0 && userId && (
+                <div className="space-y-3 border-t border-stone-100 pt-3">
+                  <p className="text-xs font-medium text-stone-500 uppercase tracking-wider">Vurder kjøpere</p>
+                  {buyerThreads.map((b) => (
+                    <div key={b}>
+                      <p className="mb-1.5 text-xs font-medium text-stone-700">
+                        {profileDisplayName(buyerProfiles[b], b)}
+                      </p>
+                      <ReviewForm
+                        itemId={item.id}
+                        reviewerId={userId}
+                        sellerId={b}
+                        label="Hvordan var kjøperen?"
+                      />
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}

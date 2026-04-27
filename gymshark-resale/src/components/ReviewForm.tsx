@@ -8,11 +8,13 @@ export function ReviewForm({
   itemId,
   reviewerId,
   sellerId,
+  label = "Hvordan var opplevelsen?",
   onDone,
 }: {
   itemId: string;
   reviewerId: string;
   sellerId: string;
+  label?: string;
   onDone?: (review: Review) => void;
 }) {
   const supabase = useMemo(() => createClient(), []);
@@ -77,7 +79,7 @@ export function ReviewForm({
 
   return (
     <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
-      <p className="text-sm font-medium text-stone-800">Hvordan var opplevelsen?</p>
+      <p className="text-sm font-medium text-stone-800">{label}</p>
       <p className="text-xs text-stone-500">
         Din vurdering hjelper andre kjøpere å stole på selgeren.
       </p>
