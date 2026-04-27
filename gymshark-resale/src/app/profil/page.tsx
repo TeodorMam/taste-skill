@@ -3,13 +3,28 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { type Review, averageRating, summarizeReviews } from "@/lib/supabase";
 import { ProfileEditor } from "@/components/ProfileEditor";
 import { PasswordSetter } from "@/components/PasswordSetter";
+
+function Stars({ avg }: { avg: number }) {
+  const filled = Math.round(avg);
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span key={n} className={n <= filled ? "text-amber-400" : "text-stone-200"}>
+          ★
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function ProfilPage() {
   const supabase = useMemo(() => createClient(), []);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
   const [email, setEmail] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<Review[] | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -17,6 +32,15 @@ export default function ProfilPage() {
       setEmail(data.user?.email ?? null);
     });
   }, [supabase]);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from("reviews")
+      .select("*")
+      .eq("seller_id", userId)
+      .then(({ data }) => setReviews((data ?? []) as Review[]));
+  }, [userId, supabase]);
 
   if (userId === undefined) {
     return <p className="py-6 text-sm text-stone-500">Laster…</p>;
@@ -38,6 +62,9 @@ export default function ProfilPage() {
     );
   }
 
+  const rated = reviews ? averageRating(reviews) : null;
+  const summary = reviews ? summarizeReviews(reviews) : null;
+
   return (
     <section className="space-y-5">
       <div>
@@ -48,6 +75,34 @@ export default function ProfilPage() {
       </div>
 
       <ProfileEditor />
+
+      {reviews && reviews.length > 0 && (
+        <div className="rounded-2xl border border-stone-200 bg-white p-4">
+          <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
+            Mine vurderinger
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+            {rated ? (
+              <>
+                <span className="text-3xl font-semibold tracking-tight">
+                  {rated.avg.toFixed(1)}
+                </span>
+                <Stars avg={rated.avg} />
+                <span className="text-sm text-stone-500">
+                  {rated.total} vurdering{rated.total !== 1 ? "er" : ""}
+                </span>
+              </>
+            ) : summary && summary.total > 0 ? (
+              <>
+                <span className="text-2xl font-semibold">{summary.pct}%</span>
+                <span className="text-sm text-stone-500">
+                  positive · {summary.total} vurdering{summary.total !== 1 ? "er" : ""}
+                </span>
+              </>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <Link

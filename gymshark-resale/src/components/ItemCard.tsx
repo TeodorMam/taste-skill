@@ -48,7 +48,7 @@ export function ItemCard({
             Ingen bilde
           </div>
         )}
-        <FavoriteButton itemId={item.id} />
+        <FavoriteButton itemId={item.id} currentPrice={item.price} />
         {item.brand && (
           <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#5a6b32] backdrop-blur">
             {item.brand}

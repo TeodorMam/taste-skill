@@ -6,9 +6,11 @@ import { createClient } from "@/utils/supabase/client";
 
 export function FavoriteButton({
   itemId,
+  currentPrice,
   variant = "overlay",
 }: {
   itemId: string;
+  currentPrice?: number;
   variant?: "overlay" | "inline";
 }) {
   const router = useRouter();
@@ -54,7 +56,11 @@ export function FavoriteButton({
     } else {
       const { error } = await supabase
         .from("favorites")
-        .insert({ user_id: userId, item_id: itemId });
+        .insert({
+          user_id: userId,
+          item_id: itemId,
+          ...(currentPrice !== undefined ? { price_when_favorited: currentPrice } : {}),
+        });
       if (!error) setFavorited(true);
     }
     setBusy(false);

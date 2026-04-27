@@ -326,7 +326,7 @@ export default function ItemPage() {
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold tracking-tight">{item.title}</h1>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                {!isSeller && <FavoriteButton itemId={item.id} variant="inline" />}
+                {!isSeller && <FavoriteButton itemId={item.id} currentPrice={item.price} variant="inline" />}
                 {shareUrl && <ShareButton url={shareUrl} title={item.title} />}
                 {isSeller && (
                   <Link
