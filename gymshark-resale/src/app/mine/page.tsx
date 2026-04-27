@@ -88,9 +88,11 @@ export default function MinePage() {
 
   async function markSoldWithBuyer(item: Item, buyerId: string | null) {
     setBusyId(item.id);
+    const update: Record<string, unknown> = { is_sold: true };
+    if (buyerId) update.sold_to_buyer_id = buyerId;
     const { data, error } = await supabase
       .from("items")
-      .update({ is_sold: true })
+      .update(update)
       .eq("id", item.id)
       .select("*")
       .single();

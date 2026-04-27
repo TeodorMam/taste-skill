@@ -13,6 +13,7 @@ export type Item = {
   brand: string | null;
   seller_id: string | null;
   is_sold: boolean;
+  sold_to_buyer_id: string | null;
   shipping: string | null;
   created_at: string;
 };

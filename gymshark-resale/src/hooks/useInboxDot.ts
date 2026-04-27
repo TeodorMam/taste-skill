@@ -28,18 +28,11 @@ export function useInboxDot(isLoggedIn: boolean): boolean {
         .limit(1);
       if ((unread?.length ?? 0) > 0) { setHasDot(true); return; }
 
-      // 2. Items sold where user was a buyer and hasn't reviewed yet
-      const { data: msgs } = await supabase
-        .from("messages")
-        .select("item_id")
-        .eq("buyer_id", user.id);
-      const itemIds = [...new Set((msgs ?? []).map((m: { item_id: string }) => m.item_id))];
-      if (itemIds.length === 0) { setHasDot(false); return; }
-
+      // 2. Items sold where user was chosen as the buyer and hasn't reviewed yet
       const { data: soldItems } = await supabase
         .from("items")
         .select("id")
-        .in("id", itemIds)
+        .eq("sold_to_buyer_id", user.id)
         .eq("is_sold", true);
       const soldIds = (soldItems ?? []).map((i: { id: string }) => i.id);
       if (soldIds.length === 0) { setHasDot(false); return; }

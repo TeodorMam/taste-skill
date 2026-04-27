@@ -206,9 +206,11 @@ export default function ItemPage() {
   async function markSold(buyerId: string | null) {
     if (!item) return;
     setSaving(true);
+    const update: Record<string, unknown> = { is_sold: true };
+    if (buyerId) update.sold_to_buyer_id = buyerId;
     const { data, error } = await supabase
       .from("items")
-      .update({ is_sold: true })
+      .update(update)
       .eq("id", item.id)
       .select("*")
       .single();

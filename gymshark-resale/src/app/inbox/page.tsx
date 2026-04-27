@@ -187,7 +187,8 @@ export default function InboxPage() {
                         {role === "seller" ? "Du selger" : "Du kjøper"}
                       </span>
                     </div>
-                    {item.is_sold && !reviewedItemIds.has(item.id) && (
+                    {item.is_sold && !reviewedItemIds.has(item.id) &&
+                      (role === "seller" || item.sold_to_buyer_id === userId) && (
                       <div className="mt-1.5">
                         <span className="inline-flex items-center gap-1 rounded-full bg-[#5a6b32]/10 px-2 py-0.5 text-[10px] font-medium text-[#5a6b32]">
                           ★ Gi en vurdering
