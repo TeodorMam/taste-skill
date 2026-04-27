@@ -8,7 +8,8 @@ import { type SavedSearch, PRICE_BUCKETS, CATEGORY_TREE } from "@/lib/supabase";
 
 type SearchWithCount = SavedSearch & { newCount: number };
 
-function applyFilters(q: ReturnType<ReturnType<typeof createClient>["from"]>, filters: Record<string, string>): typeof q {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyFilters(q: any, filters: Record<string, string>): any {
   const { brand, cat, sub, size, condition, location, shipping, price: priceKey, q: needle } = filters;
   const bucket = PRICE_BUCKETS.find((b) => b.key === priceKey);
   if (brand) q = q.eq("brand", brand);
@@ -60,7 +61,7 @@ export default function VarslerPage() {
                 .select("id", { count: "exact", head: true })
                 .eq("is_sold", false)
                 .gt("created_at", s.last_seen_at);
-              q = applyFilters(q as ReturnType<ReturnType<typeof createClient>["from"]>, s.filters);
+              q = applyFilters(q, s.filters);
               const { count } = await q;
               return { ...s, newCount: count ?? 0 };
             }),
