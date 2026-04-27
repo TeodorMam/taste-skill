@@ -368,6 +368,15 @@ export default function ItemPage() {
                   meId={userId}
                 />
               )}
+              {!item.is_sold && (
+                <button
+                  onClick={toggleSold}
+                  disabled={saving}
+                  className="w-full rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+                >
+                  {saving ? "Lagrer…" : "Marker som solgt"}
+                </button>
+              )}
             </div>
           )}
 

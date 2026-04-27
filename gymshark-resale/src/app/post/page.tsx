@@ -42,6 +42,7 @@ export default function PostPage() {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [shipping, setShipping] = useState<string>(SHIPPING_OPTIONS[0].value);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadIdx, setUploadIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
 
@@ -94,10 +95,13 @@ export default function PostPage() {
     if (!Number.isFinite(priceNum) || priceNum < 0) return setError("Ugyldig pris");
 
     setSubmitting(true);
+    setUploadIdx(0);
     try {
       const sb = createClient();
       const uploaded: string[] = [];
-      for (const slot of slots) {
+      for (let i = 0; i < slots.length; i++) {
+        setUploadIdx(i);
+        const slot = slots[i];
         const ext = slot.file.name.split(".").pop() || "jpg";
         const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const { error: upErr } = await sb.storage
@@ -381,6 +385,20 @@ export default function PostPage() {
 
         {error && (
           <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        )}
+
+        {submitting && slots.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs text-stone-500">
+              Laster opp bilde {uploadIdx + 1} av {slots.length}…
+            </p>
+            <div className="h-1.5 overflow-hidden rounded-full bg-stone-200">
+              <div
+                className="h-full rounded-full bg-stone-900 transition-all duration-300"
+                style={{ width: `${((uploadIdx + 1) / slots.length) * 100}%` }}
+              />
+            </div>
+          </div>
         )}
 
         <button

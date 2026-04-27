@@ -39,6 +39,7 @@ export default function InboxPage() {
 
   useEffect(() => {
     if (!userId) return;
+    localStorage.setItem("lastInboxVisit", Date.now().toString());
     (async () => {
       const { data: msgs, error: mErr } = await supabase
         .from("messages")

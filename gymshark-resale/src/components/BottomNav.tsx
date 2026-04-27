@@ -1,17 +1,40 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
+  const [hasUnread, setHasUnread] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const supabase = createClient();
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const lastVisit = localStorage.getItem("lastInboxVisit");
+      const since = lastVisit
+        ? new Date(Number(lastVisit)).toISOString()
+        : new Date(Date.now() - 7 * 86400000).toISOString();
+      const { data } = await supabase
+        .from("messages")
+        .select("id")
+        .neq("sender_id", user.id)
+        .gt("created_at", since)
+        .limit(1);
+      setHasUnread((data?.length ?? 0) > 0);
+    })();
+  }, [isLoggedIn, path]);
 
   const items = isLoggedIn
     ? [
         { href: "/browse", label: "Utforsk", icon: SearchIcon },
         { href: "/favoritter", label: "Favoritter", icon: HeartIcon },
         { href: "/post", label: "Selg", icon: PlusIcon },
-        { href: "/inbox", label: "Innboks", icon: InboxIcon },
+        { href: "/inbox", label: "Innboks", icon: InboxIcon, badge: hasUnread },
         { href: "/mine", label: "Mine", icon: TagIcon },
         { href: "/profil", label: "Profil", icon: UserIcon },
       ]
@@ -36,7 +59,12 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
                 active ? "text-[#5a6b32]" : "text-stone-500"
               }`}
             >
-              <Icon active={active} />
+              <span className="relative">
+                <Icon active={active} />
+                {"badge" in it && it.badge && (
+                  <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500" />
+                )}
+              </span>
               <span>{it.label}</span>
             </Link>
           );
@@ -48,17 +76,7 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
 
 function SearchIcon({ active }: { active: boolean }) {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={active ? 2.4 : 2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <circle cx="11" cy="11" r="7" />
       <path d="m20 20-3.5-3.5" />
     </svg>
@@ -67,17 +85,7 @@ function SearchIcon({ active }: { active: boolean }) {
 
 function InboxIcon({ active }: { active: boolean }) {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={active ? 2.4 : 2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z" />
     </svg>
   );
@@ -85,17 +93,7 @@ function InboxIcon({ active }: { active: boolean }) {
 
 function PlusIcon({ active }: { active: boolean }) {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={active ? 2.4 : 2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 8v8M8 12h8" />
     </svg>
@@ -104,17 +102,7 @@ function PlusIcon({ active }: { active: boolean }) {
 
 function HeartIcon({ active }: { active: boolean }) {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill={active ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth={active ? 2 : 2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
     </svg>
   );
@@ -122,17 +110,7 @@ function HeartIcon({ active }: { active: boolean }) {
 
 function TagIcon({ active }: { active: boolean }) {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={active ? 2.4 : 2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
       <line x1="7" y1="7" x2="7.01" y2="7" />
     </svg>
@@ -141,17 +119,7 @@ function TagIcon({ active }: { active: boolean }) {
 
 function UserIcon({ active }: { active: boolean }) {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={active ? 2.4 : 2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </svg>
