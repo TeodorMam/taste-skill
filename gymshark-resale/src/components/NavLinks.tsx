@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { type Profile, profileInitials } from "@/lib/supabase";
 
 export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
   const [hasUnread, setHasUnread] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -15,17 +17,20 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const lastVisit = localStorage.getItem("lastInboxVisit");
-      const since = lastVisit
-        ? new Date(Number(lastVisit)).toISOString()
-        : new Date(Date.now() - 7 * 86400000).toISOString();
-      const { data } = await supabase
-        .from("messages")
-        .select("id")
-        .neq("sender_id", user.id)
-        .gt("created_at", since)
-        .limit(1);
-      setHasUnread((data?.length ?? 0) > 0);
+
+      const [{ data: pData }, unreadRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
+        (async () => {
+          const lastVisit = localStorage.getItem("lastInboxVisit");
+          const since = lastVisit
+            ? new Date(Number(lastVisit)).toISOString()
+            : new Date(Date.now() - 7 * 86400000).toISOString();
+          return supabase.from("messages").select("id").neq("sender_id", user.id).gt("created_at", since).limit(1);
+        })(),
+      ]);
+
+      setProfile((pData as Profile | null) ?? null);
+      setHasUnread((unreadRes.data?.length ?? 0) > 0);
     })();
   }, [isLoggedIn, path]);
 
@@ -58,7 +63,15 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
           <Link href="/post" className={textCls("/post")}>
             Selg
           </Link>
-          <Link href="/profil" className={textCls("/profil")}>
+          <Link href="/profil" className={`flex items-center gap-2 ${textCls("/profil")}`}>
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-[11px] font-semibold text-stone-700">
+              {profile?.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                profileInitials(profile, null)
+              )}
+            </span>
             Min profil
           </Link>
         </>

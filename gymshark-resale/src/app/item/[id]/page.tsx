@@ -21,6 +21,19 @@ import { ReviewForm } from "@/components/ReviewForm";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { FirstListingSuccess } from "@/components/FirstListingSuccess";
 
+function fmtBuyerTime(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "nå";
+  if (diffMin < 60) return `${diffMin}m`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH}t`;
+  const diffD = Math.floor(diffH / 24);
+  return `${diffD}d`;
+}
+
 export default function ItemPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -32,6 +45,7 @@ export default function ItemPage() {
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
 
   const [buyerThreads, setBuyerThreads] = useState<string[]>([]);
+  const [buyerLastMsg, setBuyerLastMsg] = useState<Record<string, string>>({});
   const [activeBuyer, setActiveBuyer] = useState<string | null>(null);
   const [hasChatted, setHasChatted] = useState(false);
 
@@ -74,13 +88,16 @@ export default function ItemPage() {
       .then(({ data }) => {
         const seen = new Set<string>();
         const ordered: string[] = [];
-        for (const row of (data ?? []) as { buyer_id: string }[]) {
+        const lastMsg: Record<string, string> = {};
+        for (const row of (data ?? []) as { buyer_id: string; created_at: string }[]) {
           if (!seen.has(row.buyer_id)) {
             seen.add(row.buyer_id);
             ordered.push(row.buyer_id);
+            lastMsg[row.buyer_id] = row.created_at;
           }
         }
         setBuyerThreads(ordered);
+        setBuyerLastMsg(lastMsg);
         setActiveBuyer((prev) => prev ?? ordered[0] ?? null);
       });
   }, [item, isSeller, supabase]);
@@ -345,19 +362,33 @@ export default function ItemPage() {
               </h2>
               {buyerThreads.length > 1 && (
                 <div className="flex flex-wrap gap-2">
-                  {buyerThreads.map((b, i) => (
-                    <button
-                      key={b}
-                      onClick={() => setActiveBuyer(b)}
-                      className={`rounded-full border px-3 py-1 text-xs ${
-                        activeBuyer === b
-                          ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                          : "border-stone-300 text-stone-700 hover:border-stone-500"
-                      }`}
-                    >
-                      Kjøper {i + 1}
-                    </button>
-                  ))}
+                  {buyerThreads.map((b, i) => {
+                    const isActive = activeBuyer === b;
+                    const isNewest = i === 0;
+                    const t = buyerLastMsg[b];
+                    const timeLabel = t ? fmtBuyerTime(t) : null;
+                    return (
+                      <button
+                        key={b}
+                        onClick={() => setActiveBuyer(b)}
+                        className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs ${
+                          isActive
+                            ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                            : "border-stone-300 text-stone-700 hover:border-stone-500"
+                        }`}
+                      >
+                        {isNewest && !isActive && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+                        )}
+                        Kjøper {i + 1}
+                        {timeLabel && (
+                          <span className={isActive ? "opacity-70" : "text-stone-400"}>
+                            · {timeLabel}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
               {activeBuyer && (
