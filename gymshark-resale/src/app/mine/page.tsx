@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { type Item, formatPrice } from "@/lib/supabase";
+import { type Item, type Profile, formatPrice, profileDisplayName } from "@/lib/supabase";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 
@@ -18,6 +18,9 @@ export default function MinePage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [soldPickerItemId, setSoldPickerItemId] = useState<string | null>(null);
+  const [pickerBuyers, setPickerBuyers] = useState<{ buyerId: string; name: string }[]>([]);
+  const [pickerLoading, setPickerLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
@@ -62,24 +65,55 @@ export default function MinePage() {
     [items],
   );
 
-  async function toggleSold(item: Item) {
+  async function openSoldPicker(item: Item) {
+    setSoldPickerItemId(item.id);
+    setPickerBuyers([]);
+    setPickerLoading(true);
+    const { data: msgs } = await supabase
+      .from("messages")
+      .select("buyer_id")
+      .eq("item_id", item.id);
+    const buyerIds = Array.from(new Set((msgs ?? []).map((m: { buyer_id: string }) => m.buyer_id)));
+    if (buyerIds.length > 0) {
+      const { data: pData } = await supabase
+        .from("profiles")
+        .select("*")
+        .in("user_id", buyerIds);
+      const pMap: Record<string, Profile> = {};
+      for (const p of (pData ?? []) as Profile[]) pMap[p.user_id] = p;
+      setPickerBuyers(buyerIds.map((id) => ({ buyerId: id, name: profileDisplayName(pMap[id] ?? null, id) })));
+    }
+    setPickerLoading(false);
+  }
+
+  async function markSoldWithBuyer(item: Item, buyerId: string | null) {
     setBusyId(item.id);
     const { data, error } = await supabase
       .from("items")
-      .update({ is_sold: !item.is_sold })
+      .update({ is_sold: true })
       .eq("id", item.id)
       .select("*")
       .single();
     setBusyId(null);
-    if (error) {
-      setError(error.message);
-      return;
-    }
+    setSoldPickerItemId(null);
+    if (error) { setError(error.message); return; }
     if (data) {
-      setItems((prev) =>
-        (prev ?? []).map((i) => (i.id === item.id ? (data as Item) : i)),
-      );
+      setItems((prev) => (prev ?? []).map((i) => (i.id === item.id ? (data as Item) : i)));
+      if (buyerId) localStorage.setItem(`soldToBuyer:${item.id}`, buyerId);
     }
+  }
+
+  async function reactivate(item: Item) {
+    setBusyId(item.id);
+    const { data, error } = await supabase
+      .from("items")
+      .update({ is_sold: false })
+      .eq("id", item.id)
+      .select("*")
+      .single();
+    setBusyId(null);
+    if (error) { setError(error.message); return; }
+    if (data) setItems((prev) => (prev ?? []).map((i) => (i.id === item.id ? (data as Item) : i)));
   }
 
   function askDelete(itemId: string) {
@@ -192,55 +226,88 @@ export default function MinePage() {
           {filtered.map((item) => (
             <div key={item.id} className="space-y-2">
               <ItemCard item={item} hideSeller />
-              <div className="flex gap-1.5">
-                {confirmId === item.id ? (
-                  <>
-                    <span className="flex-1 rounded-full border border-red-200 bg-red-50 px-2 py-1.5 text-center text-[11px] font-medium text-red-700">
-                      Sikker?
-                    </span>
+              {soldPickerItemId === item.id ? (
+                <div className="space-y-1.5 rounded-xl border border-stone-200 bg-stone-50 p-3">
+                  <p className="text-[11px] font-medium text-stone-600">Hva skjedde?</p>
+                  {pickerLoading && <p className="text-[11px] text-stone-400">Laster…</p>}
+                  {pickerBuyers.map(({ buyerId, name }) => (
                     <button
-                      onClick={() => deleteItem(item)}
-                      className="flex-1 rounded-full border border-red-500 bg-red-600 px-2 py-1.5 text-[11px] font-medium text-white hover:bg-red-700"
-                    >
-                      Slett
-                    </button>
-                    <button
-                      onClick={() => setConfirmId(null)}
-                      className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
-                    >
-                      Avbryt
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => toggleSold(item)}
+                      key={buyerId}
+                      onClick={() => markSoldWithBuyer(item, buyerId)}
                       disabled={busyId === item.id}
-                      className="flex-1 rounded-full border border-stone-300 bg-white px-2 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500 disabled:opacity-50"
+                      className="w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-left text-[11px] font-medium text-stone-800 hover:border-[#5a6b32] hover:bg-[#5a6b32]/5 disabled:opacity-50"
                     >
-                      {busyId === item.id
-                        ? "…"
-                        : item.is_sold
-                          ? "Gjør aktiv"
-                          : "Marker solgt"}
+                      Solgt til {name}
                     </button>
-                    <Link
-                      href={`/item/${item.id}/edit`}
-                      className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
-                    >
-                      ✎
-                    </Link>
-                    <button
-                      onClick={() => askDelete(item.id)}
-                      disabled={busyId === item.id}
-                      className="rounded-full border border-red-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-red-700 hover:border-red-400 hover:bg-red-50 disabled:opacity-50"
-                      aria-label="Slett"
-                    >
-                      🗑
-                    </button>
-                  </>
-                )}
-              </div>
+                  ))}
+                  <button
+                    onClick={() => markSoldWithBuyer(item, null)}
+                    disabled={busyId === item.id}
+                    className="w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-left text-[11px] text-stone-600 hover:border-stone-500 disabled:opacity-50"
+                  >
+                    Solgte et annet sted
+                  </button>
+                  <button
+                    onClick={() => markSoldWithBuyer(item, null)}
+                    disabled={busyId === item.id}
+                    className="w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-left text-[11px] text-stone-600 hover:border-stone-500 disabled:opacity-50"
+                  >
+                    Bestemte meg for å ikke selge
+                  </button>
+                  <button
+                    onClick={() => setSoldPickerItemId(null)}
+                    className="w-full pt-0.5 text-center text-[11px] text-stone-400 hover:text-stone-600"
+                  >
+                    Avbryt
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-1.5">
+                  {confirmId === item.id ? (
+                    <>
+                      <span className="flex-1 rounded-full border border-red-200 bg-red-50 px-2 py-1.5 text-center text-[11px] font-medium text-red-700">
+                        Sikker?
+                      </span>
+                      <button
+                        onClick={() => deleteItem(item)}
+                        className="flex-1 rounded-full border border-red-500 bg-red-600 px-2 py-1.5 text-[11px] font-medium text-white hover:bg-red-700"
+                      >
+                        Slett
+                      </button>
+                      <button
+                        onClick={() => setConfirmId(null)}
+                        className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
+                      >
+                        Avbryt
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => item.is_sold ? reactivate(item) : openSoldPicker(item)}
+                        disabled={busyId === item.id}
+                        className="flex-1 rounded-full border border-stone-300 bg-white px-2 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500 disabled:opacity-50"
+                      >
+                        {busyId === item.id ? "…" : item.is_sold ? "Gjør aktiv" : "Marker solgt"}
+                      </button>
+                      <Link
+                        href={`/item/${item.id}/edit`}
+                        className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
+                      >
+                        ✎
+                      </Link>
+                      <button
+                        onClick={() => askDelete(item.id)}
+                        disabled={busyId === item.id}
+                        className="rounded-full border border-red-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-red-700 hover:border-red-400 hover:bg-red-50 disabled:opacity-50"
+                        aria-label="Slett"
+                      >
+                        🗑
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { type Item, type Message, type Profile, profileDisplayName } from "@/lib/supabase";
+import { type Item, type Message, type Profile, itemImages, profileDisplayName } from "@/lib/supabase";
 
 function fmtThreadTime(iso: string): string {
   const d = new Date(iso);
@@ -143,14 +143,21 @@ export default function InboxPage() {
                   href={`/item/${item.id}`}
                   className="flex items-center gap-3 p-3 hover:bg-stone-50"
                 >
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-stone-100">
-                    {item.image_url && (
-                      // eslint-disable-next-line @next/next/no-img-element
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {itemImages(item)[0] && (
                       <img
-                        src={item.image_url}
+                        src={itemImages(item)[0]}
                         alt={item.title}
-                        className="h-full w-full object-cover"
+                        className={`h-full w-full object-cover ${item.is_sold ? "opacity-50 grayscale" : ""}`}
                       />
+                    )}
+                    {item.is_sold && (
+                      <div className="absolute inset-0 flex items-end justify-center pb-1">
+                        <span className="rounded bg-stone-900/80 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
+                          Solgt
+                        </span>
+                      </div>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   type Item,
+  type Offer,
   type Profile,
   formatPrice,
   itemImages,
@@ -51,6 +52,10 @@ export default function ItemPage() {
   const [soldToBuyer, setSoldToBuyer] = useState<string | null>(null);
   const [activeBuyer, setActiveBuyer] = useState<string | null>(null);
   const [hasChatted, setHasChatted] = useState(false);
+  const [myOffer, setMyOffer] = useState<Offer | null | undefined>(undefined);
+  const [buyerOffers, setBuyerOffers] = useState<Record<string, Offer>>({});
+  const [offerAmount, setOfferAmount] = useState("");
+  const [submittingOffer, setSubmittingOffer] = useState(false);
 
   const [similar, setSimilar] = useState<Item[]>([]);
   const [similarSellers, setSimilarSellers] = useState<Record<string, Profile>>({});
@@ -164,6 +169,35 @@ export default function ItemPage() {
   }, [item, userId, isSeller, supabase]);
 
   useEffect(() => {
+    if (!item || !userId || isSeller) return;
+    supabase
+      .from("offers")
+      .select("*")
+      .eq("item_id", item.id)
+      .eq("buyer_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setMyOffer((data as Offer | null) ?? null));
+  }, [item, userId, isSeller, supabase]);
+
+  useEffect(() => {
+    if (!item || !isSeller) return;
+    supabase
+      .from("offers")
+      .select("*")
+      .eq("item_id", item.id)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        const map: Record<string, Offer> = {};
+        for (const o of (data ?? []) as Offer[]) {
+          if (!map[o.buyer_id]) map[o.buyer_id] = o;
+        }
+        setBuyerOffers(map);
+      });
+  }, [item, isSeller, supabase]);
+
+  useEffect(() => {
     if (!item?.id || !item.is_sold) return;
     const stored = localStorage.getItem(`soldToBuyer:${item.id}`);
     if (stored) setSoldToBuyer(stored);
@@ -217,6 +251,36 @@ export default function ItemPage() {
       return;
     }
     router.push("/mine");
+  }
+
+  async function submitOffer() {
+    if (!item || !userId || !offerAmount) return;
+    const amount = parseInt(offerAmount.replace(/\D/g, ""), 10);
+    if (!amount || amount <= 0) return;
+    setSubmittingOffer(true);
+    const { data, error: oErr } = await supabase
+      .from("offers")
+      .insert({ item_id: item.id, buyer_id: userId, amount })
+      .select("*")
+      .single();
+    setSubmittingOffer(false);
+    if (!oErr && data) { setMyOffer(data as Offer); setOfferAmount(""); }
+  }
+
+  async function withdrawOffer() {
+    if (!myOffer) return;
+    await supabase.from("offers").delete().eq("id", myOffer.id);
+    setMyOffer(null);
+  }
+
+  async function respondOffer(offerId: string, buyerId: string, status: "accepted" | "declined") {
+    const { data } = await supabase
+      .from("offers")
+      .update({ status })
+      .eq("id", offerId)
+      .select("*")
+      .single();
+    if (data) setBuyerOffers((prev) => ({ ...prev, [buyerId]: data as Offer }));
   }
 
   if (error) {
@@ -372,6 +436,60 @@ export default function ItemPage() {
             </p>
           )}
 
+          {userId && item.seller_id && !isSeller && !item.is_sold && myOffer !== undefined && (
+            <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-2">
+              {myOffer === null ? (
+                <>
+                  <p className="text-xs font-medium text-stone-700">Gi et tilbud</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={offerAmount}
+                      onChange={(e) => setOfferAmount(e.target.value.replace(/\D/g, ""))}
+                      placeholder={`Beløp (listepris ${formatPrice(item.price)})`}
+                      className="flex-1 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
+                    />
+                    <button
+                      onClick={submitOffer}
+                      disabled={submittingOffer || !offerAmount}
+                      className="shrink-0 rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+                    >
+                      {submittingOffer ? "…" : "Send"}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-stone-400">Selger kan godta, avslå eller ignorere tilbudet ditt.</p>
+                </>
+              ) : myOffer.status === "pending" ? (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-stone-600">Ditt tilbud</p>
+                    <p className="text-sm font-semibold">{formatPrice(myOffer.amount)}</p>
+                    <p className="text-[11px] text-stone-400">Venter på svar fra selger</p>
+                  </div>
+                  <button onClick={withdrawOffer} className="text-xs text-stone-400 hover:text-red-600 underline underline-offset-2">
+                    Trekk tilbake
+                  </button>
+                </div>
+              ) : myOffer.status === "accepted" ? (
+                <div className="flex items-center gap-2 text-emerald-700">
+                  <span className="text-lg">✓</span>
+                  <div>
+                    <p className="text-sm font-semibold">Tilbud godtatt!</p>
+                    <p className="text-xs text-emerald-600">Selger godtok {formatPrice(myOffer.amount)} — avtal betaling i chatten.</p>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm text-stone-600">Tilbudet på {formatPrice(myOffer.amount)} ble avslått.</p>
+                  <button onClick={() => setMyOffer(null)} className="mt-1 text-xs font-medium text-[#5a6b32] underline underline-offset-2">
+                    Gi nytt tilbud
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {userId && item.seller_id && !isSeller && (
             <ChatPanel
               itemId={item.id}
@@ -417,6 +535,41 @@ export default function ItemPage() {
                       </button>
                     );
                   })}
+                </div>
+              )}
+              {activeBuyer && buyerOffers[activeBuyer] && (
+                <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                  {buyerOffers[activeBuyer].status === "pending" ? (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-medium text-stone-500">Tilbud fra kjøper</p>
+                        <p className="text-base font-semibold">{formatPrice(buyerOffers[activeBuyer].amount)}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => respondOffer(buyerOffers[activeBuyer].id, activeBuyer, "accepted")}
+                          className="rounded-full bg-[#5a6b32] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#435022]"
+                        >
+                          Godta
+                        </button>
+                        <button
+                          onClick={() => respondOffer(buyerOffers[activeBuyer].id, activeBuyer, "declined")}
+                          className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500"
+                        >
+                          Avslå
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-stone-500">
+                      Tilbud {formatPrice(buyerOffers[activeBuyer].amount)} ·{" "}
+                      {buyerOffers[activeBuyer].status === "accepted" ? (
+                        <span className="font-medium text-emerald-700">Godtatt ✓</span>
+                      ) : (
+                        <span className="font-medium text-stone-500">Avslått</span>
+                      )}
+                    </p>
+                  )}
                 </div>
               )}
               {activeBuyer && (

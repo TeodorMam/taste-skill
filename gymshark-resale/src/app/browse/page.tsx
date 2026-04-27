@@ -44,6 +44,11 @@ function BrowseInner() {
   const [error, setError] = useState<string | null>(null);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [debouncedQ, setDebouncedQ] = useState(params.get("q") ?? "");
+  const [userId, setUserId] = useState<string | null | undefined>(undefined);
+  const [showSaveForm, setShowSaveForm] = useState(false);
+  const [saveLabel, setSaveLabel] = useState("");
+  const [savingSearch, setSavingSearch] = useState(false);
+  const [savedOk, setSavedOk] = useState(false);
 
   const q = params.get("q") ?? "";
   const brand = params.get("brand") ?? "";
@@ -61,6 +66,46 @@ function BrowseInner() {
     const timer = setTimeout(() => setDebouncedQ(q), 400);
     return () => clearTimeout(timer);
   }, [q]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+  }, []);
+
+  function autoLabel(f: Record<string, string>): string {
+    const parts: string[] = [];
+    if (f.brand) parts.push(f.brand);
+    if (f.sub) parts.push(f.sub);
+    else if (f.cat) parts.push(f.cat);
+    if (f.size) parts.push(`str. ${f.size}`);
+    if (f.price) {
+      const b = PRICE_BUCKETS.find((b) => b.key === f.price);
+      if (b) parts.push(b.label);
+    }
+    if (f.q) parts.push(`"${f.q}"`);
+    return parts.join(" · ") || "Mitt søk";
+  }
+
+  async function doSaveSearch() {
+    if (!userId || !saveLabel.trim()) return;
+    setSavingSearch(true);
+    const supabase = createClient();
+    const filters: Record<string, string> = {};
+    if (q) filters.q = q;
+    if (brand) filters.brand = brand;
+    if (cat) filters.cat = cat;
+    if (sub) filters.sub = sub;
+    if (size) filters.size = size;
+    if (condition) filters.condition = condition;
+    if (location) filters.location = location;
+    if (price) filters.price = price;
+    if (shipping) filters.shipping = shipping;
+    await supabase.from("saved_searches").insert({ user_id: userId, label: saveLabel.trim(), filters });
+    setSavingSearch(false);
+    setShowSaveForm(false);
+    setSavedOk(true);
+    setTimeout(() => setSavedOk(false), 2500);
+  }
 
   function setParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -344,12 +389,52 @@ function BrowseInner() {
             Skjul solgte
           </label>
           {hasActiveFilter && (
-            <button
-              onClick={clearAll}
-              className="ml-auto text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
-            >
-              Nullstill
-            </button>
+            <div className="ml-auto flex items-center gap-3">
+              {savedOk && (
+                <span className="text-xs font-medium text-emerald-600">✓ Søk lagret</span>
+              )}
+              {userId && !savedOk && !showSaveForm && (
+                <button
+                  onClick={() => {
+                    setSaveLabel(autoLabel({ q, brand, cat, sub, size, condition, location, price, shipping }));
+                    setShowSaveForm(true);
+                  }}
+                  className="text-xs font-medium text-stone-500 hover:text-stone-900"
+                >
+                  💾 Lagre søk
+                </button>
+              )}
+              {userId && showSaveForm && (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    autoFocus
+                    value={saveLabel}
+                    onChange={(e) => setSaveLabel(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") doSaveSearch();
+                      if (e.key === "Escape") setShowSaveForm(false);
+                    }}
+                    maxLength={60}
+                    placeholder="Navn på søket"
+                    className="w-36 rounded-full border border-stone-300 bg-white px-3 py-1 text-xs outline-none focus:border-[#5a6b32]"
+                  />
+                  <button
+                    onClick={doSaveSearch}
+                    disabled={savingSearch || !saveLabel.trim()}
+                    className="rounded-full bg-[#5a6b32] px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
+                  >
+                    {savingSearch ? "…" : "Lagre"}
+                  </button>
+                  <button onClick={() => setShowSaveForm(false)} className="text-xs text-stone-400 hover:text-stone-700">✕</button>
+                </div>
+              )}
+              <button
+                onClick={clearAll}
+                className="text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+              >
+                Nullstill
+              </button>
+            </div>
           )}
         </div>
       </div>

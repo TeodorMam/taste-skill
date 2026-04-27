@@ -41,6 +41,9 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
           <Link href="/favoritter" className={textCls("/favoritter")}>
             Favoritter
           </Link>
+          <Link href="/varsler" className={textCls("/varsler")}>
+            Varsler
+          </Link>
           <Link href="/inbox" className={`relative ${textCls("/inbox")}`}>
             Innboks
             {hasUnread && (

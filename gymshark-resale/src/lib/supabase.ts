@@ -43,6 +43,24 @@ export type Review = {
   created_at: string;
 };
 
+export type SavedSearch = {
+  id: string;
+  user_id: string;
+  label: string;
+  filters: Record<string, string>;
+  last_seen_at: string;
+  created_at: string;
+};
+
+export type Offer = {
+  id: string;
+  item_id: string;
+  buyer_id: string;
+  amount: number;
+  status: "pending" | "accepted" | "declined";
+  created_at: string;
+};
+
 export type Profile = {
   user_id: string;
   display_name: string | null;
