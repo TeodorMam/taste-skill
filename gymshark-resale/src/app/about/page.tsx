@@ -17,6 +17,34 @@ export default function AboutPage() {
         </p>
       </div>
 
+      <div className="space-y-5 border-l-2 border-[#5a6b32]/20 pl-5">
+        <p className="text-xs font-medium uppercase tracking-widest text-stone-400">
+          Grunnleggeren
+        </p>
+        <div className="space-y-4 text-sm leading-relaxed text-stone-700">
+          <p>
+            Aktivbruk ble startet av Teodor Mamelund, 16 år.
+          </p>
+          <p>
+            Som aktiv utøver — med maraton på 3:03 som 15-åring og erfaring fra
+            ultraløp over 80 km — har jeg brukt mye tid på trening. Og på utstyr.
+          </p>
+          <p>
+            Jeg oppdaget raskt hvor vanskelig det er å finne gode treningsklær
+            brukt. De forsvinner i støyen.
+          </p>
+          <p className="font-medium text-stone-900">
+            Aktivbruk er bygget for å fjerne den støyen.
+          </p>
+          <p className="font-medium text-stone-900">
+            Kun treningsklær. Enklere å finne. Enklere å selge.
+          </p>
+          <p className="text-xs font-medium uppercase tracking-widest text-stone-400">
+            Laget for folk som trener.
+          </p>
+        </div>
+      </div>
+
       <div className="space-y-3">
         <h2 className="text-lg font-semibold tracking-tight">Hva skiller oss</h2>
         <ul className="space-y-2 text-sm text-stone-700">
