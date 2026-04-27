@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   type Item,
@@ -14,12 +14,12 @@ import {
   CATEGORY_TREE,
   CATEGORY_PARENTS,
   type CategoryParent,
-  categoryMatchesParent,
 } from "@/lib/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 
+const PAGE_SIZE = 24;
 type Sort = "newest" | "price_asc" | "price_desc";
 
 export default function BrowsePage() {
@@ -34,14 +34,20 @@ function BrowseInner() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const [items, setItems] = useState<Item[] | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
   const [sellers, setSellers] = useState<Record<string, Profile>>({});
+  const [total, setTotal] = useState<number | null>(null);
+  const [offset, setOffset] = useState(0);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [debouncedQ, setDebouncedQ] = useState(params.get("q") ?? "");
 
   const q = params.get("q") ?? "";
   const brand = params.get("brand") ?? "";
-  const cat = params.get("cat") ?? ""; // parent (broad) category
-  const sub = params.get("sub") ?? ""; // specific subcategory
+  const cat = params.get("cat") ?? "";
+  const sub = params.get("sub") ?? "";
   const size = params.get("size") ?? "";
   const condition = params.get("condition") ?? "";
   const location = params.get("location") ?? "";
@@ -50,13 +56,16 @@ function BrowseInner() {
   const hideSold = params.get("sold") !== "1";
   const shipping = params.get("shipping") ?? "";
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQ(q), 400);
+    return () => clearTimeout(timer);
+  }, [q]);
+
   function setParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
     if (value) next.set(key, value);
     else next.delete(key);
-    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, {
-      scroll: false,
-    });
+    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
   }
 
   function setCat(value: string) {
@@ -64,9 +73,7 @@ function BrowseInner() {
     if (value) next.set("cat", value);
     else next.delete("cat");
     next.delete("sub");
-    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, {
-      scroll: false,
-    });
+    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
   }
 
   function clearAll() {
@@ -77,73 +84,125 @@ function BrowseInner() {
     const supabase = createClient();
     supabase
       .from("items")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (error) {
-          setError(error.message);
-          return;
-        }
-        const rows = (data ?? []) as Item[];
-        setItems(rows);
-        const ids = Array.from(
-          new Set(rows.map((r) => r.seller_id).filter((x): x is string => !!x)),
-        );
-        if (ids.length === 0) return;
-        supabase
-          .from("profiles")
-          .select("*")
-          .in("user_id", ids)
-          .then(({ data: pData }) => {
-            const map: Record<string, Profile> = {};
-            for (const p of (pData ?? []) as Profile[]) {
-              map[p.user_id] = p;
-            }
-            setSellers(map);
-          });
+      .select("brand")
+      .not("brand", "is", null)
+      .then(({ data }) => {
+        if (!data) return;
+        const set = new Set((data as { brand: string }[]).map((r) => r.brand).filter(Boolean));
+        setAvailableBrands(BRANDS.filter((b) => set.has(b)));
       });
   }, []);
 
+  const buildQuery = useCallback(
+    (supabase: ReturnType<typeof createClient>, from: number) => {
+      const needle = debouncedQ.trim();
+      const bucket = PRICE_BUCKETS.find((b) => b.key === price);
+      const activeParent = (cat || null) as CategoryParent | null;
+
+      // eslint-disable-next-line prefer-const
+      let q = supabase.from("items").select("*", { count: "exact" });
+
+      if (hideSold) q = q.eq("is_sold", false);
+      if (brand) q = q.eq("brand", brand);
+      if (sub) {
+        q = q.eq("category", sub);
+      } else if (activeParent) {
+        const group = CATEGORY_TREE.find((g) => g.name === activeParent);
+        if (group) q = q.in("category", group.children);
+      }
+      if (size) q = q.eq("size", size);
+      if (condition) q = q.eq("condition", condition);
+      if (location) q = q.eq("location", location);
+      if (shipping === "sendes") q = q.neq("shipping", "Kun henting");
+      if (bucket) q = q.gte("price", bucket.min).lt("price", bucket.max);
+      if (needle) q = q.or(`title.ilike.%${needle}%,brand.ilike.%${needle}%`);
+
+      if (sort === "price_asc") q = q.order("price", { ascending: true });
+      else if (sort === "price_desc") q = q.order("price", { ascending: false });
+      else q = q.order("created_at", { ascending: false });
+
+      return q.range(from, from + PAGE_SIZE - 1);
+    },
+    [debouncedQ, brand, cat, sub, size, condition, location, price, sort, hideSold, shipping],
+  );
+
+  useEffect(() => {
+    const supabase = createClient();
+    let cancelled = false;
+    setInitialLoading(true);
+    setError(null);
+
+    buildQuery(supabase, 0).then(({ data, error, count }) => {
+      if (cancelled) return;
+      if (error) {
+        setError(error.message);
+        setInitialLoading(false);
+        return;
+      }
+      const rows = (data ?? []) as Item[];
+      setItems(rows);
+      setTotal(count ?? null);
+      setOffset(PAGE_SIZE);
+      setInitialLoading(false);
+
+      const ids = Array.from(
+        new Set(rows.map((r) => r.seller_id).filter((x): x is string => !!x)),
+      );
+      if (ids.length === 0) return;
+      supabase
+        .from("profiles")
+        .select("*")
+        .in("user_id", ids)
+        .then(({ data: pData }) => {
+          if (cancelled) return;
+          const map: Record<string, Profile> = {};
+          for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
+          setSellers(map);
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [buildQuery]);
+
+  async function loadMore() {
+    const supabase = createClient();
+    setLoadingMore(true);
+    const { data, error } = await buildQuery(supabase, offset);
+    if (error) {
+      setError(error.message);
+      setLoadingMore(false);
+      return;
+    }
+    const rows = (data ?? []) as Item[];
+    setItems((prev) => [...prev, ...rows]);
+    setOffset((prev) => prev + PAGE_SIZE);
+    setLoadingMore(false);
+
+    const existingIds = new Set(Object.keys(sellers));
+    const newIds = Array.from(
+      new Set(
+        rows
+          .map((r) => r.seller_id)
+          .filter((x): x is string => !!x && !existingIds.has(x)),
+      ),
+    );
+    if (newIds.length === 0) return;
+    const { data: pData } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("user_id", newIds);
+    const map: Record<string, Profile> = {};
+    for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
+    setSellers((prev) => ({ ...prev, ...map }));
+  }
+
+  const hasMore = total !== null && items.length < total;
   const activeParent = (cat || null) as CategoryParent | null;
   const activeGroup = activeParent
     ? CATEGORY_TREE.find((g) => g.name === activeParent)
     : null;
-
-  const filtered = useMemo(() => {
-    if (!items) return null;
-    const needle = q.trim().toLowerCase();
-    const bucket = PRICE_BUCKETS.find((b) => b.key === price);
-    let out = items.filter((i) => {
-      if (hideSold && i.is_sold) return false;
-      if (brand && i.brand !== brand) return false;
-      if (sub) {
-        if (i.category !== sub) return false;
-      } else if (activeParent) {
-        if (!categoryMatchesParent(i.category, activeParent)) return false;
-      }
-      if (size && i.size !== size) return false;
-      if (condition && i.condition !== condition) return false;
-      if (location && i.location !== location) return false;
-      if (shipping === "sendes" && i.shipping === "Kun henting") return false;
-      if (bucket && (i.price < bucket.min || i.price >= bucket.max)) return false;
-      if (needle) {
-        const hay = `${i.title} ${i.brand ?? ""}`.toLowerCase();
-        if (!hay.includes(needle)) return false;
-      }
-      return true;
-    });
-    if (sort === "price_asc") out = [...out].sort((a, b) => a.price - b.price);
-    else if (sort === "price_desc") out = [...out].sort((a, b) => b.price - a.price);
-    return out;
-  }, [items, q, brand, sub, activeParent, size, condition, location, price, sort, hideSold, shipping]);
-
-  const availableBrands = useMemo(() => {
-    if (!items) return [] as string[];
-    const set = new Set<string>();
-    for (const i of items) if (i.brand) set.add(i.brand);
-    return BRANDS.filter((b) => set.has(b));
-  }, [items]);
-
   const hasActiveFilter =
     !!(q || brand || cat || sub || size || condition || location || price || shipping) ||
     sort !== "newest" ||
@@ -154,7 +213,7 @@ function BrowseInner() {
       <div className="flex items-end justify-between">
         <h1 className="text-3xl font-semibold tracking-tight">Utforsk</h1>
         <p className="text-xs text-stone-500">
-          {filtered ? `${filtered.length} vare${filtered.length === 1 ? "" : "r"}` : ""}
+          {total !== null ? `${total} vare${total === 1 ? "" : "r"}` : ""}
         </p>
       </div>
 
@@ -220,11 +279,7 @@ function BrowseInner() {
             Alle priser
           </Chip>
           {PRICE_BUCKETS.map((b) => (
-            <Chip
-              key={b.key}
-              active={price === b.key}
-              onClick={() => setParam("price", b.key)}
-            >
+            <Chip key={b.key} active={price === b.key} onClick={() => setParam("price", b.key)}>
               {b.label}
             </Chip>
           ))}
@@ -234,7 +289,10 @@ function BrowseInner() {
           <Chip active={shipping === ""} onClick={() => setParam("shipping", "")}>
             Alle
           </Chip>
-          <Chip active={shipping === "sendes"} onClick={() => setParam("shipping", "sendes")}>
+          <Chip
+            active={shipping === "sendes"}
+            onClick={() => setParam("shipping", "sendes")}
+          >
             📦 Kan sendes
           </Chip>
         </Row>
@@ -243,7 +301,7 @@ function BrowseInner() {
           <select
             value={condition}
             onChange={(e) => setParam("condition", e.target.value)}
-            className={select}
+            className={selectCls}
           >
             <option value="">Alle tilstander</option>
             {CONDITIONS.map((c) => (
@@ -253,7 +311,7 @@ function BrowseInner() {
           <select
             value={location}
             onChange={(e) => setParam("location", e.target.value)}
-            className={select}
+            className={selectCls}
           >
             <option value="">Hele Norge</option>
             {AREAS.map((a) => (
@@ -265,7 +323,7 @@ function BrowseInner() {
             onChange={(e) =>
               setParam("sort", e.target.value === "newest" ? "" : e.target.value)
             }
-            className={select}
+            className={selectCls}
           >
             <option value="newest">Nyeste først</option>
             <option value="price_asc">Pris lav → høy</option>
@@ -295,9 +353,9 @@ function BrowseInner() {
         <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
       )}
 
-      {filtered === null && !error && <SkeletonGrid />}
+      {initialLoading && <SkeletonGrid />}
 
-      {filtered && filtered.length === 0 && (
+      {!initialLoading && items.length === 0 && (
         <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
           <p className="font-medium text-stone-700">Ingen treff</p>
           <p className="mt-1">Prøv å nullstille filtrene eller søke bredere.</p>
@@ -312,16 +370,30 @@ function BrowseInner() {
         </div>
       )}
 
-      {filtered && filtered.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {filtered.map((item) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              seller={item.seller_id ? sellers[item.seller_id] : null}
-            />
-          ))}
-        </div>
+      {items.length > 0 && (
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {items.map((item) => (
+              <ItemCard
+                key={item.id}
+                item={item}
+                seller={item.seller_id ? sellers[item.seller_id] : null}
+              />
+            ))}
+          </div>
+
+          {hasMore && (
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="rounded-full border border-stone-300 bg-white px-6 py-2.5 text-sm font-medium text-stone-700 transition hover:border-stone-500 disabled:opacity-50"
+              >
+                {loadingMore ? "Laster…" : "Last inn flere"}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
@@ -368,5 +440,5 @@ function Chip({
   );
 }
 
-const select =
+const selectCls =
   "rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 outline-none focus:border-[#5a6b32]";
