@@ -30,6 +30,7 @@ export default function InboxPage() {
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
   const [threads, setThreads] = useState<ThreadRow[] | null>(null);
   const [otherProfiles, setOtherProfiles] = useState<Record<string, Profile>>({});
+  const [reviewedItemIds, setReviewedItemIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -84,6 +85,16 @@ export default function InboxPage() {
           new Date(a.lastMessage.created_at).getTime(),
       );
       setThreads(rows);
+
+      const soldItemIds = rows.filter((r) => r.item.is_sold).map((r) => r.item.id);
+      if (soldItemIds.length > 0) {
+        const { data: rData } = await supabase
+          .from("reviews")
+          .select("item_id")
+          .eq("reviewer_id", userId)
+          .in("item_id", soldItemIds);
+        setReviewedItemIds(new Set((rData ?? []).map((r: { item_id: string }) => r.item_id)));
+      }
 
       const otherIds = Array.from(new Set(rows.map((r) =>
         r.role === "seller" ? r.buyerId : r.item.seller_id
@@ -176,6 +187,13 @@ export default function InboxPage() {
                         {role === "seller" ? "Du selger" : "Du kjøper"}
                       </span>
                     </div>
+                    {item.is_sold && !reviewedItemIds.has(item.id) && (
+                      <div className="mt-1.5">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#5a6b32]/10 px-2 py-0.5 text-[10px] font-medium text-[#5a6b32]">
+                          ★ Gi en vurdering
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </li>
