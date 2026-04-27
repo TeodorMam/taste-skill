@@ -399,17 +399,15 @@ export default function ItemPage() {
 
           {isSeller && (
             <div className="space-y-2">
-              <button
-                onClick={toggleSold}
-                disabled={saving || deleting}
-                className="w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium hover:border-stone-500 disabled:opacity-50"
-              >
-                {saving
-                  ? "Lagrer…"
-                  : item.is_sold
-                    ? "Marker som tilgjengelig"
-                    : "Marker som solgt"}
-              </button>
+              {item.is_sold && (
+                <button
+                  onClick={toggleSold}
+                  disabled={saving || deleting}
+                  className="w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium hover:border-stone-500 disabled:opacity-50"
+                >
+                  {saving ? "Lagrer…" : "Marker som tilgjengelig"}
+                </button>
+              )}
               <button
                 onClick={onDelete}
                 disabled={saving || deleting}
