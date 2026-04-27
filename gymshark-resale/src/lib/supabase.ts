@@ -37,7 +37,8 @@ export type Review = {
   item_id: string;
   reviewer_id: string;
   seller_id: string;
-  is_positive: boolean;
+  is_positive: boolean | null;
+  rating: number | null;
   comment: string | null;
   created_at: string;
 };
@@ -56,6 +57,13 @@ export function summarizeReviews(reviews: Review[]) {
   const positive = reviews.filter((r) => r.is_positive).length;
   const pct = total === 0 ? 0 : Math.round((positive / total) * 100);
   return { total, positive, negative: total - positive, pct };
+}
+
+export function averageRating(reviews: Review[]): { avg: number; total: number } | null {
+  const rated = reviews.filter((r) => r.rating !== null && r.rating !== undefined);
+  if (rated.length === 0) return null;
+  const avg = rated.reduce((s, r) => s + (r.rating ?? 0), 0) / rated.length;
+  return { avg: Math.round(avg * 10) / 10, total: rated.length };
 }
 
 export function profileDisplayName(

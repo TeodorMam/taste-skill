@@ -48,6 +48,7 @@ export default function ItemPage() {
   const [buyerLastMsg, setBuyerLastMsg] = useState<Record<string, string>>({});
   const [buyerProfiles, setBuyerProfiles] = useState<Record<string, Profile>>({});
   const [showSoldPicker, setShowSoldPicker] = useState(false);
+  const [soldToBuyer, setSoldToBuyer] = useState<string | null>(null);
   const [activeBuyer, setActiveBuyer] = useState<string | null>(null);
   const [hasChatted, setHasChatted] = useState(false);
 
@@ -161,6 +162,32 @@ export default function ItemPage() {
       .limit(1)
       .then(({ data }) => setHasChatted((data ?? []).length > 0));
   }, [item, userId, isSeller, supabase]);
+
+  useEffect(() => {
+    if (!item?.id || !item.is_sold) return;
+    const stored = localStorage.getItem(`soldToBuyer:${item.id}`);
+    if (stored) setSoldToBuyer(stored);
+  }, [item?.id, item?.is_sold]);
+
+  async function markSold(buyerId: string | null) {
+    if (!item) return;
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("items")
+      .update({ is_sold: true })
+      .eq("id", item.id)
+      .select("*")
+      .single();
+    setSaving(false);
+    if (error) { setError(error.message); return; }
+    if (data) setItem(data as Item);
+    setShowSoldPicker(false);
+    if (buyerId) {
+      setSoldToBuyer(buyerId);
+      setActiveBuyer(buyerId);
+      localStorage.setItem(`soldToBuyer:${item.id}`, buyerId);
+    }
+  }
 
   async function toggleSold() {
     if (!item) return;
@@ -414,34 +441,41 @@ export default function ItemPage() {
               {!item.is_sold && (
                 showSoldPicker ? (
                   <div className="space-y-2 rounded-xl border border-stone-200 bg-stone-50 p-3">
-                    <p className="text-xs font-medium text-stone-700">Hvem kjøpte varen?</p>
+                    <p className="text-xs font-medium text-stone-700">Hva skjedde?</p>
                     {buyerThreads.map((b) => (
                       <button
                         key={b}
-                        onClick={async () => {
-                          setActiveBuyer(b);
-                          await toggleSold();
-                          setShowSoldPicker(false);
-                        }}
+                        onClick={() => markSold(b)}
                         disabled={saving}
                         className="w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-left text-sm font-medium text-stone-800 hover:border-[#5a6b32] hover:bg-[#5a6b32]/5 disabled:opacity-50"
                       >
-                        {profileDisplayName(buyerProfiles[b], b)}
+                        Solgt til {profileDisplayName(buyerProfiles[b], b)}
                       </button>
                     ))}
                     <button
+                      onClick={() => markSold(null)}
+                      disabled={saving}
+                      className="w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-left text-sm font-medium text-stone-600 hover:border-stone-500 disabled:opacity-50"
+                    >
+                      Jeg solgte et annet sted
+                    </button>
+                    <button
+                      onClick={() => markSold(null)}
+                      disabled={saving}
+                      className="w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-left text-sm font-medium text-stone-600 hover:border-stone-500 disabled:opacity-50"
+                    >
+                      Jeg bestemte meg for å ikke selge
+                    </button>
+                    <button
                       onClick={() => setShowSoldPicker(false)}
-                      className="w-full text-center text-xs text-stone-400 hover:text-stone-600"
+                      className="w-full text-center text-xs text-stone-400 hover:text-stone-600 pt-1"
                     >
                       Avbryt
                     </button>
                   </div>
                 ) : (
                   <button
-                    onClick={() => {
-                      if (buyerThreads.length > 1) setShowSoldPicker(true);
-                      else toggleSold();
-                    }}
+                    onClick={() => setShowSoldPicker(true)}
                     disabled={saving}
                     className="w-full rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
                   >
@@ -450,22 +484,20 @@ export default function ItemPage() {
                 )
               )}
 
-              {item.is_sold && buyerThreads.length > 0 && userId && (
-                <div className="space-y-3 border-t border-stone-100 pt-3">
-                  <p className="text-xs font-medium text-stone-500 uppercase tracking-wider">Vurder kjøpere</p>
-                  {buyerThreads.map((b) => (
-                    <div key={b}>
-                      <p className="mb-1.5 text-xs font-medium text-stone-700">
-                        {profileDisplayName(buyerProfiles[b], b)}
-                      </p>
-                      <ReviewForm
-                        itemId={item.id}
-                        reviewerId={userId}
-                        sellerId={b}
-                        label="Hvordan var kjøperen?"
-                      />
-                    </div>
-                  ))}
+              {item.is_sold && soldToBuyer && userId && (
+                <div className="space-y-2 border-t border-stone-100 pt-3">
+                  <p className="text-xs font-medium text-stone-500 uppercase tracking-wider">
+                    Vurder kjøperen
+                  </p>
+                  <p className="text-xs font-medium text-stone-700">
+                    {profileDisplayName(buyerProfiles[soldToBuyer], soldToBuyer)}
+                  </p>
+                  <ReviewForm
+                    itemId={item.id}
+                    reviewerId={userId}
+                    sellerId={soldToBuyer}
+                    label="Hvordan var kjøperen?"
+                  />
                 </div>
               )}
             </div>

@@ -19,7 +19,8 @@ export function ReviewForm({
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [existing, setExisting] = useState<Review | null | undefined>(undefined);
-  const [isPositive, setIsPositive] = useState<boolean | null>(null);
+  const [rating, setRating] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,8 +36,8 @@ export function ReviewForm({
   }, [itemId, reviewerId, supabase]);
 
   async function submit() {
-    if (isPositive === null) {
-      setError("Velg tommel opp eller ned");
+    if (rating === null) {
+      setError("Velg et antall stjerner");
       return;
     }
     setError(null);
@@ -47,7 +48,8 @@ export function ReviewForm({
         item_id: itemId,
         reviewer_id: reviewerId,
         seller_id: sellerId,
-        is_positive: isPositive,
+        rating,
+        is_positive: rating >= 3,
         comment: comment.trim() || null,
       })
       .select("*")
@@ -68,7 +70,7 @@ export function ReviewForm({
     return (
       <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm">
         <p className="font-medium text-stone-800">
-          Takk for vurderingen {existing.is_positive ? "👍" : "👎"}
+          Takk for vurderingen — {renderStars(existing.rating ?? (existing.is_positive ? 4 : 2), 16)}
         </p>
         {existing.comment && (
           <p className="mt-1 text-stone-600">{existing.comment}</p>
@@ -77,36 +79,29 @@ export function ReviewForm({
     );
   }
 
+  const display = hovered ?? rating ?? 0;
+
   return (
     <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
       <p className="text-sm font-medium text-stone-800">{label}</p>
-      <p className="text-xs text-stone-500">
-        Din vurdering hjelper andre kjøpere å stole på selgeren.
-      </p>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => setIsPositive(true)}
-          className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium transition ${
-            isPositive === true
-              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-              : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
-          }`}
-        >
-          👍 Bra
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsPositive(false)}
-          className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium transition ${
-            isPositive === false
-              ? "border-red-500 bg-red-50 text-red-700"
-              : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
-          }`}
-        >
-          👎 Dårlig
-        </button>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => setRating(n)}
+            onMouseEnter={() => setHovered(n)}
+            onMouseLeave={() => setHovered(null)}
+            className="text-3xl leading-none transition-transform hover:scale-110 focus:outline-none"
+            aria-label={`${n} stjerner`}
+          >
+            <span className={n <= display ? "text-amber-400" : "text-stone-300"}>★</span>
+          </button>
+        ))}
       </div>
+      {rating !== null && (
+        <p className="text-xs text-stone-500">{ratingLabel(rating)}</p>
+      )}
       <textarea
         value={comment}
         onChange={(e) => setComment(e.target.value.slice(0, 280))}
@@ -124,5 +119,21 @@ export function ReviewForm({
         {submitting ? "Lagrer…" : "Send vurdering"}
       </button>
     </div>
+  );
+}
+
+function ratingLabel(r: number): string {
+  return ["", "Veldig dårlig", "Dårlig", "OK", "Bra", "Veldig bra"][r] ?? "";
+}
+
+export function renderStars(rating: number, size = 14): React.ReactNode {
+  return (
+    <span className="inline-flex items-center gap-0.5" style={{ fontSize: size }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span key={n} className={n <= Math.round(rating) ? "text-amber-400" : "text-stone-300"}>
+          ★
+        </span>
+      ))}
+    </span>
   );
 }
