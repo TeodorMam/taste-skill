@@ -38,9 +38,6 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
       </Link>
       {isLoggedIn ? (
         <>
-          <Link href="/favoritter" className={textCls("/favoritter")}>
-            Favoritter
-          </Link>
           <Link href="/varsler" className={textCls("/varsler")}>
             Varsler
           </Link>
@@ -50,15 +47,12 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
               <span className="absolute -right-2 -top-1 h-2 w-2 rounded-full bg-red-500" />
             )}
           </Link>
-          <Link href="/mine" className={textCls("/mine")}>
-            Mine annonser
-          </Link>
           <Link href="/post" className={textCls("/post")}>
             Selg
           </Link>
           <Link href="/profil" className={`flex items-center gap-2 ${textCls("/profil")}`}>
-            <Avatar profile={profile} size="sm" />
             Min profil
+            <Avatar profile={profile} size="sm" />
           </Link>
         </>
       ) : (

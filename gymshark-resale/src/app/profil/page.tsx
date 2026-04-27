@@ -49,6 +49,29 @@ export default function ProfilPage() {
 
       <ProfileEditor />
 
+      <div className="grid grid-cols-2 gap-3">
+        <Link
+          href="/favoritter"
+          className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:border-stone-400"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg">♡</span>
+          <div>
+            <p className="text-sm font-medium text-stone-900">Favoritter</p>
+            <p className="text-xs text-stone-500">Lagrede varer</p>
+          </div>
+        </Link>
+        <Link
+          href="/mine"
+          className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:border-stone-400"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg">🏷</span>
+          <div>
+            <p className="text-sm font-medium text-stone-900">Mine annonser</p>
+            <p className="text-xs text-stone-500">Alt du har lagt ut</p>
+          </div>
+        </Link>
+      </div>
+
       <PasswordSetter />
 
       <div className="rounded-2xl border border-stone-200 bg-white p-4">

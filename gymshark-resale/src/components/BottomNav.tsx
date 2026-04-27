@@ -11,10 +11,8 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   const items = isLoggedIn
     ? [
         { href: "/browse", label: "Utforsk", icon: SearchIcon },
-        { href: "/favoritter", label: "Favoritter", icon: HeartIcon },
         { href: "/post", label: "Selg", icon: PlusIcon },
         { href: "/inbox", label: "Innboks", icon: InboxIcon, badge: hasUnread },
-        { href: "/mine", label: "Mine", icon: TagIcon },
         { href: "/profil", label: "Profil", icon: UserIcon },
       ]
     : [
