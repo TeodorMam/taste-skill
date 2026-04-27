@@ -1,0 +1,58 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
+
+export function useInboxDot(isLoggedIn: boolean): boolean {
+  const path = usePathname();
+  const [hasDot, setHasDot] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const supabase = createClient();
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // 1. Unread messages from others since last inbox visit
+      const lastVisit = localStorage.getItem("lastInboxVisit");
+      const since = lastVisit
+        ? new Date(Number(lastVisit)).toISOString()
+        : new Date(Date.now() - 7 * 86400000).toISOString();
+      const { data: unread } = await supabase
+        .from("messages")
+        .select("id")
+        .neq("sender_id", user.id)
+        .gt("created_at", since)
+        .limit(1);
+      if ((unread?.length ?? 0) > 0) { setHasDot(true); return; }
+
+      // 2. Items sold where user was a buyer and hasn't reviewed yet
+      const { data: msgs } = await supabase
+        .from("messages")
+        .select("item_id")
+        .eq("buyer_id", user.id);
+      const itemIds = [...new Set((msgs ?? []).map((m: { item_id: string }) => m.item_id))];
+      if (itemIds.length === 0) { setHasDot(false); return; }
+
+      const { data: soldItems } = await supabase
+        .from("items")
+        .select("id")
+        .in("id", itemIds)
+        .eq("is_sold", true);
+      const soldIds = (soldItems ?? []).map((i: { id: string }) => i.id);
+      if (soldIds.length === 0) { setHasDot(false); return; }
+
+      const { data: reviews } = await supabase
+        .from("reviews")
+        .select("item_id")
+        .in("item_id", soldIds)
+        .eq("reviewer_id", user.id);
+      const reviewed = new Set((reviews ?? []).map((r: { item_id: string }) => r.item_id));
+      setHasDot(soldIds.some((id: string) => !reviewed.has(id)));
+    })();
+  }, [isLoggedIn, path]);
+
+  return hasDot;
+}

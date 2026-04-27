@@ -1,33 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { useInboxDot } from "@/hooks/useInboxDot";
 
 export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
-  const [hasUnread, setHasUnread] = useState(false);
-
-  useEffect(() => {
-    if (!isLoggedIn) return;
-    const supabase = createClient();
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const lastVisit = localStorage.getItem("lastInboxVisit");
-      const since = lastVisit
-        ? new Date(Number(lastVisit)).toISOString()
-        : new Date(Date.now() - 7 * 86400000).toISOString();
-      const { data } = await supabase
-        .from("messages")
-        .select("id")
-        .neq("sender_id", user.id)
-        .gt("created_at", since)
-        .limit(1);
-      setHasUnread((data?.length ?? 0) > 0);
-    })();
-  }, [isLoggedIn, path]);
+  const hasUnread = useInboxDot(isLoggedIn);
 
   const items = isLoggedIn
     ? [
