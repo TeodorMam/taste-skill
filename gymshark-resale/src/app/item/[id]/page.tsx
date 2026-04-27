@@ -46,6 +46,7 @@ export default function ItemPage() {
 
   const [buyerThreads, setBuyerThreads] = useState<string[]>([]);
   const [buyerLastMsg, setBuyerLastMsg] = useState<Record<string, string>>({});
+  const [buyerProfiles, setBuyerProfiles] = useState<Record<string, Profile>>({});
   const [activeBuyer, setActiveBuyer] = useState<string | null>(null);
   const [hasChatted, setHasChatted] = useState(false);
 
@@ -99,6 +100,16 @@ export default function ItemPage() {
         setBuyerThreads(ordered);
         setBuyerLastMsg(lastMsg);
         setActiveBuyer((prev) => prev ?? ordered[0] ?? null);
+        if (ordered.length === 0) return;
+        supabase
+          .from("profiles")
+          .select("*")
+          .in("user_id", ordered)
+          .then(({ data: pData }) => {
+            const map: Record<string, Profile> = {};
+            for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
+            setBuyerProfiles(map);
+          });
       });
   }, [item, isSeller, supabase]);
 
@@ -380,7 +391,7 @@ export default function ItemPage() {
                         {isNewest && !isActive && (
                           <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
                         )}
-                        Kjøper {i + 1}
+                        {profileDisplayName(buyerProfiles[b], b)}
                         {timeLabel && (
                           <span className={isActive ? "opacity-70" : "text-stone-400"}>
                             · {timeLabel}
