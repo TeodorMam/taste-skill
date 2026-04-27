@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
 
 export function FirstListingSuccess({
   itemId,
@@ -20,10 +21,26 @@ export function FirstListingSuccess({
   const welcome = searchParams.get("welcome") === "1";
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {
     if (welcome && isSeller) setOpen(true);
   }, [welcome, isSeller]);
+
+  useEffect(() => {
+    if (!open) return;
+    const supabase = createClient();
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data?.display_name?.trim() && data?.avatar_url) setProfileComplete(true);
+    })();
+  }, [open]);
 
   function close() {
     setOpen(false);
@@ -91,24 +108,26 @@ export function FirstListingSuccess({
             <span className="text-stone-400">›</span>
           </button>
 
-          <Link
-            href="/profil"
-            onClick={close}
-            className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 transition hover:border-[#5a6b32]"
-          >
-            <span className="flex items-center gap-3">
-              <span className="text-xl">👤</span>
-              <span>
-                <span className="block text-sm font-medium text-stone-900">
-                  Fyll ut profilen
-                </span>
-                <span className="block text-xs text-stone-500">
-                  Navn og bilde gir kjøpere mer tillit
+          {!profileComplete && (
+            <Link
+              href="/profil"
+              onClick={close}
+              className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 transition hover:border-[#5a6b32]"
+            >
+              <span className="flex items-center gap-3">
+                <span className="text-xl">👤</span>
+                <span>
+                  <span className="block text-sm font-medium text-stone-900">
+                    Fyll ut profilen
+                  </span>
+                  <span className="block text-xs text-stone-500">
+                    Navn og bilde gir kjøpere mer tillit
+                  </span>
                 </span>
               </span>
-            </span>
-            <span className="text-stone-400">›</span>
-          </Link>
+              <span className="text-stone-400">›</span>
+            </Link>
+          )}
 
           <Link
             href="/inbox"
