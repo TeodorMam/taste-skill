@@ -697,16 +697,10 @@ export default function ItemPage() {
       {similar.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-end justify-between">
-            <h2 className="text-lg font-semibold tracking-tight">
-              {item.is_sold
-                ? "Finn en lignende vare"
-                : item.brand
-                ? `Flere fra ${item.brand}`
-                : "Lignende varer"}
-            </h2>
-            {item.brand && (
+            <h2 className="text-lg font-semibold tracking-tight">Lignende annonser</h2>
+            {(item.brand || item.category) && (
               <Link
-                href={`/browse?brand=${encodeURIComponent(item.brand)}`}
+                href={item.brand ? `/browse?brand=${encodeURIComponent(item.brand)}` : `/browse?sub=${encodeURIComponent(item.category!)}`}
                 className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]"
               >
                 Se alle →
