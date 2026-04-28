@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 import { NavLinks } from "@/components/NavLinks";
 import { BottomNav } from "@/components/BottomNav";
 import { ClientProviders } from "@/components/ClientProviders";
+import { SearchButton } from "@/components/SearchButton";
 
 export const metadata: Metadata = {
   title: "Aktivbruk — bruktbørs for treningsklær",
@@ -46,6 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <div className="hidden sm:block">
               <NavLinks isLoggedIn={!!user} />
             </div>
+            <SearchButton />
             {!user && (
               <Link
                 href="/login"
