@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { useToast } from "@/components/ToastProvider";
 
 export function FavoriteButton({
   itemId,
@@ -14,6 +15,7 @@ export function FavoriteButton({
   variant?: "overlay" | "inline";
 }) {
   const router = useRouter();
+  const toast = useToast();
   const supabase = useMemo(() => createClient(), []);
   const [favorited, setFavorited] = useState<boolean | null>(null);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
@@ -52,7 +54,7 @@ export function FavoriteButton({
         .delete()
         .eq("user_id", userId)
         .eq("item_id", itemId);
-      if (!error) setFavorited(false);
+      if (!error) { setFavorited(false); toast("Fjernet fra favoritter"); }
     } else {
       const { error } = await supabase
         .from("favorites")
@@ -61,7 +63,7 @@ export function FavoriteButton({
           item_id: itemId,
           ...(currentPrice !== undefined ? { price_when_favorited: currentPrice } : {}),
         });
-      if (!error) setFavorited(true);
+      if (!error) { setFavorited(true); toast("Lagt til i favoritter"); }
     }
     setBusy(false);
   }

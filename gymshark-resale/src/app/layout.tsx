@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { NavLinks } from "@/components/NavLinks";
 import { BottomNav } from "@/components/BottomNav";
+import { ClientProviders } from "@/components/ClientProviders";
 
 export const metadata: Metadata = {
   title: "Aktivbruk — bruktbørs for treningsklær",
@@ -35,6 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="no">
       <body className="bg-stone-50 text-stone-900">
+        <ClientProviders>
         <header className="sticky top-0 z-10 border-b border-stone-200 bg-stone-50/80 backdrop-blur">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
             <Link href="/" className="text-base font-semibold tracking-tight">
@@ -77,6 +79,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </div>
         </footer>
         <BottomNav isLoggedIn={!!user} />
+        </ClientProviders>
       </body>
     </html>
   );

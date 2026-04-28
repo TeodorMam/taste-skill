@@ -8,8 +8,10 @@ import {
   type Profile,
   profileDisplayName,
 } from "@/lib/supabase";
+import { useToast } from "@/components/ToastProvider";
 
 export function ProfileEditor() {
+  const toast = useToast();
   const supabase = useMemo(() => createClient(), []);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -88,6 +90,7 @@ export function ProfileEditor() {
     }
     if (data) setProfile(data as Profile);
     setSavedAt(Date.now());
+    toast("Profil lagret");
   }
 
   if (!open) {

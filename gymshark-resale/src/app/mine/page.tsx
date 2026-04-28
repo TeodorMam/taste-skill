@@ -6,10 +6,12 @@ import { createClient } from "@/utils/supabase/client";
 import { type Item, type Profile, formatPrice, profileDisplayName } from "@/lib/supabase";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
+import { useToast } from "@/components/ToastProvider";
 
 type Tab = "active" | "sold" | "all";
 
 export default function MinePage() {
+  const toast = useToast();
   const supabase = useMemo(() => createClient(), []);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
   const [items, setItems] = useState<Item[] | null>(null);
@@ -102,6 +104,7 @@ export default function MinePage() {
     if (data) {
       setItems((prev) => (prev ?? []).map((i) => (i.id === item.id ? (data as Item) : i)));
       if (buyerId) localStorage.setItem(`soldToBuyer:${item.id}`, buyerId);
+      toast("Annonsen er markert som solgt");
     }
   }
 
@@ -115,7 +118,10 @@ export default function MinePage() {
       .single();
     setBusyId(null);
     if (error) { setError(error.message); return; }
-    if (data) setItems((prev) => (prev ?? []).map((i) => (i.id === item.id ? (data as Item) : i)));
+    if (data) {
+      setItems((prev) => (prev ?? []).map((i) => (i.id === item.id ? (data as Item) : i)));
+      toast("Annonsen er aktiv igjen");
+    }
   }
 
   function askDelete(itemId: string) {
@@ -135,6 +141,7 @@ export default function MinePage() {
       return;
     }
     setItems((prev) => (prev ?? []).filter((i) => i.id !== item.id));
+    toast("Annonsen er slettet");
   }
 
   if (userId === undefined) {

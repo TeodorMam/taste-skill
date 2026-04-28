@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import type { Message } from "@/lib/supabase";
+import { useToast } from "@/components/ToastProvider";
 
 function fmtTime(iso: string): string {
   const d = new Date(iso);
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
+  const toast = useToast();
   const supabase = useMemo(() => createClient(), []);
   const [messages, setMessages] = useState<Message[]>([]);
   const [body, setBody] = useState("");
@@ -96,6 +98,7 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
       return;
     }
     setBody("");
+    toast("Melding sendt");
     const m = data as Message;
     setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
   }

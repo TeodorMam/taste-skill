@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { type Review } from "@/lib/supabase";
+import { useToast } from "@/components/ToastProvider";
 
 export function ReviewForm({
   itemId,
@@ -18,6 +19,7 @@ export function ReviewForm({
   onDone?: (review: Review) => void;
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const toast = useToast();
   const [existing, setExisting] = useState<Review | null | undefined>(undefined);
   const [rating, setRating] = useState<number | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -61,6 +63,7 @@ export function ReviewForm({
     }
     const review = data as Review;
     setExisting(review);
+    toast("Vurdering sendt");
     onDone?.(review);
   }
 

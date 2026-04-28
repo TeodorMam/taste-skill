@@ -21,6 +21,7 @@ import { SellerRating } from "@/components/SellerRating";
 import { ReviewForm } from "@/components/ReviewForm";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { FirstListingSuccess } from "@/components/FirstListingSuccess";
+import { useToast } from "@/components/ToastProvider";
 
 function fmtBuyerTime(iso: string): string {
   const d = new Date(iso);
@@ -38,6 +39,7 @@ function fmtBuyerTime(iso: string): string {
 export default function ItemPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const toast = useToast();
   const supabase = useMemo(() => createClient(), []);
   const [item, setItem] = useState<Item | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -134,27 +136,28 @@ export default function ItemPage() {
   }, [item?.seller_id, supabase]);
 
   useEffect(() => {
-    if (!item) return;
-    const base = supabase.from("items").select("*").neq("id", item.id).limit(24);
-    const query = item.brand ? base.eq("brand", item.brand) : base;
-    query.then(({ data }) => {
-      const rows = ((data ?? []) as Item[]).filter((i) => !i.is_sold);
+    if (!item || (!item.brand && !item.category)) return;
+    (async () => {
+      const base = supabase.from("items").select("*").neq("id", item.id).eq("is_sold", false);
+      let rows: Item[] = [];
+      if (item.brand) {
+        const { data } = await base.eq("brand", item.brand).limit(12);
+        rows = (data ?? []) as Item[];
+      }
+      if (rows.length < 3 && item.category) {
+        const seen = new Set(rows.map((r) => r.id));
+        const { data } = await base.eq("category", item.category).limit(12);
+        rows = [...rows, ...((data ?? []) as Item[]).filter((r) => !seen.has(r.id))];
+      }
       const slice = rows.slice(0, 6);
       setSimilar(slice);
-      const ids = Array.from(
-        new Set(slice.map((r) => r.seller_id).filter((x): x is string => !!x)),
-      );
+      const ids = Array.from(new Set(slice.map((r) => r.seller_id).filter((x): x is string => !!x)));
       if (ids.length === 0) return;
-      supabase
-        .from("profiles")
-        .select("*")
-        .in("user_id", ids)
-        .then(({ data: pData }) => {
-          const map: Record<string, Profile> = {};
-          for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
-          setSimilarSellers(map);
-        });
-    });
+      const { data: pData } = await supabase.from("profiles").select("*").in("user_id", ids);
+      const map: Record<string, Profile> = {};
+      for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
+      setSimilarSellers(map);
+    })();
   }, [item, supabase]);
 
   useEffect(() => {
@@ -218,6 +221,7 @@ export default function ItemPage() {
     if (error) { setError(error.message); return; }
     if (data) setItem(data as Item);
     setShowSoldPicker(false);
+    toast("Annonsen er markert som solgt");
     if (buyerId) {
       setSoldToBuyer(buyerId);
       setActiveBuyer(buyerId);
@@ -266,7 +270,7 @@ export default function ItemPage() {
       .select("*")
       .single();
     setSubmittingOffer(false);
-    if (!oErr && data) { setMyOffer(data as Offer); setOfferAmount(""); }
+    if (!oErr && data) { setMyOffer(data as Offer); setOfferAmount(""); toast("Tilbud sendt"); }
   }
 
   async function withdrawOffer() {
@@ -282,7 +286,10 @@ export default function ItemPage() {
       .eq("id", offerId)
       .select("*")
       .single();
-    if (data) setBuyerOffers((prev) => ({ ...prev, [buyerId]: data as Offer }));
+    if (data) {
+      setBuyerOffers((prev) => ({ ...prev, [buyerId]: data as Offer }));
+      toast(status === "accepted" ? "Tilbud godtatt" : "Tilbud avslått");
+    }
   }
 
   if (error) {
@@ -691,7 +698,11 @@ export default function ItemPage() {
         <section className="space-y-3">
           <div className="flex items-end justify-between">
             <h2 className="text-lg font-semibold tracking-tight">
-              {item.brand ? `Flere fra ${item.brand}` : "Lignende varer"}
+              {item.is_sold
+                ? "Finn en lignende vare"
+                : item.brand
+                ? `Flere fra ${item.brand}`
+                : "Lignende varer"}
             </h2>
             {item.brand && (
               <Link
