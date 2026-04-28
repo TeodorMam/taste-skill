@@ -71,16 +71,6 @@ export function FavoriteButton({
       if (!error) {
         setFavorited(true);
         toast("Lagt til i favoritter");
-        if (sellerId && sellerId !== userId) {
-          const { error: notifErr } = await supabase.from("notifications").insert({
-            user_id: sellerId,
-            type: "favorite",
-            item_id: Number(itemId),
-            from_user_id: userId,
-            metadata: { item_title: itemTitle ?? "" },
-          });
-          if (notifErr) toast(`Notifikasjonsfeil: ${notifErr.message}`);
-        }
       } else {
         toast(`Feil: ${error.message}`);
       }

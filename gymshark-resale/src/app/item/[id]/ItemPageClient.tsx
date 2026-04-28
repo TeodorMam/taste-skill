@@ -228,16 +228,6 @@ export default function ItemPageClient() {
       setMyOffer(data as Offer);
       setOfferAmount("");
       toast("Tilbud sendt");
-      if (item.seller_id && item.seller_id !== userId) {
-        const { error: notifErr } = await supabase.from("notifications").insert({
-          user_id: item.seller_id,
-          type: "offer",
-          item_id: item.id,
-          from_user_id: userId,
-          metadata: { amount, item_title: item.title },
-        });
-        if (notifErr) toast(`Notifikasjonsfeil: ${notifErr.message}`);
-      }
     } else if (oErr) { toast(`Feil: ${oErr.message}`); }
   }
 
