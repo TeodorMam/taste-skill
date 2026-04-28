@@ -16,29 +16,50 @@ export function useInboxDot(isLoggedIn: boolean): boolean {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 1. Unread notifications (offers + favorites)
-      const { data: unreadNotifs } = await supabase
-        .from("notifications")
-        .select("id")
-        .eq("user_id", user.id)
-        .is("read_at", null)
-        .limit(1);
-      if ((unreadNotifs?.length ?? 0) > 0) { setHasDot(true); return; }
-
-      // 2. Unread messages from others since last inbox visit
       const lastVisit = localStorage.getItem("lastInboxVisit");
       const since = lastVisit
         ? new Date(Number(lastVisit)).toISOString()
-        : new Date(Date.now() - 7 * 86400000).toISOString();
-      const { data: unread } = await supabase
+        : new Date(Date.now() - 30 * 86400000).toISOString();
+
+      // Items I sell
+      const { data: myItems } = await supabase
+        .from("items")
+        .select("id")
+        .eq("seller_id", user.id);
+      const myItemIds = (myItems ?? []).map((i: { id: string | number }) => i.id);
+
+      // 1. New offers on my items
+      if (myItemIds.length > 0) {
+        const { data: newOffers } = await supabase
+          .from("offers")
+          .select("id")
+          .in("item_id", myItemIds)
+          .neq("buyer_id", user.id)
+          .gt("created_at", since)
+          .limit(1);
+        if ((newOffers?.length ?? 0) > 0) { setHasDot(true); return; }
+
+        // 2. New favorites on my items
+        const { data: newFavorites } = await supabase
+          .from("favorites")
+          .select("id")
+          .in("item_id", myItemIds)
+          .neq("user_id", user.id)
+          .gt("created_at", since)
+          .limit(1);
+        if ((newFavorites?.length ?? 0) > 0) { setHasDot(true); return; }
+      }
+
+      // 3. New messages from others
+      const { data: newMsgs } = await supabase
         .from("messages")
         .select("id")
         .neq("sender_id", user.id)
         .gt("created_at", since)
         .limit(1);
-      if ((unread?.length ?? 0) > 0) { setHasDot(true); return; }
+      if ((newMsgs?.length ?? 0) > 0) { setHasDot(true); return; }
 
-      // 3. Items sold to user that haven't been reviewed
+      // 4. Items sold to user that haven't been reviewed
       const { data: soldItems } = await supabase
         .from("items")
         .select("id")
