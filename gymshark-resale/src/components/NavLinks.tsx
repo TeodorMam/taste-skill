@@ -19,6 +19,8 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      // Stamp last_seen_at in the background on every navigation
+      supabase.from("profiles").update({ last_seen_at: new Date().toISOString() }).eq("user_id", user.id);
       const { data: pData } = await supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle();
       setProfile((pData as Profile | null) ?? null);
     })();

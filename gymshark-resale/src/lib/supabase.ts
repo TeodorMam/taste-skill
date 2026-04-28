@@ -70,6 +70,7 @@ export type Profile = {
   bio: string | null;
   location: string | null;
   created_at: string;
+  last_seen_at: string | null;
 };
 
 export function summarizeReviews(reviews: Review[]) {

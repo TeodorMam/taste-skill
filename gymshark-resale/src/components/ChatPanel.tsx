@@ -30,8 +30,13 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [otherLastRead, setOtherLastRead] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
+  // The other person in the conversation
+  const otherId = meId === buyerId ? sellerId : buyerId;
+
+  // Load messages + subscribe to new ones
   useEffect(() => {
     let cancelled = false;
     supabase
@@ -72,6 +77,53 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
     };
   }, [supabase, itemId, buyerId]);
 
+  // Fetch other person's last_read_at + subscribe to updates
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("chat_reads")
+      .select("last_read_at")
+      .eq("user_id", otherId)
+      .eq("item_id", itemId)
+      .eq("buyer_id", buyerId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setOtherLastRead((data as { last_read_at: string } | null)?.last_read_at ?? null);
+      });
+
+    const channel = supabase
+      .channel(`reads:${itemId}:${buyerId}:${otherId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "chat_reads",
+          filter: `user_id=eq.${otherId}`,
+        },
+        (payload) => {
+          const row = payload.new as { item_id: string; buyer_id: string; last_read_at: string } | null;
+          if (row && row.item_id === itemId && row.buyer_id === buyerId) {
+            setOtherLastRead(row.last_read_at);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, itemId, buyerId, otherId]);
+
+  // Mark conversation as read when opened and when new messages arrive
+  useEffect(() => {
+    supabase.from("chat_reads").upsert(
+      { user_id: meId, item_id: itemId, buyer_id: buyerId, last_read_at: new Date().toISOString() },
+      { onConflict: "user_id,item_id,buyer_id" },
+    );
+  }, [supabase, itemId, buyerId, meId, messages.length]);
+
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages.length]);
@@ -103,6 +155,9 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
     setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
   }
 
+  // Index of last message sent by me (for "Sett" receipt)
+  const lastSentIdx = messages.reduce((acc, m, i) => (m.sender_id === meId ? i : acc), -1);
+
   return (
     <div className="flex flex-col rounded-2xl border border-stone-200 bg-white">
       <div
@@ -116,8 +171,13 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
               : "Si hei — spør om størrelse, henting eller tilstand."}
           </p>
         )}
-        {messages.map((m) => {
+        {messages.map((m, i) => {
           const mine = m.sender_id === meId;
+          const isLastSent = mine && i === lastSentIdx;
+          const isSeen =
+            isLastSent &&
+            otherLastRead !== null &&
+            new Date(m.created_at) <= new Date(otherLastRead);
           return (
             <div
               key={m.id}
@@ -133,7 +193,7 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
                 {m.body}
               </div>
               <span className="mt-0.5 px-1 text-[10px] text-stone-400">
-                {fmtTime(m.created_at)}
+                {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
               </span>
             </div>
           );

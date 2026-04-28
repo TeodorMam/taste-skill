@@ -35,6 +35,15 @@ function fmtBuyerTime(iso: string): string {
   return `${Math.floor(diffH / 24)}d`;
 }
 
+function fmtLastSeen(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (days === 0) return "Aktiv i dag";
+  if (days === 1) return "Aktiv i går";
+  if (days < 30) return `Aktiv for ${days} dager siden`;
+  return null;
+}
+
 function fmtLastEdited(iso: string): string {
   const d = new Date(iso);
   const now = new Date();
@@ -287,7 +296,9 @@ export default function ItemPageClient() {
               <Avatar profile={seller} size="md" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{profileDisplayName(seller, item.seller_id)}</p>
-                <p className="text-xs text-stone-500">Se profil og flere annonser →</p>
+                <p className="text-xs text-stone-500">
+                  {fmtLastSeen(seller?.last_seen_at) ?? "Se profil og flere annonser →"}
+                </p>
               </div>
               <SellerRating sellerId={item.seller_id} size="md" />
             </Link>

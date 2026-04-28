@@ -17,6 +17,15 @@ import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 import { ReviewList } from "@/components/ReviewList";
 import { Avatar } from "@/components/Avatar";
 
+function fmtLastSeen(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (days === 0) return "Aktiv i dag";
+  if (days === 1) return "Aktiv i går";
+  if (days < 30) return `Aktiv for ${days} dager siden`;
+  return null;
+}
+
 export default function SellerPage() {
   const params = useParams<{ id: string }>();
   const supabase = useMemo(() => createClient(), []);
@@ -105,6 +114,7 @@ export default function SellerPage() {
                   })}`
                 : "Ny selger"}
               {profile?.location ? ` · ${profile.location}` : ""}
+              {fmtLastSeen(profile?.last_seen_at) ? ` · ${fmtLastSeen(profile?.last_seen_at)}` : ""}
             </p>
           </div>
           {summary && summary.total > 0 && (
