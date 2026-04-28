@@ -95,6 +95,7 @@ export default function EditItemPage() {
         location,
         description: description.trim() || null,
         shipping,
+        updated_at: new Date().toISOString(),
       })
       .eq("id", params.id);
     setSaving(false);
