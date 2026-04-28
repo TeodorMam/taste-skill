@@ -63,6 +63,17 @@ export type Offer = {
   created_at: string;
 };
 
+export type Notification = {
+  id: string;
+  user_id: string;
+  type: "offer" | "favorite";
+  item_id: number | null;
+  from_user_id: string | null;
+  metadata: { amount?: number; item_title?: string };
+  read_at: string | null;
+  created_at: string;
+};
+
 export type Profile = {
   user_id: string;
   display_name: string | null;

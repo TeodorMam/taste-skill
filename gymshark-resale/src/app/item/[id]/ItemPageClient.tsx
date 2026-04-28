@@ -224,8 +224,20 @@ export default function ItemPageClient() {
     setSubmittingOffer(true);
     const { data, error: oErr } = await supabase.from("offers").insert({ item_id: item.id, buyer_id: userId, amount }).select("*").single();
     setSubmittingOffer(false);
-    if (!oErr && data) { setMyOffer(data as Offer); setOfferAmount(""); toast("Tilbud sendt"); }
-    else if (oErr) { toast(`Feil: ${oErr.message}`); }
+    if (!oErr && data) {
+      setMyOffer(data as Offer);
+      setOfferAmount("");
+      toast("Tilbud sendt");
+      if (item.seller_id && item.seller_id !== userId) {
+        supabase.from("notifications").insert({
+          user_id: item.seller_id,
+          type: "offer",
+          item_id: item.id,
+          from_user_id: userId,
+          metadata: { amount, item_title: item.title },
+        });
+      }
+    } else if (oErr) { toast(`Feil: ${oErr.message}`); }
   }
 
   async function withdrawOffer() {
@@ -263,7 +275,7 @@ export default function ItemPageClient() {
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold tracking-tight">{item.title}</h1>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                {!isSeller && <FavoriteButton itemId={item.id} currentPrice={item.price} variant="inline" />}
+                {!isSeller && <FavoriteButton itemId={item.id} currentPrice={item.price} sellerId={item.seller_id} itemTitle={item.title} variant="inline" />}
                 {shareUrl && <ShareButton url={shareUrl} title={item.title} />}
                 {isSeller && (
                   <Link href={`/item/${item.id}/edit`} className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500">
@@ -392,7 +404,9 @@ export default function ItemPageClient() {
                   {buyerOffers[activeBuyer].status === "pending" ? (
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-medium text-stone-500">Tilbud fra kjøper</p>
+                        <p className="text-xs font-medium text-stone-500">
+                          Tilbud fra {profileDisplayName(buyerProfiles[activeBuyer], activeBuyer)}
+                        </p>
                         <p className="text-base font-semibold">{formatPrice(buyerOffers[activeBuyer].amount)}</p>
                       </div>
                       <div className="flex gap-2">

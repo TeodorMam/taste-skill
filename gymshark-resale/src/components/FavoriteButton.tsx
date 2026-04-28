@@ -8,10 +8,14 @@ import { useToast } from "@/components/ToastProvider";
 export function FavoriteButton({
   itemId,
   currentPrice,
+  sellerId,
+  itemTitle,
   variant = "overlay",
 }: {
   itemId: string;
   currentPrice?: number;
+  sellerId?: string | null;
+  itemTitle?: string;
   variant?: "overlay" | "inline";
 }) {
   const router = useRouter();
@@ -64,8 +68,21 @@ export function FavoriteButton({
           item_id: itemId,
           ...(currentPrice !== undefined ? { price_when_favorited: currentPrice } : {}),
         });
-      if (!error) { setFavorited(true); toast("Lagt til i favoritter"); }
-      else toast(`Feil: ${error.message}`);
+      if (!error) {
+        setFavorited(true);
+        toast("Lagt til i favoritter");
+        if (sellerId && sellerId !== userId) {
+          supabase.from("notifications").insert({
+            user_id: sellerId,
+            type: "favorite",
+            item_id: itemId,
+            from_user_id: userId,
+            metadata: { item_title: itemTitle ?? "" },
+          });
+        }
+      } else {
+        toast(`Feil: ${error.message}`);
+      }
     }
     setBusy(false);
   }

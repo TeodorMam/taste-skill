@@ -9,13 +9,23 @@ export function useInboxDot(isLoggedIn: boolean): boolean {
   const [hasDot, setHasDot] = useState(false);
 
   useEffect(() => {
+    if (path === "/inbox") { setHasDot(false); return; }
     if (!isLoggedIn) return;
     const supabase = createClient();
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 1. Unread messages from others since last inbox visit
+      // 1. Unread notifications (offers + favorites)
+      const { data: unreadNotifs } = await supabase
+        .from("notifications")
+        .select("id")
+        .eq("user_id", user.id)
+        .is("read_at", null)
+        .limit(1);
+      if ((unreadNotifs?.length ?? 0) > 0) { setHasDot(true); return; }
+
+      // 2. Unread messages from others since last inbox visit
       const lastVisit = localStorage.getItem("lastInboxVisit");
       const since = lastVisit
         ? new Date(Number(lastVisit)).toISOString()
@@ -28,7 +38,7 @@ export function useInboxDot(isLoggedIn: boolean): boolean {
         .limit(1);
       if ((unread?.length ?? 0) > 0) { setHasDot(true); return; }
 
-      // 2. Items sold where user was chosen as the buyer and hasn't reviewed yet
+      // 3. Items sold to user that haven't been reviewed
       const { data: soldItems } = await supabase
         .from("items")
         .select("id")
@@ -36,7 +46,6 @@ export function useInboxDot(isLoggedIn: boolean): boolean {
         .eq("is_sold", true);
       const soldIds = (soldItems ?? []).map((i: { id: string }) => i.id);
       if (soldIds.length === 0) { setHasDot(false); return; }
-
       const { data: reviews } = await supabase
         .from("reviews")
         .select("item_id")
