@@ -225,6 +225,7 @@ export default function ItemPageClient() {
     const { data, error: oErr } = await supabase.from("offers").insert({ item_id: item.id, buyer_id: userId, amount }).select("*").single();
     setSubmittingOffer(false);
     if (!oErr && data) { setMyOffer(data as Offer); setOfferAmount(""); toast("Tilbud sendt"); }
+    else if (oErr) { toast(`Feil: ${oErr.message}`); }
   }
 
   async function withdrawOffer() {

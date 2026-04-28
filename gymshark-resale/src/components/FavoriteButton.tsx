@@ -55,6 +55,7 @@ export function FavoriteButton({
         .eq("user_id", userId)
         .eq("item_id", itemId);
       if (!error) { setFavorited(false); toast("Fjernet fra favoritter"); }
+      else toast(`Feil: ${error.message}`);
     } else {
       const { error } = await supabase
         .from("favorites")
@@ -64,6 +65,7 @@ export function FavoriteButton({
           ...(currentPrice !== undefined ? { price_when_favorited: currentPrice } : {}),
         });
       if (!error) { setFavorited(true); toast("Lagt til i favoritter"); }
+      else toast(`Feil: ${error.message}`);
     }
     setBusy(false);
   }
