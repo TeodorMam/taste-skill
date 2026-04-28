@@ -66,6 +66,7 @@ export default function InboxPage() {
       ]);
 
       // Handle notifications
+      if (notifRes.error) { setError(`Notifikasjoner: ${notifRes.error.message}`); }
       const notifs = (notifRes.data ?? []) as Notification[];
       setNotifications(notifs);
       const unread = new Set(notifs.filter((n) => !n.read_at).map((n) => n.id));
