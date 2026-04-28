@@ -94,6 +94,10 @@ export function ProfileEditor() {
   }
 
   if (!open) {
+    const missingName = !profile?.display_name;
+    const missingAvatar = !avatarUrl;
+    const isIncomplete = missingName || missingAvatar;
+
     return (
       <div className="rounded-2xl border border-stone-200 bg-white p-4">
         <div className="flex items-center gap-3">
@@ -111,6 +115,26 @@ export function ProfileEditor() {
             Rediger profil
           </button>
         </div>
+
+        {isIncomplete && (
+          <div className="mt-3 rounded-xl border border-[#5a6b32]/25 bg-[#5a6b32]/8 p-3">
+            <p className="text-xs font-semibold text-[#3d4a22]">Profilen din er ikke fullført</p>
+            <p className="mt-0.5 text-xs text-stone-600">
+              {missingName && missingAvatar
+                ? "Legg til navn og profilbilde — kjøpere stoler mer på selgere med fullstendig profil."
+                : missingName
+                  ? "Legg til et visningsnavn så kjøpere vet hvem de handler med."
+                  : "Legg til et profilbilde for å øke tilliten hos kjøperne."}
+            </p>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="mt-2 rounded-full bg-[#5a6b32] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#435022]"
+            >
+              Fullfør profil
+            </button>
+          </div>
+        )}
       </div>
     );
   }
