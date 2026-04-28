@@ -72,13 +72,13 @@ export function FavoriteButton({
         setFavorited(true);
         toast("Lagt til i favoritter");
         if (sellerId && sellerId !== userId) {
-          supabase.from("notifications").insert({
+          void supabase.from("notifications").insert({
             user_id: sellerId,
             type: "favorite",
             item_id: itemId,
             from_user_id: userId,
             metadata: { item_title: itemTitle ?? "" },
-          });
+          }).then(() => null);
         }
       } else {
         toast(`Feil: ${error.message}`);
