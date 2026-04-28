@@ -73,10 +73,11 @@ export default function InboxPage() {
 
       // Mark unread notifications as read
       if (unread.size > 0) {
-        supabase
+        void supabase
           .from("notifications")
           .update({ read_at: new Date().toISOString() })
-          .in("id", Array.from(unread));
+          .in("id", Array.from(unread))
+          .then(() => null);
       }
 
       // Fetch items + profiles for notifications
