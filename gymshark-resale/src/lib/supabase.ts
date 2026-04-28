@@ -67,7 +67,7 @@ export type Notification = {
   id: string;
   user_id: string;
   type: "offer" | "favorite";
-  item_id: number | null;
+  item_id: string | null;
   from_user_id: string | null;
   metadata: { amount?: number; item_title?: string };
   read_at: string | null;
@@ -100,12 +100,12 @@ export function averageRating(reviews: Review[]): { avg: number; total: number }
 
 export function profileDisplayName(
   profile: Profile | null | undefined,
-  sellerId: string | null | undefined,
+  userId: string | null | undefined,
 ): string {
   const name = profile?.display_name?.trim();
   if (name) return name;
-  const short = (sellerId ?? "").slice(0, 6);
-  return short ? `Selger #${short}` : "Selger";
+  const short = (userId ?? "").slice(0, 6);
+  return short ? `Bruker #${short}` : "Bruker";
 }
 
 export function profileInitials(

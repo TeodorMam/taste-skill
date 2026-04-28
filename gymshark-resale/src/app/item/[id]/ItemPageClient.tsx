@@ -172,10 +172,18 @@ export default function ItemPageClient() {
     if (!item || !isSeller) return;
     supabase.from("offers").select("*").eq("item_id", item.id)
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         const map: Record<string, Offer> = {};
         for (const o of (data ?? []) as Offer[]) if (!map[o.buyer_id]) map[o.buyer_id] = o;
         setBuyerOffers(map);
+        const offerBuyerIds = Object.keys(map);
+        if (offerBuyerIds.length === 0) return;
+        const { data: pData } = await supabase.from("profiles").select("*").in("user_id", offerBuyerIds);
+        setBuyerProfiles((prev) => {
+          const updated = { ...prev };
+          for (const p of (pData ?? []) as Profile[]) updated[p.user_id] = p;
+          return updated;
+        });
       });
   }, [item, isSeller, supabase]);
 
