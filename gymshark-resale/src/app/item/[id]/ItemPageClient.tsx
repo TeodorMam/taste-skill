@@ -178,6 +178,14 @@ export default function ItemPageClient() {
         setBuyerOffers(map);
         const offerBuyerIds = Object.keys(map);
         if (offerBuyerIds.length === 0) return;
+        // Merge offer-only buyers into the thread list so seller sees them
+        setBuyerThreads((prev) => {
+          const existing = new Set(prev);
+          const added = offerBuyerIds.filter((id) => !existing.has(id));
+          if (added.length === 0) return prev;
+          return [...prev, ...added];
+        });
+        setActiveBuyer((prev) => prev ?? offerBuyerIds[0] ?? null);
         const { data: pData } = await supabase.from("profiles").select("*").in("user_id", offerBuyerIds);
         setBuyerProfiles((prev) => {
           const updated = { ...prev };
@@ -236,6 +244,7 @@ export default function ItemPageClient() {
       setMyOffer(data as Offer);
       setOfferAmount("");
       toast("Tilbud sendt");
+      void supabase.rpc("notify_seller_of_offer", { p_item_id: String(item.id), p_amount: amount }).then(() => null);
     } else if (oErr) { toast(`Feil: ${oErr.message}`); }
   }
 

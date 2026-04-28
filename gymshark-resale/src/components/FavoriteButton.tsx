@@ -71,6 +71,7 @@ export function FavoriteButton({
       if (!error) {
         setFavorited(true);
         toast("Lagt til i favoritter");
+        void supabase.rpc("notify_seller_of_favorite", { p_item_id: String(itemId) }).then(() => null);
       } else {
         toast(`Feil: ${error.message}`);
       }
