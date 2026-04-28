@@ -151,6 +151,9 @@ export default function InboxPage() {
     <section className="space-y-5">
       <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
       {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      <p className="rounded bg-yellow-100 p-2 text-xs text-yellow-900">
+        Debug → bruker-ID: {userId?.slice(0, 8)} | varslinger hentet: {notifications.length}
+      </p>
 
       {/* Notifications: offers + favorites */}
       {notifications.length > 0 && (
