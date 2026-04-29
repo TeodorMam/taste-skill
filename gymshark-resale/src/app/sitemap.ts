@@ -1,9 +1,11 @@
 import { MetadataRoute } from "next";
-import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
+import { createBrowserClient } from "@supabase/ssr";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createClient(await cookies());
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+  );
 
   const { data: items } = await supabase
     .from("items")
@@ -13,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const itemUrls: MetadataRoute.Sitemap = (items ?? []).map((item) => ({
     url: `https://aktivbruk.com/item/${item.id}`,
     lastModified: item.updated_at ? new Date(item.updated_at) : new Date(),
-    changeFrequency: "weekly",
+    changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
 
