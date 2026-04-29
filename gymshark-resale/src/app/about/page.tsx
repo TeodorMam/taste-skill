@@ -58,7 +58,7 @@ export default function AboutPage() {
           <li className="flex gap-2">
             <span aria-hidden>✓</span>
             <span>
-              <strong>250+ merker.</strong> Fra Gymshark til Alphalete, NVGTN,
+              <strong>1000+ merker.</strong> Fra Gymshark til Alphalete, NVGTN,
               AYBL, Breathe Divinity, Ekkovision — de som er vanskelige å finne
               brukt andre steder.
             </span>
