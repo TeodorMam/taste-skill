@@ -270,7 +270,7 @@ function OffersTab({
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm">
                   <span className="font-medium text-stone-900">{name}</span>
-                  <span className="text-stone-700"> bød </span>
+                  <span className="text-stone-700"> la inn et bud på </span>
                   <span className="font-semibold text-stone-900">{formatPrice(o.amount)}</span>
                   {item && <span className="text-stone-700"> på «{item.title}»</span>}
                 </p>
@@ -327,7 +327,7 @@ function FavoritesTab({
                   <span className="font-medium text-stone-900">{name}</span>
                   <span className="text-stone-700"> la til </span>
                   {item && <span className="font-medium text-stone-900">«{item.title}»</span>}
-                  <span className="text-stone-700"> i favoritter</span>
+                  <span className="text-stone-700"> i favorittene sine</span>
                 </p>
                 <p className="mt-0.5 text-xs text-stone-500">{fmtTime(f.created_at)}</p>
               </div>
