@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Om Aktivbruk — bruktbørs for treningsklær",
+  title: "Om Aktivbruk — bruktmarked for treningsklær",
   description:
-    "Aktivbruk er bruktbørsen for treningsklær i Norge. Gymshark, Nike, Lululemon, Alphalete og flere hundre andre merker.",
+    "Aktivbruk er bruktmarkedet for treningsklær i Norge. Gymshark, Nike, Lululemon, Alphalete og flere hundre andre merker.",
 };
 
 export default function AboutPage() {
@@ -12,7 +12,7 @@ export default function AboutPage() {
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Om Aktivbruk</h1>
         <p className="mt-2 text-sm text-stone-600">
-          En ren, lokal bruktbørs bygget for treningsklær. Ingen støy, ingen
+          En ren, lokal bruktmarked bygget for treningsklær. Ingen støy, ingen
           algoritme — bare varer som faktisk passer.
         </p>
       </div>

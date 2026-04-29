@@ -9,11 +9,11 @@ import { ClientProviders } from "@/components/ClientProviders";
 import { SearchButton } from "@/components/SearchButton";
 
 export const metadata: Metadata = {
-  title: "Aktivbruk — bruktbørs for treningsklær",
+  title: "Aktivbruk — bruktmarked for treningsklær",
   description:
     "Kjøp og selg brukte treningsklær i Norge. Gymshark, Nike, Lululemon, Alphalete og mer.",
   openGraph: {
-    title: "Aktivbruk — bruktbørs for treningsklær",
+    title: "Aktivbruk — bruktmarked for treningsklær",
     description:
       "Kjøp og selg brukte treningsklær i Norge. Gymshark, Nike, Lululemon, Alphalete og mer.",
     type: "website",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aktivbruk — bruktbørs for treningsklær",
+    title: "Aktivbruk — bruktmarked for treningsklær",
     description:
       "Kjøp og selg brukte treningsklær i Norge.",
   },
@@ -72,7 +72,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <footer className="mx-auto max-w-3xl px-4 pb-24 pt-4 text-xs text-stone-500 sm:pb-10">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p>
-              Aktivbruk — bruktbørs for treningsklær. Et uavhengig prosjekt, ikke
+              Aktivbruk — bruktmarked for treningsklær. Et uavhengig prosjekt, ikke
               tilknyttet noen merkevare.
             </p>
             <div className="flex items-center gap-4">
