@@ -56,7 +56,6 @@ export default function InboxPage() {
   const [profilesMap, setProfilesMap] = useState<Record<string, Profile>>({});
   const [reviewedItemIds, setReviewedItemIds] = useState<Set<string>>(new Set());
   const [lastVisit, setLastVisit] = useState<number>(0);
-  const [debug, setDebug] = useState<string>("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
@@ -70,7 +69,7 @@ export default function InboxPage() {
 
     (async () => {
       // 1. Items I am selling
-      const { data: myItemsData, error: itemsErr } = await supabase
+      const { data: myItemsData } = await supabase
         .from("items")
         .select("*")
         .eq("seller_id", userId);
@@ -99,10 +98,6 @@ export default function InboxPage() {
           : Promise.resolve({ data: [] as FavoriteRow[], error: null }),
         supabase.from("messages").select("*").order("created_at", { ascending: false }),
       ]);
-
-      setDebug(
-        `userId=${userId} | items=${myItems.length}${itemsErr ? `(err:${itemsErr.message})` : ""} | itemIds=[${myItemIds.slice(0, 5).join(",")}${myItemIds.length > 5 ? "…" : ""}] | offers=${offersRes.data?.length ?? 0}${offersRes.error ? `(err:${offersRes.error.message})` : ""} | favs=${favoritesRes.data?.length ?? 0}${favoritesRes.error ? `(err:${favoritesRes.error.message})` : ""}`,
-      );
 
       if (offersRes.error) setError(`Tilbud: ${offersRes.error.message}`);
       if (favoritesRes.error) setError(`Favoritter: ${favoritesRes.error.message}`);
@@ -192,7 +187,6 @@ export default function InboxPage() {
   return (
     <section className="space-y-4">
       <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
-      {debug && <pre className="overflow-x-auto rounded-lg bg-yellow-50 p-2 text-[10px] text-yellow-900">{debug}</pre>}
       {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       <div className="flex gap-1 border-b border-stone-200">
