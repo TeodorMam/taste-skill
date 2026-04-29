@@ -99,29 +99,42 @@ export default function ItemPageClient() {
 
   useEffect(() => {
     if (!item || !isSeller) return;
-    supabase.from("messages").select("buyer_id, created_at").eq("item_id", item.id)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        const seen = new Set<string>();
-        const ordered: string[] = [];
-        const lastMsg: Record<string, string> = {};
-        for (const row of (data ?? []) as { buyer_id: string; created_at: string }[]) {
-          if (!seen.has(row.buyer_id)) {
-            seen.add(row.buyer_id);
-            ordered.push(row.buyer_id);
-            lastMsg[row.buyer_id] = row.created_at;
-          }
+    (async () => {
+      const [msgRes, offersRes] = await Promise.all([
+        supabase.from("messages").select("buyer_id, created_at").eq("item_id", item.id).order("created_at", { ascending: false }),
+        supabase.from("offers").select("*").eq("item_id", item.id).order("created_at", { ascending: false }),
+      ]);
+
+      // Build messages metadata
+      const seen = new Set<string>();
+      const ordered: string[] = [];
+      const lastMsg: Record<string, string> = {};
+      for (const row of (msgRes.data ?? []) as { buyer_id: string; created_at: string }[]) {
+        if (!seen.has(row.buyer_id)) {
+          seen.add(row.buyer_id);
+          ordered.push(row.buyer_id);
+          lastMsg[row.buyer_id] = row.created_at;
         }
-        setBuyerThreads(ordered);
-        setBuyerLastMsg(lastMsg);
-        setActiveBuyer((prev) => prev ?? ordered[0] ?? null);
-        if (ordered.length === 0) return;
-        supabase.from("profiles").select("*").in("user_id", ordered).then(({ data: pData }) => {
-          const map: Record<string, Profile> = {};
-          for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
-          setBuyerProfiles(map);
-        });
-      });
+      }
+      setBuyerLastMsg(lastMsg);
+
+      // Build offers map
+      const offerMap: Record<string, Offer> = {};
+      for (const o of (offersRes.data ?? []) as Offer[]) if (!offerMap[o.buyer_id]) offerMap[o.buyer_id] = o;
+      setBuyerOffers(offerMap);
+
+      // Combined buyer list: message-senders first, then offer-only buyers
+      const offerOnlyBuyers = Object.keys(offerMap).filter((id) => !seen.has(id));
+      const allBuyers = [...ordered, ...offerOnlyBuyers];
+      setBuyerThreads(allBuyers);
+      setActiveBuyer((prev) => prev ?? allBuyers[0] ?? null);
+
+      if (allBuyers.length === 0) return;
+      const { data: pData } = await supabase.from("profiles").select("*").in("user_id", allBuyers);
+      const map: Record<string, Profile> = {};
+      for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
+      setBuyerProfiles(map);
+    })();
   }, [item, isSeller, supabase]);
 
   useEffect(() => {
@@ -168,32 +181,6 @@ export default function ItemPageClient() {
       .then(({ data }) => setMyOffer((data as Offer | null) ?? null));
   }, [item, userId, isSeller, supabase]);
 
-  useEffect(() => {
-    if (!item || !isSeller) return;
-    supabase.from("offers").select("*").eq("item_id", item.id)
-      .order("created_at", { ascending: false })
-      .then(async ({ data }) => {
-        const map: Record<string, Offer> = {};
-        for (const o of (data ?? []) as Offer[]) if (!map[o.buyer_id]) map[o.buyer_id] = o;
-        setBuyerOffers(map);
-        const offerBuyerIds = Object.keys(map);
-        if (offerBuyerIds.length === 0) return;
-        // Merge offer-only buyers into the thread list so seller sees them
-        setBuyerThreads((prev) => {
-          const existing = new Set(prev);
-          const added = offerBuyerIds.filter((id) => !existing.has(id));
-          if (added.length === 0) return prev;
-          return [...prev, ...added];
-        });
-        setActiveBuyer((prev) => prev ?? offerBuyerIds[0] ?? null);
-        const { data: pData } = await supabase.from("profiles").select("*").in("user_id", offerBuyerIds);
-        setBuyerProfiles((prev) => {
-          const updated = { ...prev };
-          for (const p of (pData ?? []) as Profile[]) updated[p.user_id] = p;
-          return updated;
-        });
-      });
-  }, [item, isSeller, supabase]);
 
   useEffect(() => {
     if (!item?.id || !item.is_sold) return;
