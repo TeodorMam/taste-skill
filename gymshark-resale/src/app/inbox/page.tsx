@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import {
   type Item,
@@ -19,18 +20,23 @@ type FavoriteRow = {
   created_at: string;
 };
 
-type Tab = "innboks" | "favoritter";
+type PendingOffer = {
+  id: string;
+  amount: number;
+  buyerName: string;
+  createdAt: string;
+};
 
 type ActivityEntry = {
   item: Item;
   latestAt: string;
-  previewText: string;
-  kind: "offer" | "message";
-  offerAmount?: number;
-  offerSenderName?: string;
+  messagePreview?: string;
+  pendingOffer?: PendingOffer;
   isUnread: boolean;
   contactCount: number;
 };
+
+type Tab = "innboks" | "favoritter";
 
 function fmtTime(iso: string): string {
   const d = new Date(iso);
@@ -113,12 +119,7 @@ export default function InboxPage() {
         for (const m of byThread.values()) {
           const item = iMap[String(m.item_id)];
           if (!item) continue;
-          rows.push({
-            item,
-            lastMessage: m,
-            buyerId: m.buyer_id,
-            role: item.seller_id === userId ? "seller" : "buyer",
-          });
+          rows.push({ item, lastMessage: m, buyerId: m.buyer_id, role: item.seller_id === userId ? "seller" : "buyer" });
         }
         setThreads(rows);
       }
@@ -144,6 +145,11 @@ export default function InboxPage() {
     })();
   }, [userId, supabase]);
 
+  const handleOfferAction = async (offerId: string, action: "accepted" | "declined") => {
+    await supabase.from("offers").update({ status: action }).eq("id", offerId);
+    setOffers((prev) => prev.map((o) => (o.id === offerId ? { ...o, status: action } : o)));
+  };
+
   if (userId === undefined) return <p className="py-6 text-sm text-stone-500">Laster…</p>;
   if (userId === null) {
     return (
@@ -157,53 +163,71 @@ export default function InboxPage() {
     );
   }
 
-  // Build one entry per item — combining offers + messages
+  // Build one ActivityEntry per item
   const activityByItem: Record<string, ActivityEntry> = {};
   const buyersByItem: Record<string, Set<string>> = {};
 
-  const touch = (
-    key: string, item: Item, at: string, preview: string,
-    kind: "offer" | "message", unread: boolean, personId: string,
-    offerAmount?: number, offerSenderName?: string,
-  ) => {
-    if (!buyersByItem[key]) buyersByItem[key] = new Set();
-    buyersByItem[key].add(personId);
-    if (!activityByItem[key] || at > activityByItem[key].latestAt) {
-      activityByItem[key] = { item, latestAt: at, previewText: preview, kind, offerAmount, offerSenderName, isUnread: unread, contactCount: 0 };
+  // Best pending offer per item (most recent)
+  const pendingOfferByItem: Record<string, PendingOffer> = {};
+  for (const o of offers) {
+    if (o.status !== "pending") continue;
+    const key = String(o.item_id);
+    if (!pendingOfferByItem[key] || o.created_at > pendingOfferByItem[key].createdAt) {
+      const name = profileDisplayName(profilesMap[o.buyer_id], o.buyer_id);
+      pendingOfferByItem[key] = { id: o.id, amount: o.amount, buyerName: name, createdAt: o.created_at };
     }
-    if (unread) activityByItem[key].isUnread = true;
-  };
+  }
 
+  // Seed from all offers (including non-pending, for latestAt tracking)
   for (const o of offers) {
     const key = String(o.item_id);
     const item = itemsMap[key];
     if (!item) continue;
-    const name = profileDisplayName(profilesMap[o.buyer_id], o.buyer_id);
-    touch(key, item, o.created_at, `${name} la inn et bud`, "offer", new Date(o.created_at).getTime() > lastVisit, o.buyer_id, o.amount, name);
+    if (!buyersByItem[key]) buyersByItem[key] = new Set();
+    buyersByItem[key].add(o.buyer_id);
+    const isUnread = new Date(o.created_at).getTime() > lastVisit;
+    if (!activityByItem[key] || o.created_at > activityByItem[key].latestAt) {
+      activityByItem[key] = { item, latestAt: o.created_at, isUnread, contactCount: 0 };
+    }
+    if (isUnread) activityByItem[key].isUnread = true;
   }
 
+  // Overlay message previews
   for (const t of threads) {
     if (t.role === "seller") {
       const key = String(t.item.id);
+      const item = itemsMap[key] ?? t.item;
+      if (!buyersByItem[key]) buyersByItem[key] = new Set();
+      buyersByItem[key].add(t.buyerId);
+      const isOther = t.lastMessage.sender_id !== userId;
       const name = profileDisplayName(profilesMap[t.buyerId], t.buyerId);
-      const isOther = t.lastMessage.sender_id !== userId;
       const preview = isOther ? `${name}: ${t.lastMessage.body}` : `Du: ${t.lastMessage.body}`;
-      touch(key, t.item, t.lastMessage.created_at, preview, "message", isOther && new Date(t.lastMessage.created_at).getTime() > lastVisit, t.buyerId);
+      const isUnread = isOther && new Date(t.lastMessage.created_at).getTime() > lastVisit;
+      if (!activityByItem[key]) activityByItem[key] = { item, latestAt: t.lastMessage.created_at, isUnread, contactCount: 0 };
+      // Always update messagePreview to the latest message
+      if (!activityByItem[key].messagePreview || t.lastMessage.created_at > (activityByItem[key].latestAt)) {
+        activityByItem[key].messagePreview = preview;
+      }
+      if (t.lastMessage.created_at > activityByItem[key].latestAt) activityByItem[key].latestAt = t.lastMessage.created_at;
+      if (isUnread) activityByItem[key].isUnread = true;
     } else {
+      // Buyer side
       const key = `buyer:${t.item.id}`;
-      const sellerName = t.item.seller_id ? profileDisplayName(profilesMap[t.item.seller_id], t.item.seller_id) : "Selger";
       const isOther = t.lastMessage.sender_id !== userId;
+      const sellerName = t.item.seller_id ? profileDisplayName(profilesMap[t.item.seller_id], t.item.seller_id) : "Selger";
       const preview = isOther ? `${sellerName}: ${t.lastMessage.body}` : `Du: ${t.lastMessage.body}`;
       if (!activityByItem[key] || t.lastMessage.created_at > activityByItem[key].latestAt) {
         activityByItem[key] = {
-          item: t.item, latestAt: t.lastMessage.created_at, previewText: preview,
-          kind: "message", isUnread: isOther && new Date(t.lastMessage.created_at).getTime() > lastVisit, contactCount: 1,
+          item: t.item, latestAt: t.lastMessage.created_at, messagePreview: preview,
+          isUnread: isOther && new Date(t.lastMessage.created_at).getTime() > lastVisit, contactCount: 1,
         };
       }
     }
   }
 
+  // Attach pending offers + contact counts
   for (const key of Object.keys(activityByItem)) {
+    activityByItem[key].pendingOffer = pendingOfferByItem[key];
     activityByItem[key].contactCount = buyersByItem[key]?.size ?? activityByItem[key].contactCount;
   }
 
@@ -224,7 +248,7 @@ export default function InboxPage() {
         <TabButton label="Favoritter" badge={newFavorites} active={tab === "favoritter"} onClick={() => setTab("favoritter")} />
       </div>
 
-      {tab === "innboks" && <ActivityTab activities={activityList} />}
+      {tab === "innboks" && <ActivityTab activities={activityList} onOfferAction={handleOfferAction} />}
       {tab === "favoritter" && (
         <FavoritesTab favorites={favorites} items={itemsMap} profiles={profilesMap} lastVisit={lastVisit} />
       )}
@@ -250,7 +274,16 @@ function TabButton({ label, badge, active, onClick }: { label: string; badge: nu
   );
 }
 
-function ActivityTab({ activities }: { activities: ActivityEntry[] }) {
+function ActivityTab({
+  activities,
+  onOfferAction,
+}: {
+  activities: ActivityEntry[];
+  onOfferAction: (id: string, action: "accepted" | "declined") => Promise<void>;
+}) {
+  const router = useRouter();
+  const [acting, setActing] = useState<string | null>(null);
+
   if (activities.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
@@ -258,13 +291,19 @@ function ActivityTab({ activities }: { activities: ActivityEntry[] }) {
       </div>
     );
   }
+
   return (
     <ul className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
-      {activities.map(({ item, latestAt, previewText, kind, offerAmount, offerSenderName, isUnread, contactCount }) => {
+      {activities.map(({ item, latestAt, messagePreview, pendingOffer, isUnread, contactCount }) => {
         const cover = itemImages(item)[0];
         return (
-          <li key={item.id} className={isUnread ? "bg-[#5a6b32]/5" : ""}>
-            <Link href={`/item/${item.id}`} className="flex items-center gap-3 p-3 hover:bg-stone-50">
+          <li
+            key={item.id}
+            className={`cursor-pointer ${isUnread ? "bg-[#5a6b32]/5" : ""} hover:bg-stone-50`}
+            onClick={() => router.push(`/item/${item.id}`)}
+          >
+            <div className="flex items-start gap-3 p-3">
+              {/* Thumbnail */}
               <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-stone-100">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -274,34 +313,58 @@ function ActivityTab({ activities }: { activities: ActivityEntry[] }) {
                 )}
                 {item.is_sold && (
                   <div className="absolute inset-0 flex items-end justify-center pb-1">
-                    <span className="rounded bg-stone-900/80 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
-                      Solgt
-                    </span>
+                    <span className="rounded bg-stone-900/80 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">Solgt</span>
                   </div>
                 )}
               </div>
+
+              {/* Content */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
                   <p className="truncate text-sm font-semibold text-stone-900">{item.title}</p>
                   <span className="shrink-0 text-[10px] text-stone-400">{fmtTime(latestAt)}</span>
                 </div>
-                {kind === "offer" ? (
-                  <div className="mt-1 flex items-center gap-2">
+
+                {/* Message preview */}
+                {messagePreview && (
+                  <p className="mt-0.5 line-clamp-1 text-xs text-stone-500">{messagePreview}</p>
+                )}
+
+                {/* Pending offer — always shown if exists, with inline action buttons */}
+                {pendingOffer && (
+                  <div
+                    className="mt-1.5 flex flex-wrap items-center gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <span className="inline-flex items-center rounded-full bg-[#5a6b32] px-2 py-0.5 text-[11px] font-semibold text-white">
                       Bud
                     </span>
-                    <span className="text-sm font-semibold text-stone-900">{formatPrice(offerAmount!)}</span>
-                    <span className="truncate text-xs text-stone-400">fra {offerSenderName}</span>
+                    <span className="text-sm font-bold text-stone-900">{formatPrice(pendingOffer.amount)}</span>
+                    <span className="text-xs text-stone-400">fra {pendingOffer.buyerName}</span>
+                    <button
+                      disabled={acting === pendingOffer.id}
+                      onClick={async () => { setActing(pendingOffer.id); await onOfferAction(pendingOffer.id, "accepted"); setActing(null); }}
+                      className="rounded-full bg-[#5a6b32] px-3 py-0.5 text-xs font-semibold text-white hover:bg-[#4a5828] disabled:opacity-50"
+                    >
+                      Godta
+                    </button>
+                    <button
+                      disabled={acting === pendingOffer.id}
+                      onClick={async () => { setActing(pendingOffer.id); await onOfferAction(pendingOffer.id, "declined"); setActing(null); }}
+                      className="rounded-full border border-stone-300 px-3 py-0.5 text-xs font-semibold text-stone-600 hover:bg-stone-100 disabled:opacity-50"
+                    >
+                      Avslå
+                    </button>
                   </div>
-                ) : (
-                  <p className="mt-0.5 line-clamp-1 text-xs text-stone-500">{previewText}</p>
                 )}
+
                 {contactCount > 1 && (
                   <p className="mt-0.5 text-[10px] font-medium text-[#5a6b32]">{contactCount} interesserte</p>
                 )}
               </div>
-              {isUnread && <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />}
-            </Link>
+
+              {isUnread && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />}
+            </div>
           </li>
         );
       })}
