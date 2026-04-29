@@ -26,8 +26,9 @@ export default function AboutPage() {
             Aktivbruk ble startet av Teodor Mamelund, 16 år.
           </p>
           <p>
-            Som aktiv utøver — med maraton på 3:03 som 15-åring og erfaring fra
-            ultraløp over 80 km — har jeg brukt mye tid på trening. Og på utstyr.
+            Som aktiv utøver — med maraton på 3:03 som 15-åring, erfaring fra
+            ultraløp over 80 km og styrketrening — har jeg brukt mye tid på
+            trening. Og på utstyr.
           </p>
           <p>
             Jeg oppdaget raskt hvor vanskelig det er å finne gode treningsklær

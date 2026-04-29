@@ -141,7 +141,7 @@ export function FirstListingSuccess({
                   Hold øye med innboksen
                 </span>
                 <span className="block text-xs text-stone-500">
-                  Raske svar = raske salg
+                  Raske svar = raske salg — du får også e-postvarsler
                 </span>
               </span>
             </span>
