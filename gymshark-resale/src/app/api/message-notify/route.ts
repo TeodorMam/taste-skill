@@ -47,12 +47,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad json" }, { status: 400 });
   }
 
+  console.log("[message-notify] payload type:", payload.type, "table:", payload.table);
   if (payload.type !== "INSERT" || payload.table !== "messages") {
     return NextResponse.json({ ok: true, skipped: true });
   }
 
   const msg = payload.record;
-  const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+  console.log("[message-notify] msg item_id:", msg.item_id, "sender:", msg.sender_id);
+  const admin = createClient(SUPABASE_URL!, SERVICE_ROLE_KEY!, {
     auth: { persistSession: false },
   });
 
@@ -62,18 +64,21 @@ export async function POST(req: Request) {
     .eq("id", msg.item_id)
     .maybeSingle();
 
+  console.log("[message-notify] item:", item?.id, "seller:", item?.seller_id);
   if (!item || !item.seller_id) {
     return NextResponse.json({ ok: true, skipped: "item or seller missing" });
   }
 
   const senderIsSeller = msg.sender_id === item.seller_id;
   const recipientId = senderIsSeller ? msg.buyer_id : item.seller_id;
+  console.log("[message-notify] recipient:", recipientId, "senderIsSeller:", senderIsSeller);
   if (recipientId === msg.sender_id) {
     return NextResponse.json({ ok: true, skipped: "self message" });
   }
 
   const { data: recipientData } = await admin.auth.admin.getUserById(recipientId);
   const recipientEmail = recipientData.user?.email;
+  console.log("[message-notify] recipientEmail:", recipientEmail ? "found" : "missing");
   if (!recipientEmail) {
     return NextResponse.json({ ok: true, skipped: "no recipient email" });
   }
