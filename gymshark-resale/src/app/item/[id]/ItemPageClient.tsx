@@ -80,10 +80,19 @@ export default function ItemPageClient() {
   const [similar, setSimilar] = useState<Item[]>([]);
   const [similarSellers, setSimilarSellers] = useState<Record<string, Profile>>({});
   const [seller, setSeller] = useState<Profile | null>(null);
+  const [sellerChargesEnabled, setSellerChargesEnabled] = useState(false);
   const [shareUrl, setShareUrl] = useState<string>("");
+  const [buyingNow, setBuyingNow] = useState(false);
+  const [payingOffer, setPayingOffer] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"success" | "cancelled" | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") setShareUrl(window.location.href);
+    if (typeof window !== "undefined") {
+      setShareUrl(window.location.href);
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("payment") === "success") setPaymentStatus("success");
+      else if (sp.get("payment") === "cancelled") setPaymentStatus("cancelled");
+    }
   }, [params.id]);
 
   useEffect(() => {
@@ -141,7 +150,11 @@ export default function ItemPageClient() {
   useEffect(() => {
     if (!item?.seller_id) { setSeller(null); return; }
     supabase.from("profiles").select("*").eq("user_id", item.seller_id).maybeSingle()
-      .then(({ data }) => setSeller((data ?? null) as Profile | null));
+      .then(({ data }) => {
+        const p = (data ?? null) as Profile | null;
+        setSeller(p);
+        setSellerChargesEnabled(p?.stripe_charges_enabled ?? false);
+      });
   }, [item?.seller_id, supabase]);
 
   useEffect(() => {
@@ -236,6 +249,23 @@ export default function ItemPageClient() {
     } else if (oErr) { toast(`Feil: ${oErr.message}`); }
   }
 
+  async function handleCheckout(offerId?: string) {
+    const setter = offerId ? setPayingOffer : setBuyingNow;
+    setter(true);
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ item_id: String(item!.id), ...(offerId ? { offer_id: offerId } : {}) }),
+    });
+    const json = await res.json() as { url?: string; error?: string };
+    if (json.url) {
+      window.location.href = json.url;
+    } else {
+      toast(json.error ?? "Noe gikk galt");
+      setter(false);
+    }
+  }
+
   async function withdrawOffer() {
     if (!myOffer) return;
     await supabase.from("offers").delete().eq("id", myOffer.id);
@@ -253,6 +283,19 @@ export default function ItemPageClient() {
   return (
     <article className="space-y-8">
       <FirstListingSuccess itemId={item.id} itemTitle={item.title} shareUrl={shareUrl} isSeller={isSeller} />
+
+      {paymentStatus === "success" && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <p className="font-semibold text-emerald-800">✓ Betaling gjennomført!</p>
+          <p className="mt-1 text-sm text-emerald-700">Du vil motta en bekreftelse på e-post. Kontakt selger i chatten for å avtale levering.</p>
+        </div>
+      )}
+      {paymentStatus === "cancelled" && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          Betalingen ble avbrutt — varen er fortsatt tilgjengelig.
+        </div>
+      )}
+
       <Link href="/browse" className="text-sm text-stone-500 hover:text-black">← Tilbake</Link>
 
       <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
@@ -327,6 +370,20 @@ export default function ItemPageClient() {
             </div>
           )}
 
+          {/* Kjøp nå — shown to logged-in buyers when seller has Stripe enabled */}
+          {userId && !isSeller && !item.is_sold && sellerChargesEnabled && (
+            <div className="space-y-1">
+              <button
+                onClick={() => handleCheckout()}
+                disabled={buyingNow}
+                className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+              >
+                {buyingNow ? "Sender til betaling…" : `Kjøp nå — ${formatPrice(item.price)}`}
+              </button>
+              <p className="text-center text-[11px] text-stone-400">Sikker betaling via Stripe · 7% plattformavgift inkludert</p>
+            </div>
+          )}
+
           {userId === null && (
             <Link href={`/login?next=/item/${item.id}`} className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black">
               Logg inn for å chatte med selger
@@ -358,12 +415,24 @@ export default function ItemPageClient() {
                   <button onClick={withdrawOffer} className="text-xs text-stone-400 hover:text-red-600 underline underline-offset-2">Trekk tilbake</button>
                 </div>
               ) : myOffer.status === "accepted" ? (
-                <div className="flex items-center gap-2 text-emerald-700">
-                  <span className="text-lg">✓</span>
-                  <div>
-                    <p className="text-sm font-semibold">Tilbud godtatt!</p>
-                    <p className="text-xs text-emerald-600">Selger godtok {formatPrice(myOffer.amount)} — avtal betaling i chatten.</p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-emerald-700">
+                    <span className="text-lg">✓</span>
+                    <div>
+                      <p className="text-sm font-semibold">Tilbud godtatt!</p>
+                      <p className="text-xs text-emerald-600">Selger godtok {formatPrice(myOffer.amount)}</p>
+                    </div>
                   </div>
+                  {sellerChargesEnabled && (
+                    <button
+                      onClick={() => handleCheckout(myOffer.id)}
+                      disabled={payingOffer}
+                      className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+                    >
+                      {payingOffer ? "Sender til betaling…" : `Betal nå — ${formatPrice(myOffer.amount)}`}
+                    </button>
+                  )}
+                  <p className="text-center text-[11px] text-stone-400">Sikker betaling via Stripe · 7% plattformavgift inkludert</p>
                 </div>
               ) : (
                 <div>
