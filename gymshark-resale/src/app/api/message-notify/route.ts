@@ -27,12 +27,16 @@ type WebhookPayload = {
 };
 
 export async function POST(req: Request) {
+  const providedSecret = req.headers.get("x-webhook-secret");
+  console.log("[message-notify] called, secret match:", providedSecret === WEBHOOK_SECRET, "has resend:", !!RESEND_API_KEY, "has service key:", !!SERVICE_ROLE_KEY);
+
   if (!WEBHOOK_SECRET || !SERVICE_ROLE_KEY || !SUPABASE_URL || !RESEND_API_KEY) {
+    console.log("[message-notify] missing env vars");
     return NextResponse.json({ error: "server not configured" }, { status: 500 });
   }
 
-  const providedSecret = req.headers.get("x-webhook-secret");
   if (providedSecret !== WEBHOOK_SECRET) {
+    console.log("[message-notify] unauthorized - secret mismatch");
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
