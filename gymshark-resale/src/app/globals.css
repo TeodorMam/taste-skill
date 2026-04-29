@@ -13,9 +13,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Prevent iOS Safari from auto-zooming on input focus */
+/* Prevent iOS Safari from auto-zooming on input focus (requires !important to override Tailwind text-sm) */
 input, textarea, select {
-  font-size: 16px;
+  font-size: 16px !important;
 }
 
 @keyframes toast-in {
