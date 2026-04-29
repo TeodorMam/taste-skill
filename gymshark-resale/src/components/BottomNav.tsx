@@ -8,19 +8,13 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
   const { inbox, varsler } = useNavCounts(isLoggedIn);
 
-  const items = isLoggedIn
-    ? [
-        { href: "/browse", label: "Utforsk", icon: SearchIcon, badge: 0 },
-        { href: "/varsler", label: "Varsler", icon: BellIcon, badge: varsler },
-        { href: "/inbox", label: "Innboks", icon: InboxIcon, badge: inbox },
-        { href: "/post", label: "Selg", icon: PlusIcon, badge: 0 },
-        { href: "/profil", label: "Profil", icon: UserIcon, badge: 0 },
-      ]
-    : [
-        { href: "/browse", label: "Utforsk", icon: SearchIcon, badge: 0 },
-        { href: "/post", label: "Selg", icon: PlusIcon, badge: 0 },
-        { href: "/login", label: "Logg inn", icon: UserIcon, badge: 0 },
-      ];
+  const items = [
+    { href: "/browse", label: "Utforsk", icon: SearchIcon, badge: 0 },
+    { href: isLoggedIn ? "/varsler" : `/login?next=${encodeURIComponent("/varsler")}`, label: "Varsler", icon: BellIcon, badge: varsler },
+    { href: isLoggedIn ? "/inbox" : `/login?next=${encodeURIComponent("/inbox")}`, label: "Innboks", icon: InboxIcon, badge: inbox },
+    { href: isLoggedIn ? "/post" : `/login?next=${encodeURIComponent("/post")}`, label: "Selg", icon: PlusIcon, badge: 0 },
+    { href: isLoggedIn ? "/profil" : `/login?next=${encodeURIComponent("/profil")}`, label: "Profil", icon: UserIcon, badge: 0 },
+  ];
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-stone-200 bg-white/95 backdrop-blur sm:hidden">

@@ -8,6 +8,10 @@ import { type Profile } from "@/lib/supabase";
 import { useNavCounts } from "@/hooks/useNavCounts";
 import { Avatar } from "@/components/Avatar";
 
+function authHref(isLoggedIn: boolean, href: string) {
+  return isLoggedIn ? href : `/login?next=${encodeURIComponent(href)}`;
+}
+
 export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
   const { inbox, varsler } = useNavCounts(isLoggedIn);
@@ -37,32 +41,21 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
       <Link href="/browse" className={textCls("/browse")}>
         Utforsk
       </Link>
-      {isLoggedIn ? (
-        <>
-          <Link href="/varsler" className={`relative ${textCls("/varsler")}`}>
-            Varsler
-            {varsler > 0 && <Badge count={varsler} />}
-          </Link>
-          <Link href="/inbox" className={`relative ${textCls("/inbox")}`}>
-            Innboks
-            {inbox > 0 && <Badge count={inbox} />}
-          </Link>
-          <Link href="/post" className={textCls("/post")}>
-            Selg
-          </Link>
-          <Link href="/profil" className={`flex items-center gap-2 ${textCls("/profil")}`}>
-            Min profil
-            <Avatar profile={profile} size="sm" />
-          </Link>
-        </>
-      ) : (
-        <Link
-          href="/login"
-          className="rounded-full bg-stone-900 px-3 py-1.5 font-medium text-stone-50 hover:bg-black"
-        >
-          Logg inn
-        </Link>
-      )}
+      <Link href={authHref(isLoggedIn, "/varsler")} className={`relative ${textCls("/varsler")}`}>
+        Varsler
+        {varsler > 0 && <Badge count={varsler} />}
+      </Link>
+      <Link href={authHref(isLoggedIn, "/inbox")} className={`relative ${textCls("/inbox")}`}>
+        Innboks
+        {inbox > 0 && <Badge count={inbox} />}
+      </Link>
+      <Link href={authHref(isLoggedIn, "/post")} className={textCls("/post")}>
+        Selg
+      </Link>
+      <Link href={authHref(isLoggedIn, "/profil")} className={`flex items-center gap-2 ${textCls("/profil")}`}>
+        Min profil
+        {isLoggedIn && <Avatar profile={profile} size="sm" />}
+      </Link>
     </nav>
   );
 }
