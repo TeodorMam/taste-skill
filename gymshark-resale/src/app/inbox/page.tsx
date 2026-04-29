@@ -25,6 +25,9 @@ type ActivityEntry = {
   item: Item;
   latestAt: string;
   previewText: string;
+  kind: "offer" | "message";
+  offerAmount?: number;
+  offerSenderName?: string;
   isUnread: boolean;
   contactCount: number;
 };
@@ -158,11 +161,15 @@ export default function InboxPage() {
   const activityByItem: Record<string, ActivityEntry> = {};
   const buyersByItem: Record<string, Set<string>> = {};
 
-  const touch = (key: string, item: Item, at: string, preview: string, unread: boolean, personId: string) => {
+  const touch = (
+    key: string, item: Item, at: string, preview: string,
+    kind: "offer" | "message", unread: boolean, personId: string,
+    offerAmount?: number, offerSenderName?: string,
+  ) => {
     if (!buyersByItem[key]) buyersByItem[key] = new Set();
     buyersByItem[key].add(personId);
     if (!activityByItem[key] || at > activityByItem[key].latestAt) {
-      activityByItem[key] = { item, latestAt: at, previewText: preview, isUnread: unread, contactCount: 0 };
+      activityByItem[key] = { item, latestAt: at, previewText: preview, kind, offerAmount, offerSenderName, isUnread: unread, contactCount: 0 };
     }
     if (unread) activityByItem[key].isUnread = true;
   };
@@ -172,7 +179,7 @@ export default function InboxPage() {
     const item = itemsMap[key];
     if (!item) continue;
     const name = profileDisplayName(profilesMap[o.buyer_id], o.buyer_id);
-    touch(key, item, o.created_at, `${name} la inn et bud på ${formatPrice(o.amount)}`, new Date(o.created_at).getTime() > lastVisit, o.buyer_id);
+    touch(key, item, o.created_at, `${name} la inn et bud`, "offer", new Date(o.created_at).getTime() > lastVisit, o.buyer_id, o.amount, name);
   }
 
   for (const t of threads) {
@@ -181,20 +188,16 @@ export default function InboxPage() {
       const name = profileDisplayName(profilesMap[t.buyerId], t.buyerId);
       const isOther = t.lastMessage.sender_id !== userId;
       const preview = isOther ? `${name}: ${t.lastMessage.body}` : `Du: ${t.lastMessage.body}`;
-      touch(key, t.item, t.lastMessage.created_at, preview, isOther && new Date(t.lastMessage.created_at).getTime() > lastVisit, t.buyerId);
+      touch(key, t.item, t.lastMessage.created_at, preview, "message", isOther && new Date(t.lastMessage.created_at).getTime() > lastVisit, t.buyerId);
     } else {
-      // buyer side — one entry per item showing seller thread
       const key = `buyer:${t.item.id}`;
       const sellerName = t.item.seller_id ? profileDisplayName(profilesMap[t.item.seller_id], t.item.seller_id) : "Selger";
       const isOther = t.lastMessage.sender_id !== userId;
       const preview = isOther ? `${sellerName}: ${t.lastMessage.body}` : `Du: ${t.lastMessage.body}`;
       if (!activityByItem[key] || t.lastMessage.created_at > activityByItem[key].latestAt) {
         activityByItem[key] = {
-          item: t.item,
-          latestAt: t.lastMessage.created_at,
-          previewText: preview,
-          isUnread: isOther && new Date(t.lastMessage.created_at).getTime() > lastVisit,
-          contactCount: 1,
+          item: t.item, latestAt: t.lastMessage.created_at, previewText: preview,
+          kind: "message", isUnread: isOther && new Date(t.lastMessage.created_at).getTime() > lastVisit, contactCount: 1,
         };
       }
     }
@@ -257,7 +260,7 @@ function ActivityTab({ activities }: { activities: ActivityEntry[] }) {
   }
   return (
     <ul className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
-      {activities.map(({ item, latestAt, previewText, isUnread, contactCount }) => {
+      {activities.map(({ item, latestAt, previewText, kind, offerAmount, offerSenderName, isUnread, contactCount }) => {
         const cover = itemImages(item)[0];
         return (
           <li key={item.id} className={isUnread ? "bg-[#5a6b32]/5" : ""}>
@@ -282,7 +285,17 @@ function ActivityTab({ activities }: { activities: ActivityEntry[] }) {
                   <p className="truncate text-sm font-semibold text-stone-900">{item.title}</p>
                   <span className="shrink-0 text-[10px] text-stone-400">{fmtTime(latestAt)}</span>
                 </div>
-                <p className="mt-0.5 line-clamp-1 text-xs text-stone-500">{previewText}</p>
+                {kind === "offer" ? (
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="inline-flex items-center rounded-full bg-[#5a6b32] px-2 py-0.5 text-[11px] font-semibold text-white">
+                      Bud
+                    </span>
+                    <span className="text-sm font-semibold text-stone-900">{formatPrice(offerAmount!)}</span>
+                    <span className="truncate text-xs text-stone-400">fra {offerSenderName}</span>
+                  </div>
+                ) : (
+                  <p className="mt-0.5 line-clamp-1 text-xs text-stone-500">{previewText}</p>
+                )}
                 {contactCount > 1 && (
                   <p className="mt-0.5 text-[10px] font-medium text-[#5a6b32]">{contactCount} interesserte</p>
                 )}
