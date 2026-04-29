@@ -20,6 +20,7 @@ import { ShareButton } from "@/components/ShareButton";
 import { SellerRating } from "@/components/SellerRating";
 import { ReviewForm } from "@/components/ReviewForm";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { ItemLikes } from "@/components/ItemLikes";
 import { FirstListingSuccess } from "@/components/FirstListingSuccess";
 import { useToast } from "@/components/ToastProvider";
 
@@ -269,6 +270,7 @@ export default function ItemPageClient() {
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold tracking-tight">{item.title}</h1>
+              <ItemLikes itemId={item.id} />
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {!isSeller && <FavoriteButton itemId={item.id} currentPrice={item.price} sellerId={item.seller_id} itemTitle={item.title} variant="inline" />}
                 {shareUrl && <ShareButton url={shareUrl} title={item.title} />}

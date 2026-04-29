@@ -36,7 +36,6 @@ type ActivityEntry = {
   contactCount: number;
 };
 
-type Tab = "innboks" | "favoritter";
 
 function fmtTime(iso: string): string {
   const d = new Date(iso);
@@ -54,11 +53,9 @@ function fmtTime(iso: string): string {
 export default function InboxPage() {
   const supabase = useMemo(() => createClient(), []);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
-  const [tab, setTab] = useState<Tab>("innboks");
   const [error, setError] = useState<string | null>(null);
 
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [favorites, setFavorites] = useState<FavoriteRow[]>([]);
   const [threads, setThreads] = useState<{ item: Item; lastMessage: Message; buyerId: string; role: "buyer" | "seller" }[]>([]);
 
   const [itemsMap, setItemsMap] = useState<Record<string, Item>>({});
@@ -80,23 +77,17 @@ export default function InboxPage() {
       const myItems = (myItemsData ?? []) as Item[];
       const myItemIds = myItems.map((i) => i.id);
 
-      const [offersRes, favoritesRes, msgRes] = await Promise.all([
+      const [offersRes, msgRes] = await Promise.all([
         myItemIds.length > 0
           ? supabase.from("offers").select("*").in("item_id", myItemIds).neq("buyer_id", userId)
               .order("created_at", { ascending: false }).limit(50)
           : Promise.resolve({ data: [] as Offer[], error: null }),
-        myItemIds.length > 0
-          ? supabase.from("favorites").select("*").in("item_id", myItemIds).neq("user_id", userId)
-              .order("created_at", { ascending: false }).limit(50)
-          : Promise.resolve({ data: [] as FavoriteRow[], error: null }),
         supabase.from("messages").select("*").order("created_at", { ascending: false }),
       ]);
 
       if (offersRes.error) setError(`Tilbud: ${offersRes.error.message}`);
-      if (favoritesRes.error) setError(`Favoritter: ${favoritesRes.error.message}`);
 
       setOffers((offersRes.data ?? []) as Offer[]);
-      setFavorites((favoritesRes.data ?? []) as FavoriteRow[]);
 
       const iMap: Record<string, Item> = {};
       for (const it of myItems) iMap[String(it.id)] = it;
@@ -128,7 +119,6 @@ export default function InboxPage() {
 
       const personIds = new Set<string>();
       for (const o of (offersRes.data ?? []) as Offer[]) personIds.add(o.buyer_id);
-      for (const f of (favoritesRes.data ?? []) as FavoriteRow[]) personIds.add(f.user_id);
       for (const m of (msgRes.data ?? []) as Message[]) {
         const item = iMap[String(m.item_id)];
         if (!item) continue;
@@ -235,23 +225,11 @@ export default function InboxPage() {
     (a, b) => new Date(b.latestAt).getTime() - new Date(a.latestAt).getTime(),
   );
 
-  const newActivity = activityList.filter((a) => a.isUnread).length;
-  const newFavorites = favorites.filter((f) => new Date(f.created_at).getTime() > lastVisit).length;
-
   return (
     <section className="space-y-4">
       <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
       {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-
-      <div className="flex gap-1 border-b border-stone-200">
-        <TabButton label="Innboks" badge={newActivity} active={tab === "innboks"} onClick={() => setTab("innboks")} />
-        <TabButton label="Favoritter" badge={newFavorites} active={tab === "favoritter"} onClick={() => setTab("favoritter")} />
-      </div>
-
-      {tab === "innboks" && <ActivityTab activities={activityList} onOfferAction={handleOfferAction} />}
-      {tab === "favoritter" && (
-        <FavoritesTab favorites={favorites} items={itemsMap} profiles={profilesMap} lastVisit={lastVisit} />
-      )}
+      <ActivityTab activities={activityList} onOfferAction={handleOfferAction} />
     </section>
   );
 }
