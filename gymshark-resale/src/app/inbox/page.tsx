@@ -400,23 +400,32 @@ function FavoritesTab({
         return (
           <li key={`${f.user_id}:${f.item_id}:${i}`} className={isUnread ? "bg-[#5a6b32]/5" : ""}>
             <Link href={item ? `/item/${item.id}` : "/inbox"} className="flex items-center gap-3 p-3 hover:bg-stone-50">
+              {/* Item thumbnail */}
               <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-stone-100">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={cover} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-stone-400">♡</div>
+                  <div className="h-full w-full bg-stone-200" />
                 )}
               </div>
+
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">
-                  <span className="font-medium text-stone-900">{name}</span>
-                  <span className="text-stone-500"> la til </span>
-                  {item && <span className="font-medium text-stone-900">«{item.title}»</span>}
-                  <span className="text-stone-500"> i favorittene sine</span>
+                {/* Item title + time */}
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="truncate text-sm font-semibold text-stone-900">
+                    {item?.title ?? "Annonse"}
+                  </p>
+                  <span className="shrink-0 text-[10px] text-stone-400">{fmtTime(f.created_at)}</span>
+                </div>
+                {/* Who favorited */}
+                <p className="mt-0.5 flex items-center gap-1 text-xs text-stone-500">
+                  <span className="text-rose-400">♥</span>
+                  <span className="font-medium text-stone-700">{name}</span>
+                  <span>la dette til i favorittene sine</span>
                 </p>
-                <p className="mt-0.5 text-xs text-stone-400">{fmtTime(f.created_at)}</p>
               </div>
+
               {isUnread && <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />}
             </Link>
           </li>
