@@ -75,9 +75,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               Aktivbruk — bruktbørs for treningsklær. Et uavhengig prosjekt, ikke
               tilknyttet noen merkevare.
             </p>
-            <Link href="/about" className="text-stone-500 underline hover:text-black">
-              Om & FAQ
-            </Link>
+            <div className="flex items-center gap-4">
+              <a href="mailto:kontakt@aktivbruk.com" className="text-stone-500 hover:text-black">
+                kontakt@aktivbruk.com
+              </a>
+              <Link href="/about" className="text-stone-500 underline hover:text-black">
+                Om & FAQ
+              </Link>
+            </div>
           </div>
         </footer>
         <BottomNav isLoggedIn={!!user} />

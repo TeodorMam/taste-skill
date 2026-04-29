@@ -115,8 +115,11 @@ export default function AboutPage() {
         </Faq>
 
         <Faq q="Jeg har et forslag eller problem.">
-          Send oss en melding via Instagram eller legg ut ønsket merke i
-          annonsen — vi ser alt.
+          Send en e-post til{" "}
+          <a href="mailto:kontakt@aktivbruk.com" className="underline hover:text-stone-900">
+            kontakt@aktivbruk.com
+          </a>{" "}
+          — vi svarer raskt.
         </Faq>
       </div>
 
