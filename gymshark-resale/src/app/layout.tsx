@@ -12,6 +12,24 @@ export const metadata: Metadata = {
   title: "Aktivbruk — bruktmarked for treningsklær",
   description:
     "Kjøp og selg brukte treningsklær i Norge. Gymshark, Nike, Lululemon, Alphalete og mer.",
+  keywords: [
+    "brukte treningsklær",
+    "treningsklær brukt",
+    "kjøp treningsklær",
+    "selg treningsklær",
+    "gymshark brukt",
+    "gymshark norge",
+    "alphalete brukt",
+    "lululemon brukt",
+    "nvgtn brukt",
+    "aybl brukt",
+    "bruktmarked treningsklær",
+    "treningsutstyr brukt",
+    "aktivbruk",
+    "brukte sportklær",
+    "second hand treningsklær",
+    "treningsklær norge",
+  ],
   openGraph: {
     title: "Aktivbruk — bruktmarked for treningsklær",
     description:
