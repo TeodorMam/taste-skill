@@ -8,7 +8,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const WEBHOOK_SECRET = process.env.MESSAGE_WEBHOOK_SECRET;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = process.env.RESEND_FROM ?? "Aktivbruk <noreply@aktivbruk.com>";
+const FROM_EMAIL = process.env.RESEND_FROM ?? "Aktivbruk <kontakt@aktivbruk.com>";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aktivbruk.com";
 
 type MessageRow = {
@@ -126,12 +126,10 @@ export async function POST(req: Request) {
     }),
   });
 
+  const resBody = await res.text();
+  console.log("[message-notify] resend status:", res.status, "body:", resBody);
   if (!res.ok) {
-    const err = await res.text();
-    return NextResponse.json(
-      { error: "resend failed", detail: err },
-      { status: 502 },
-    );
+    return NextResponse.json({ error: "resend failed", detail: resBody }, { status: 502 });
   }
 
   return NextResponse.json({ ok: true });
