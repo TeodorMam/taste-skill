@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { type Profile } from "@/lib/supabase";
-import { useInboxDot } from "@/hooks/useInboxDot";
+import { useNavCounts } from "@/hooks/useNavCounts";
 import { Avatar } from "@/components/Avatar";
 
 export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
-  const hasUnread = useInboxDot(isLoggedIn);
+  const { inbox, varsler } = useNavCounts(isLoggedIn);
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -19,7 +19,6 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      // Stamp last_seen_at in the background on every navigation
       void supabase.from("profiles").update({ last_seen_at: new Date().toISOString() }).eq("user_id", user.id).then(() => null);
       const { data: pData } = await supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle();
       setProfile((pData as Profile | null) ?? null);
@@ -40,14 +39,13 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
       </Link>
       {isLoggedIn ? (
         <>
-          <Link href="/varsler" className={textCls("/varsler")}>
+          <Link href="/varsler" className={`relative ${textCls("/varsler")}`}>
             Varsler
+            {varsler > 0 && <Badge count={varsler} />}
           </Link>
           <Link href="/inbox" className={`relative ${textCls("/inbox")}`}>
             Innboks
-            {hasUnread && (
-              <span className="absolute -right-2 -top-1 h-2 w-2 rounded-full bg-red-500" />
-            )}
+            {inbox > 0 && <Badge count={inbox} />}
           </Link>
           <Link href="/post" className={textCls("/post")}>
             Selg
@@ -66,5 +64,13 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
         </Link>
       )}
     </nav>
+  );
+}
+
+function Badge({ count }: { count: number }) {
+  return (
+    <span className="absolute -right-3 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+      {count > 9 ? "9+" : count}
+    </span>
   );
 }

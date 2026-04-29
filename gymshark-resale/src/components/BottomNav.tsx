@@ -2,23 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useInboxDot } from "@/hooks/useInboxDot";
+import { useNavCounts } from "@/hooks/useNavCounts";
 
 export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
-  const hasUnread = useInboxDot(isLoggedIn);
+  const { inbox, varsler } = useNavCounts(isLoggedIn);
 
   const items = isLoggedIn
     ? [
-        { href: "/browse", label: "Utforsk", icon: SearchIcon },
-        { href: "/post", label: "Selg", icon: PlusIcon },
-        { href: "/inbox", label: "Innboks", icon: InboxIcon, badge: hasUnread },
-        { href: "/profil", label: "Profil", icon: UserIcon },
+        { href: "/browse", label: "Utforsk", icon: SearchIcon, badge: 0 },
+        { href: "/varsler", label: "Varsler", icon: BellIcon, badge: varsler },
+        { href: "/inbox", label: "Innboks", icon: InboxIcon, badge: inbox },
+        { href: "/post", label: "Selg", icon: PlusIcon, badge: 0 },
+        { href: "/profil", label: "Profil", icon: UserIcon, badge: 0 },
       ]
     : [
-        { href: "/browse", label: "Utforsk", icon: SearchIcon },
-        { href: "/post", label: "Selg", icon: PlusIcon },
-        { href: "/login", label: "Logg inn", icon: UserIcon },
+        { href: "/browse", label: "Utforsk", icon: SearchIcon, badge: 0 },
+        { href: "/post", label: "Selg", icon: PlusIcon, badge: 0 },
+        { href: "/login", label: "Logg inn", icon: UserIcon, badge: 0 },
       ];
 
   return (
@@ -38,8 +39,10 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
             >
               <span className="relative">
                 <Icon active={active} />
-                {"badge" in it && it.badge && (
-                  <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500" />
+                {it.badge > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold leading-none text-white">
+                    {it.badge > 9 ? "9+" : it.badge}
+                  </span>
                 )}
               </span>
               <span>{it.label}</span>
@@ -60,6 +63,15 @@ function SearchIcon({ active }: { active: boolean }) {
   );
 }
 
+function BellIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
+
 function InboxIcon({ active }: { active: boolean }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -73,23 +85,6 @@ function PlusIcon({ active }: { active: boolean }) {
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 8v8M8 12h8" />
-    </svg>
-  );
-}
-
-function HeartIcon({ active }: { active: boolean }) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-  );
-}
-
-function TagIcon({ active }: { active: boolean }) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-      <line x1="7" y1="7" x2="7.01" y2="7" />
     </svg>
   );
 }
