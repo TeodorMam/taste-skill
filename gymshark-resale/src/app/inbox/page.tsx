@@ -310,29 +310,30 @@ function ActivityTab({
 
                 {/* Pending offer — always shown if exists, with inline action buttons */}
                 {pendingOffer && (
-                  <div
-                    className="mt-1.5 flex flex-wrap items-center gap-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <span className="inline-flex items-center rounded-full bg-[#5a6b32] px-2 py-0.5 text-[11px] font-semibold text-white">
-                      Bud
-                    </span>
-                    <span className="text-sm font-bold text-stone-900">{formatPrice(pendingOffer.amount)}</span>
-                    <span className="text-xs text-stone-400">fra {pendingOffer.buyerName}</span>
-                    <button
-                      disabled={acting === pendingOffer.id}
-                      onClick={async () => { setActing(pendingOffer.id); await onOfferAction(pendingOffer.id, "accepted"); setActing(null); }}
-                      className="rounded-full bg-[#5a6b32] px-3 py-0.5 text-xs font-semibold text-white hover:bg-[#4a5828] disabled:opacity-50"
-                    >
-                      Godta
-                    </button>
-                    <button
-                      disabled={acting === pendingOffer.id}
-                      onClick={async () => { setActing(pendingOffer.id); await onOfferAction(pendingOffer.id, "declined"); setActing(null); }}
-                      className="rounded-full border border-stone-300 px-3 py-0.5 text-xs font-semibold text-stone-600 hover:bg-stone-100 disabled:opacity-50"
-                    >
-                      Avslå
-                    </button>
+                  <div className="mt-1.5" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center rounded-full bg-[#5a6b32] px-2 py-0.5 text-[11px] font-semibold text-white">
+                        Bud
+                      </span>
+                      <span className="text-sm font-bold text-stone-900">{formatPrice(pendingOffer.amount)}</span>
+                      <span className="text-xs text-stone-400">fra {pendingOffer.buyerName}</span>
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <button
+                        disabled={acting === pendingOffer.id}
+                        onClick={async () => { setActing(pendingOffer.id); await onOfferAction(pendingOffer.id, "accepted"); setActing(null); }}
+                        className="rounded-full bg-[#5a6b32] px-3 py-0.5 text-xs font-semibold text-white hover:bg-[#4a5828] disabled:opacity-50"
+                      >
+                        Godta
+                      </button>
+                      <button
+                        disabled={acting === pendingOffer.id}
+                        onClick={async () => { setActing(pendingOffer.id); await onOfferAction(pendingOffer.id, "declined"); setActing(null); }}
+                        className="rounded-full border border-stone-300 px-3 py-0.5 text-xs font-semibold text-stone-600 hover:bg-stone-100 disabled:opacity-50"
+                      >
+                        Avslå
+                      </button>
+                    </div>
                   </div>
                 )}
 
