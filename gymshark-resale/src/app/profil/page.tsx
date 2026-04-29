@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { type Review, averageRating, summarizeReviews } from "@/lib/supabase";
 import { ProfileEditor } from "@/components/ProfileEditor";
 import { PasswordSetter } from "@/components/PasswordSetter";
+import { StripeConnectPanel } from "@/components/StripeConnectPanel";
 
 function Stars({ avg }: { avg: number }) {
   const filled = Math.round(avg);
@@ -126,6 +127,8 @@ export default function ProfilPage() {
           </div>
         </Link>
       </div>
+
+      <StripeConnectPanel />
 
       <PasswordSetter />
 

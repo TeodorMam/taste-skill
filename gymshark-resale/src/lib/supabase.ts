@@ -82,6 +82,9 @@ export type Profile = {
   location: string | null;
   created_at: string;
   last_seen_at: string | null;
+  stripe_account_id: string | null;
+  stripe_charges_enabled: boolean;
+  stripe_onboarding_complete: boolean;
 };
 
 export function summarizeReviews(reviews: Review[]) {

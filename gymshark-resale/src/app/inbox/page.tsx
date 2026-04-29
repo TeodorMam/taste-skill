@@ -32,6 +32,7 @@ type ActivityEntry = {
   latestAt: string;
   messagePreview?: string;
   pendingOffer?: PendingOffer;
+  acceptedOffer?: { id: string; amount: number };
   isUnread: boolean;
   contactCount: number;
 };
@@ -56,6 +57,7 @@ export default function InboxPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [myAcceptedOffers, setMyAcceptedOffers] = useState<Offer[]>([]);
   const [threads, setThreads] = useState<{ item: Item; lastMessage: Message; buyerId: string; role: "buyer" | "seller" }[]>([]);
 
   const [itemsMap, setItemsMap] = useState<Record<string, Item>>({});
@@ -77,13 +79,15 @@ export default function InboxPage() {
       const myItems = (myItemsData ?? []) as Item[];
       const myItemIds = myItems.map((i) => i.id);
 
-      const [offersRes, msgRes] = await Promise.all([
+      const [offersRes, msgRes, myOffersRes] = await Promise.all([
         myItemIds.length > 0
           ? supabase.from("offers").select("*").in("item_id", myItemIds).neq("buyer_id", userId)
               .order("created_at", { ascending: false }).limit(50)
           : Promise.resolve({ data: [] as Offer[], error: null }),
         supabase.from("messages").select("*").order("created_at", { ascending: false }),
+        supabase.from("offers").select("*").eq("buyer_id", userId).eq("status", "accepted"),
       ]);
+      setMyAcceptedOffers((myOffersRes.data ?? []) as Offer[]);
 
       if (offersRes.error) setError(`Tilbud: ${offersRes.error.message}`);
 
@@ -221,6 +225,14 @@ export default function InboxPage() {
     activityByItem[key].contactCount = buyersByItem[key]?.size ?? activityByItem[key].contactCount;
   }
 
+  // Attach buyer's accepted offers to buyer-side entries
+  for (const o of myAcceptedOffers) {
+    const key = `buyer:${o.item_id}`;
+    if (activityByItem[key]) {
+      activityByItem[key].acceptedOffer = { id: o.id, amount: o.amount };
+    }
+  }
+
   const activityList = Object.values(activityByItem).sort(
     (a, b) => new Date(b.latestAt).getTime() - new Date(a.latestAt).getTime(),
   );
@@ -261,6 +273,23 @@ function ActivityTab({
 }) {
   const router = useRouter();
   const [acting, setActing] = useState<string | null>(null);
+  const [paying, setPaying] = useState<string | null>(null);
+
+  async function handlePay(itemId: string | number, offerId: string) {
+    setPaying(offerId);
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ item_id: String(itemId), offer_id: offerId }),
+    });
+    const json = await res.json() as { url?: string; error?: string };
+    if (json.url) {
+      window.location.href = json.url;
+    } else {
+      alert(json.error ?? "Noe gikk galt");
+      setPaying(null);
+    }
+  }
 
   if (activities.length === 0) {
     return (
@@ -272,7 +301,7 @@ function ActivityTab({
 
   return (
     <ul className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
-      {activities.map(({ item, latestAt, messagePreview, pendingOffer, isUnread, contactCount }) => {
+      {activities.map(({ item, latestAt, messagePreview, pendingOffer, acceptedOffer, isUnread, contactCount }) => {
         const cover = itemImages(item)[0];
         return (
           <li
@@ -334,6 +363,23 @@ function ActivityTab({
                         Avslå
                       </button>
                     </div>
+                  </div>
+                )}
+
+                {/* Buyer-side: accepted offer with payment button */}
+                {acceptedOffer && !item.is_sold && (
+                  <div className="mt-1.5" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-semibold text-white">✓ Godtatt</span>
+                      <span className="text-sm font-bold text-stone-900">{formatPrice(acceptedOffer.amount)}</span>
+                    </div>
+                    <button
+                      disabled={paying === acceptedOffer.id}
+                      onClick={() => handlePay(item.id, acceptedOffer.id)}
+                      className="mt-1.5 rounded-full bg-[#5a6b32] px-3 py-0.5 text-xs font-semibold text-white hover:bg-[#4a5828] disabled:opacity-50"
+                    >
+                      {paying === acceptedOffer.id ? "Sender…" : `Betal nå — ${formatPrice(acceptedOffer.amount)}`}
+                    </button>
                   </div>
                 )}
 
