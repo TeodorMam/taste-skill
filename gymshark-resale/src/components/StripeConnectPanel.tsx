@@ -34,12 +34,17 @@ export function StripeConnectPanel() {
 
   async function handleConnect() {
     setConnecting(true);
-    const res = await fetch("/api/stripe/connect", { method: "POST" });
-    const json = await res.json() as { url?: string; error?: string };
-    if (json.url) {
-      window.location.href = json.url;
-    } else {
-      toast(json.error ?? "Noe gikk galt");
+    try {
+      const res = await fetch("/api/stripe/connect", { method: "POST" });
+      const json = await res.json() as { url?: string; error?: string };
+      if (json.url) {
+        window.location.href = json.url;
+      } else {
+        toast(json.error ?? "Noe gikk galt");
+        setConnecting(false);
+      }
+    } catch {
+      toast("Noe gikk galt, prøv igjen");
       setConnecting(false);
     }
   }

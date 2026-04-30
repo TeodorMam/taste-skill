@@ -252,16 +252,21 @@ export default function ItemPageClient() {
   async function handleCheckout(offerId?: string) {
     const setter = offerId ? setPayingOffer : setBuyingNow;
     setter(true);
-    const res = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ item_id: String(item!.id), ...(offerId ? { offer_id: offerId } : {}) }),
-    });
-    const json = await res.json() as { url?: string; error?: string };
-    if (json.url) {
-      window.location.href = json.url;
-    } else {
-      toast(json.error ?? "Noe gikk galt");
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_id: String(item!.id), ...(offerId ? { offer_id: offerId } : {}) }),
+      });
+      const json = await res.json() as { url?: string; error?: string };
+      if (json.url) {
+        window.location.href = json.url;
+      } else {
+        toast(json.error ?? "Noe gikk galt");
+        setter(false);
+      }
+    } catch {
+      toast("Noe gikk galt, prøv igjen");
       setter(false);
     }
   }
