@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         paid_at: new Date().toISOString(),
         stripe_payment_intent_id: session.payment_intent as string,
       }).eq("id", orderId),
-      admin.from("items").update({ is_sold: true, sold_to_buyer_id: existing.buyer_id }).eq("id", Number(itemId)),
+      admin.from("items").update({ is_sold: true }).eq("id", Number(itemId)),
       offerId ? admin.from("offers").update({ status: "accepted" }).eq("id", offerId) : Promise.resolve({ error: null }),
     ]);
 
