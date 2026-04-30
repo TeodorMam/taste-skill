@@ -33,21 +33,29 @@ export async function POST(req: NextRequest) {
     const itemId = session.metadata?.item_id;
     const offerId = session.metadata?.offer_id;
 
-    if (!orderId || !itemId) return NextResponse.json({ received: true });
+    console.log("[webhook] checkout.session.completed orderId:", orderId, "itemId:", itemId);
 
-    // Idempotency: skip if already paid
-    const { data: existing } = await admin.from("orders").select("status, buyer_id, seller_id, amount_nok, platform_fee_nok").eq("id", orderId).maybeSingle();
+    if (!orderId || !itemId) {
+      console.log("[webhook] missing orderId or itemId — skipping");
+      return NextResponse.json({ received: true });
+    }
+
+    const { data: existing, error: orderFetchErr } = await admin.from("orders").select("status, buyer_id, seller_id, amount_nok, platform_fee_nok").eq("id", orderId).maybeSingle();
+    console.log("[webhook] order fetch:", existing?.status, "fetchErr:", orderFetchErr?.message);
     if (!existing || existing.status === "paid") return NextResponse.json({ received: true });
 
-    await Promise.all([
+    const [ordersUpdate, itemsUpdate] = await Promise.all([
       admin.from("orders").update({
         status: "paid",
         paid_at: new Date().toISOString(),
         stripe_payment_intent_id: session.payment_intent as string,
       }).eq("id", orderId),
       admin.from("items").update({ is_sold: true, sold_to_buyer_id: existing.buyer_id }).eq("id", Number(itemId)),
-      offerId ? admin.from("offers").update({ status: "accepted" }).eq("id", offerId) : Promise.resolve(),
+      offerId ? admin.from("offers").update({ status: "accepted" }).eq("id", offerId) : Promise.resolve({ error: null }),
     ]);
+
+    console.log("[webhook] orders update error:", ordersUpdate.error?.message);
+    console.log("[webhook] items update error:", itemsUpdate.error?.message, "itemId used:", Number(itemId));
 
     // Send confirmation emails
     const [buyerRes, sellerRes, itemRes] = await Promise.all([
