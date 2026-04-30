@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseServerClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { stripe, calcFee } from "@/lib/stripe";
 
@@ -12,12 +12,9 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aktivbruk.com";
 
 export async function POST(req: NextRequest) {
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } },
-  );
+  try {
+  const cookieStore = await cookies();
+  const supabase = createSupabaseServerClient(cookieStore);
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Logg inn for å kjøpe" }, { status: 401 });
 
@@ -122,4 +119,8 @@ export async function POST(req: NextRequest) {
   await admin.from("orders").update({ stripe_checkout_session_id: session.id }).eq("id", order.id);
 
   return NextResponse.json({ url: session.url });
+  } catch (err) {
+    console.error("[stripe/checkout POST]", err);
+    return NextResponse.json({ error: "Noe gikk galt, prøv igjen" }, { status: 500 });
+  }
 }
