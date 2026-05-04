@@ -10,10 +10,10 @@ export default function AboutPage() {
   return (
     <section className="space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Om Aktivbruk</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Om Aktivbruk.</h1>
         <p className="mt-2 text-sm text-stone-600">
-          En ren, lokal bruktmarked bygget for treningsklær. Ingen støy, ingen
-          algoritme — bare varer som faktisk passer.
+          Aktivbruk er en markedsplass for brukte treningsklær. Enklere å finne
+          det du faktisk vil ha. Enklere å selge det du ikke bruker.
         </p>
       </div>
 
@@ -100,6 +100,17 @@ export default function AboutPage() {
           Ja. Aktivbruk holder pengene dine til du bekrefter at varen stemmer —
           vi kaller det kjøperbeskyttelse. Melder du et problem innen 48 timer
           etter levering, setter vi betalingen på vent og ser på saken.
+        </Faq>
+
+        <Faq q="Hva er kjøperbeskyttelse?">
+          Kjøperbeskyttelse betyr at pengene holdes hos Aktivbruk — ikke selger
+          — frem til du bekrefter at varen er som forventet. Du har 48 timer
+          etter levering til å melde et problem. Stemmer ikke varen med
+          beskrivelsen, er den skadet, eller ikke levert, ser vi på saken og
+          refunderer deg om nødvendig.{" "}
+          <a href="/kjoperbeskyttelse" className="font-medium underline underline-offset-2 hover:text-stone-900">
+            Les mer om kjøperbeskyttelse →
+          </a>
         </Faq>
 
         <Faq q="Koster det noe å legge ut en annonse?">
