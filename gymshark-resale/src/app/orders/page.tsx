@@ -31,8 +31,8 @@ type Order = {
 const STATUS_LABEL: Record<OrderStatus, string> = {
   pending: "Venter på betaling",
   paid: "Betalt — ikke sendt enda",
-  shipped: "Sendt",
-  delivered: "Levert — venter på bekreftelse",
+  shipped: "Sendt — venter på bekreftelse",
+  delivered: "Sendt — venter på bekreftelse",
   confirmed: "Bekreftet mottatt",
   disputed: "Tvist åpnet",
   paid_out: "Fullført",
@@ -161,22 +161,12 @@ function OrderCard({ order, role, onAction }: {
         </div>
       )}
 
-      {role === "seller" && order.status === "shipped" && (
-        <div className="border-t border-stone-100 p-4 space-y-2">
-          <p className="text-xs text-stone-600">Bekreft at kjøper har mottatt varen.</p>
-          <button
-            onClick={() => act("deliver")}
-            disabled={!!busy}
-            className="w-full rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-50"
-          >
-            {busy === "deliver" ? "Lagrer…" : "Marker som levert →"}
-          </button>
-        </div>
-      )}
-
-      {role === "seller" && order.status === "delivered" && (
+      {role === "seller" && (order.status === "shipped" || order.status === "delivered") && (
         <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-stone-500">Venter på bekreftelse fra kjøper.{order.review_deadline && <> <Countdown deadline={order.review_deadline} /> — betaling frigjøres automatisk etter fristen.</>}</p>
+          <p className="text-xs text-stone-500">
+            Venter på bekreftelse fra kjøper.
+            {order.review_deadline && <> <Countdown deadline={order.review_deadline} /> — betaling frigjøres automatisk etter fristen.</>}
+          </p>
         </div>
       )}
 
@@ -209,13 +199,7 @@ function OrderCard({ order, role, onAction }: {
         </div>
       )}
 
-      {role === "buyer" && order.status === "shipped" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-stone-600">Varen er sendt. Bekreft mottak her når den ankommer.</p>
-        </div>
-      )}
-
-      {role === "buyer" && order.status === "delivered" && (
+      {role === "buyer" && (order.status === "shipped" || order.status === "delivered") && (
         <div className="border-t border-stone-100 p-4 space-y-3">
           {order.review_deadline && (
             <div className="flex items-center justify-between">

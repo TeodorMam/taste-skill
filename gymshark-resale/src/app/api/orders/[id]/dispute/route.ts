@@ -28,7 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     if (!order) return NextResponse.json({ error: "Ordre ikke funnet" }, { status: 404 });
     if (order.buyer_id !== user.id) return NextResponse.json({ error: "Ikke autorisert" }, { status: 403 });
-    if (order.status !== "delivered") return NextResponse.json({ error: `Ordre er i status '${order.status}', kan ikke melde problem nå` }, { status: 400 });
+    if (order.status !== "delivered" && order.status !== "shipped") return NextResponse.json({ error: `Ordre er i status '${order.status}', kan ikke melde problem nå` }, { status: 400 });
     if (order.payout_transfer_id) return NextResponse.json({ error: "Betaling er allerede frigjort" }, { status: 400 });
 
     const body = await req.json().catch(() => ({})) as { reason?: string };
