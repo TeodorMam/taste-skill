@@ -74,8 +74,8 @@ export default function AboutPage() {
           <li className="flex gap-2">
             <span aria-hidden>✓</span>
             <span>
-              <strong>Gratis å bruke.</strong> Ingen avgift på salg, ingen
-              skjulte kostnader.
+              <strong>Trygg betaling.</strong> Kjøperbeskyttelse inkludert —
+              pengene holdes til du bekrefter at varen stemmer.
             </span>
           </li>
         </ul>
@@ -85,20 +85,21 @@ export default function AboutPage() {
         <h2 className="text-lg font-semibold tracking-tight">Vanlige spørsmål</h2>
 
         <Faq q="Hvordan betaler jeg?">
-          Avtal betaling direkte med selger — vanligvis via Vipps. Aktivbruk
-          behandler ikke betalinger.
+          Du betaler trygt med kort direkte på Aktivbruk — drevet av Stripe.
+          Pengene holdes hos oss til du har bekreftet at varen er som forventet,
+          og selger får ikke utbetalt før alt er i orden.
         </Faq>
 
         <Faq q="Hvordan fungerer frakt?">
-          Selger velger om varen kan sendes eller hentes lokalt. For fraktvarer
-          er Posten Servicepakke (~99 kr) og PostNord MyPack (~89 kr) vanligst.
-          Kjøper betaler frakt.
+          Selger velger om varen kan sendes med Posten eller hentes lokalt.
+          Kjøper betaler frakten, som legges til i kassen. Selger slipper pakken
+          på nærmeste Posten-punkt etter betaling.
         </Faq>
 
         <Faq q="Er det trygt?">
-          Chat gjør at du kan avklare alt før du betaler: se flere bilder,
-          spørre om passform, avtale Vipps. Vi anbefaler Vipps fremfor
-          bankoverføring til ukjent konto.
+          Ja. Aktivbruk holder pengene dine til du bekrefter at varen stemmer —
+          vi kaller det kjøperbeskyttelse. Melder du et problem innen 48 timer
+          etter levering, setter vi betalingen på vent og ser på saken.
         </Faq>
 
         <Faq q="Koster det noe å legge ut en annonse?">
