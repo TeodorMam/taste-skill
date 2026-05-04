@@ -16,6 +16,7 @@ import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 import { ReviewList } from "@/components/ReviewList";
 import { Avatar } from "@/components/Avatar";
+import { ReportButton } from "@/components/ReportButton";
 
 function fmtLastSeen(iso: string | null | undefined): string | null {
   if (!iso) return null;
@@ -147,6 +148,10 @@ export default function SellerPage() {
           <Stat label="Aktive" value={counts.active} />
           <Stat label="Solgt" value={counts.sold} />
           <Stat label="Omsetning" value={formatPrice(counts.revenue)} />
+        </div>
+
+        <div className="mt-3 border-t border-stone-100 pt-3">
+          <ReportButton type="user" targetId={params.id} />
         </div>
       </div>
 

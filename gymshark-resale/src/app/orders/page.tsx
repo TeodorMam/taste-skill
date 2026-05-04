@@ -133,6 +133,7 @@ function OrderCard({ order, role, onAction }: {
       {role === "seller" && order.status === "paid" && order.delivery_method !== "meetup" && (
         <div className="border-t border-stone-100 p-4 space-y-3">
           <p className="text-xs text-stone-600">Send varen via Posten og legg inn sporingsnummeret — kjøper varsles automatisk når pakken er levert.</p>
+          <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg px-3 py-2">⚠ Varen må sendes innen 7 dager etter betaling, ellers kanselleres ordren automatisk og kjøper refunderes.</p>
           {showShipForm ? (
             <div className="space-y-2">
               <input

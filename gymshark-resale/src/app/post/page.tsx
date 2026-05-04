@@ -389,26 +389,28 @@ export default function PostPage() {
         {shipping !== "Kun henting" && (
           <div className="space-y-1.5">
             <span className="block text-sm font-medium text-stone-800">Pakkestørrelse (Posten)</span>
-            <p className="text-xs text-stone-500">Kjøperen betaler fraktprisen basert på størrelsen du velger.</p>
+            <p className="text-xs text-stone-500">Velg den størrelsen som passer varen din. Kjøper betaler frakten.</p>
             <div className="space-y-2">
               {POSTEN_PACKAGES.map((pkg) => (
                 <button
                   key={pkg.id}
                   type="button"
                   onClick={() => setPackageSize(pkg.id)}
-                  className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition ${
+                  className={`w-full rounded-xl border p-3 text-left transition ${
                     packageSize === pkg.id
                       ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]"
                       : "border-stone-200 bg-white hover:border-stone-400"
                   }`}
                 >
-                  <div>
-                    <p className="text-sm font-medium">{pkg.label}</p>
-                    <p className="text-[11px] text-stone-500">Opp til {pkg.maxWeight}</p>
-                  </div>
-                  <p className="text-sm font-semibold text-stone-800">{pkg.price} kr</p>
+                  <p className="text-sm font-medium">{pkg.label}</p>
+                  <p className="mt-0.5 text-[11px] text-stone-500">Maks {pkg.maxWeight} · {pkg.dimensions}</p>
                 </button>
               ))}
+            </div>
+            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
+              <p className="font-medium">Leveringsinformasjon</p>
+              <p className="mt-1">Send varen innen 1–2 dager etter betaling. Levering tar vanligvis 2–5 virkedager.</p>
+              <p className="mt-1">⚠ Ordren kanselleres automatisk og kjøper refunderes fullt hvis varen ikke er sendt innen 7 dager.</p>
             </div>
           </div>
         )}

@@ -12,6 +12,7 @@ import {
   profileDisplayName,
 } from "@/lib/supabase";
 import { getPackageOption } from "@/lib/shipping";
+import { ReportButton } from "@/components/ReportButton";
 import { Avatar } from "@/components/Avatar";
 import { createClient } from "@/utils/supabase/client";
 import { ChatPanel } from "@/components/ChatPanel";
@@ -355,6 +356,7 @@ export default function ItemPageClient() {
           </p>
 
           {item.seller_id && !isSeller && (
+            <div className="space-y-2">
             <Link href={`/seller/${item.seller_id}`} className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 transition hover:border-stone-400">
               <Avatar profile={seller} size="md" />
               <div className="min-w-0 flex-1">
@@ -365,6 +367,11 @@ export default function ItemPageClient() {
               </div>
               <SellerRating sellerId={item.seller_id} size="md" />
             </Link>
+            <div className="flex gap-3 px-1">
+              <ReportButton type="listing" targetId={String(item.id)} />
+              <ReportButton type="user" targetId={item.seller_id} />
+            </div>
+            </div>
           )}
 
           {/* Kjøp nå — shown to logged-in buyers when seller has Stripe enabled */}
