@@ -311,11 +311,6 @@ export default function EditItemPage() {
                 </button>
               ))}
             </div>
-            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
-              <p className="font-medium">Leveringsinformasjon</p>
-              <p className="mt-1">Send varen innen 1–2 dager etter betaling. Levering tar vanligvis 2–5 virkedager.</p>
-              <p className="mt-1">⚠ Ordren kanselleres automatisk og kjøper refunderes fullt hvis varen ikke er sendt innen 7 dager.</p>
-            </div>
           </div>
         )}
 
