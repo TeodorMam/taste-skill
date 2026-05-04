@@ -125,6 +125,17 @@ export default function ProfilPage() {
         </Link>
       </div>
 
+      <Link
+        href="/orders"
+        className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:border-stone-400"
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg">📦</span>
+        <div>
+          <p className="text-sm font-medium text-stone-900">Mine ordre</p>
+          <p className="text-xs text-stone-500">Kjøp, salg og leveringsstatus</p>
+        </div>
+      </Link>
+
       <StripeConnectPanel />
 
       <PasswordSetter />

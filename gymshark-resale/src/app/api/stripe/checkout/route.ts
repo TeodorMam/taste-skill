@@ -96,8 +96,7 @@ export async function POST(req: NextRequest) {
       quantity: 1,
     }],
     payment_intent_data: {
-      application_fee_amount: platformFeeNok * 100,
-      transfer_data: { destination: sellerAccountId },
+      // No transfer_data: funds held on platform until buyer confirms delivery
       metadata: {
         order_id: order.id,
         item_id: String(item.id),

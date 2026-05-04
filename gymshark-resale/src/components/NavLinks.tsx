@@ -49,6 +49,9 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
         Innboks
         {inbox > 0 && <Badge count={inbox} />}
       </Link>
+      <Link href={authHref(isLoggedIn, "/orders")} className={textCls("/orders")}>
+        Ordre
+      </Link>
       <Link href={authHref(isLoggedIn, "/post")} className={textCls("/post")}>
         Selg
       </Link>

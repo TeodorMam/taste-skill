@@ -76,9 +76,9 @@ export async function POST(req: NextRequest) {
       await sendEmail(buyerEmail, `Betaling bekreftet — ${itemTitle}`, `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1c1917;max-width:560px">
           <h2 style="margin:0 0 8px;font-size:18px">Betaling bekreftet!</h2>
-          <p style="margin:0 0 16px;color:#57534e;font-size:14px">Du har kjøpt <strong>${escapeHtml(itemTitle)}</strong> for <strong>${fmt(existing.amount_nok)}</strong>.</p>
-          <p style="margin:0 0 16px;font-size:14px">Kontakt selger i chatten for å avtale levering/frakt.</p>
-          <a href="${link}" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se annonsen</a>
+          <p style="margin:0 0 12px;color:#57534e;font-size:14px">Du har kjøpt <strong>${escapeHtml(itemTitle)}</strong> for <strong>${fmt(existing.amount_nok)}</strong>. Betalingen holdes hos Aktivbruk til du bekrefter mottak.</p>
+          <p style="margin:0 0 16px;font-size:14px;color:#57534e">Selger vil sende varen og markere den som levert. Når du mottar den, bekrefter du i <a href="${SITE_URL}/orders">dine ordre</a> — da frigjøres betalingen til selger. Har du 48 timer på deg, etter det skjer det automatisk.</p>
+          <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
           <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
         </div>
       `);
@@ -89,12 +89,12 @@ export async function POST(req: NextRequest) {
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1c1917;max-width:560px">
           <h2 style="margin:0 0 8px;font-size:18px">Du har solgt «${escapeHtml(itemTitle)}»!</h2>
           <div style="background:#f5f5f4;padding:16px;border-radius:12px;margin-bottom:16px">
-            <p style="margin:0 0 4px;font-size:13px;color:#78716c">Du mottar</p>
-            <p style="margin:0;font-size:22px;font-weight:700;color:#16a34a">${fmt(sellerReceives)}</p>
-            <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Salgspris ${fmt(existing.amount_nok)} − 7% plattformavgift (${fmt(existing.platform_fee_nok)})</p>
+            <p style="margin:0 0 4px;font-size:13px;color:#78716c">Salgsbeløp</p>
+            <p style="margin:0;font-size:22px;font-weight:700;color:#1c1917">${fmt(existing.amount_nok)}</p>
+            <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Du mottar ${fmt(sellerReceives)} etter 7% plattformavgift (${fmt(existing.platform_fee_nok)})</p>
           </div>
-          <p style="margin:0 0 16px;font-size:14px">Utbetaling skjer automatisk via Stripe Express-dashbordet ditt. Kontakt kjøperen i chatten for å avtale levering.</p>
-          <a href="${link}" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se annonsen</a>
+          <p style="margin:0 0 12px;font-size:14px">Betalingen holdes trygt hos Aktivbruk. Send varen og marker som levert i dine ordre — utbetaling skjer etter kjøper bekrefter mottak (eller automatisk etter 48 timer).</p>
+          <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
           <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
         </div>
       `);
