@@ -12,7 +12,7 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
     { href: "/browse", label: "Utforsk", icon: SearchIcon, badge: 0 },
     { href: isLoggedIn ? "/varsler" : `/login?next=${encodeURIComponent("/varsler")}`, label: "Varsler", icon: BellIcon, badge: varsler },
     { href: isLoggedIn ? "/inbox" : `/login?next=${encodeURIComponent("/inbox")}`, label: "Innboks", icon: InboxIcon, badge: inbox },
-    { href: isLoggedIn ? "/post" : `/login?next=${encodeURIComponent("/post")}`, label: "Selg", icon: PlusIcon, badge: 0 },
+    { href: isLoggedIn ? "/sell" : `/login?next=${encodeURIComponent("/sell")}`, label: "Selg", icon: PlusIcon, badge: 0 },
     { href: isLoggedIn ? "/profil" : `/login?next=${encodeURIComponent("/profil")}`, label: "Profil", icon: UserIcon, badge: 0 },
   ];
 

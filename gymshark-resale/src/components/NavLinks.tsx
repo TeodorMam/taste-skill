@@ -52,7 +52,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
       <Link href={authHref(isLoggedIn, "/orders")} className={textCls("/orders")}>
         Ordre
       </Link>
-      <Link href={authHref(isLoggedIn, "/post")} className={textCls("/post")}>
+      <Link href={authHref(isLoggedIn, "/sell")} className={textCls("/sell")}>
         Selg
       </Link>
       <Link href={authHref(isLoggedIn, "/profil")} className={`flex items-center gap-2 ${textCls("/profil")}`}>

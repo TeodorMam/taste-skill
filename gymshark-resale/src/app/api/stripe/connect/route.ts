@@ -11,12 +11,15 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aktivbruk.com";
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
     const supabase = createSupabaseServerClient(cookieStore);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Logg inn først" }, { status: 401 });
+
+    const body = await req.json().catch(() => ({})) as { returnPath?: string };
+    const returnPath = body.returnPath ?? "/profil?stripe=return";
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
     const { data: profile } = await admin.from("profiles").select("stripe_account_id").eq("user_id", user.id).maybeSingle();
@@ -39,7 +42,7 @@ export async function POST() {
     const link = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${SITE_URL}/api/stripe/connect/refresh?account=${accountId}`,
-      return_url: `${SITE_URL}/profil?stripe=return`,
+      return_url: `${SITE_URL}${returnPath}`,
       type: "account_onboarding",
     });
 
