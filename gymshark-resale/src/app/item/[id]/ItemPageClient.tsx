@@ -442,7 +442,7 @@ export default function ItemPageClient() {
                       {buyingNow ? "Sender til betaling…" : `Kjøp nå — ${formatPrice(totalPrice)}`}
                     </button>
                     <p className="text-center text-[11px] text-stone-400">
-                      {shippingCost > 0 ? `${formatPrice(item.price)} vare + ${formatPrice(shippingCost)} frakt · ` : ""}Sikker betaling via Stripe · 7% plattformavgift inkludert
+                      {shippingCost > 0 ? `${formatPrice(item.price)} vare + ${formatPrice(shippingCost)} frakt · ` : ""}Sikker betaling via Stripe · <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">Kjøperbeskyttelse</Link>
                     </p>
                   </div>
                 )}
