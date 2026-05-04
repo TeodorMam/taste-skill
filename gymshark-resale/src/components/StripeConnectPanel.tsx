@@ -76,7 +76,13 @@ export function StripeConnectPanel() {
       {status === "none" && (
         <div className="mt-3 space-y-3">
           <p className="text-sm text-stone-700">
-            For å selge via Aktivbruk må du koble til en Stripe-konto. Stripe håndterer betaling og utbetaling trygt og sikkert.
+            For å selge må du koble til Stripe (trygg betaling).<br />
+            Det tar ca. 2 minutter, og du trenger ikke ha et firma.
+          </p>
+          <p className="text-sm text-stone-600">
+            Stripe ber om noen opplysninger for utbetalinger.<br />
+            Har du ikke nettside, velg <strong>«Produktbeskrivelse»</strong> og skriv f.eks:<br />
+            <span className="italic">«Jeg selger brukte treningsklær via Aktivbruk»</span>
           </p>
           <button
             onClick={handleConnect}
