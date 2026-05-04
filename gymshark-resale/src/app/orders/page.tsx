@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { formatPrice } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
+import { CARRIER_LABELS, type Carrier } from "@/lib/tracking";
 
 type OrderStatus =
   | "pending" | "paid" | "shipped" | "delivered"
@@ -76,8 +77,9 @@ function OrderCard({ order, role, onAction }: {
 }) {
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
+  const [carrier, setCarrier] = useState<Carrier>("bring");
   const [trackingInput, setTrackingInput] = useState("");
-  const [showTracking, setShowTracking] = useState(false);
+  const [showShipForm, setShowShipForm] = useState(false);
   const [showDispute, setShowDispute] = useState(false);
   const [disputeReason, setDisputeReason] = useState("");
 
@@ -126,33 +128,47 @@ function OrderCard({ order, role, onAction }: {
 
       {/* Seller actions */}
       {role === "seller" && order.status === "paid" && (
-        <div className="border-t border-stone-100 p-4 space-y-2">
-          <p className="text-xs text-stone-600">Send varen til kjøper, deretter marker som sendt.</p>
-          {showTracking ? (
+        <div className="border-t border-stone-100 p-4 space-y-3">
+          <p className="text-xs text-stone-600">Send varen og registrer fraktinfo — vi følger pakken automatisk og varsler kjøper ved levering.</p>
+          {showShipForm ? (
             <div className="space-y-2">
-              <input
-                type="text"
-                value={trackingInput}
-                onChange={(e) => setTrackingInput(e.target.value)}
-                placeholder="Sporingsnummer / fraktinfo (valgfritt)"
+              <select
+                value={carrier}
+                onChange={(e) => setCarrier(e.target.value as Carrier)}
                 className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
-              />
+              >
+                {(Object.entries(CARRIER_LABELS) as [Carrier, string][]).map(([val, label]) => (
+                  <option key={val} value={val}>{label}</option>
+                ))}
+              </select>
+              {carrier !== "other" && (
+                <input
+                  type="text"
+                  value={trackingInput}
+                  onChange={(e) => setTrackingInput(e.target.value)}
+                  placeholder="Sporingsnummer"
+                  className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
+                />
+              )}
+              {carrier === "other" && (
+                <p className="text-xs text-stone-500">Kjøper må bekrefte mottak manuelt i Mine ordre.</p>
+              )}
               <div className="flex gap-2">
                 <button
-                  onClick={() => act("ship", trackingInput ? { tracking_info: trackingInput } : {})}
-                  disabled={!!busy}
+                  onClick={() => act("ship", { carrier, ...(trackingInput ? { tracking_info: trackingInput } : {}) })}
+                  disabled={!!busy || (carrier !== "other" && !trackingInput.trim())}
                   className="flex-1 rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
                 >
                   {busy === "ship" ? "Lagrer…" : "Marker som sendt"}
                 </button>
-                <button onClick={() => setShowTracking(false)} className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500">
+                <button onClick={() => setShowShipForm(false)} className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500">
                   Avbryt
                 </button>
               </div>
             </div>
           ) : (
             <button
-              onClick={() => setShowTracking(true)}
+              onClick={() => setShowShipForm(true)}
               className="w-full rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022]"
             >
               Marker som sendt →
@@ -163,7 +179,11 @@ function OrderCard({ order, role, onAction }: {
 
       {role === "seller" && order.status === "shipped" && (
         <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-stone-500">Varen er sendt — venter på at kjøper bekrefter mottak.</p>
+          <p className="text-xs text-stone-500">
+            {order.carrier && order.carrier !== "other"
+              ? "Vi sporer pakken automatisk og varsler kjøper ved levering."
+              : "Venter på at kjøper bekrefter mottak manuelt."}
+          </p>
         </div>
       )}
 
