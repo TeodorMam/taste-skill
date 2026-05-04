@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createClient as createSupabaseServerClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
-import { CARRIER_LABELS, type Carrier } from "@/lib/tracking";
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -12,8 +10,6 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const FROM_EMAIL = process.env.RESEND_FROM ?? "Aktivbruk <kontakt@aktivbruk.com>";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aktivbruk.com";
-
-const VALID_CARRIERS: Carrier[] = ["bring", "postnord", "helthjem", "other"];
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -32,19 +28,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (order.seller_id !== user.id) return NextResponse.json({ error: "Ikke autorisert" }, { status: 403 });
     if (order.status !== "paid") return NextResponse.json({ error: `Ordre er i status '${order.status}'` }, { status: 400 });
 
-    const body = await req.json().catch(() => ({})) as { tracking_info?: string; carrier?: string };
-    const carrier = (VALID_CARRIERS.includes(body.carrier as Carrier) ? body.carrier : null) as Carrier | null;
+    const body = await req.json().catch(() => ({})) as { tracking_info?: string };
 
-    // Require tracking number unless carrier is "other"
-    if (carrier && carrier !== "other" && !body.tracking_info?.trim()) {
+    if (!body.tracking_info?.trim()) {
       return NextResponse.json({ error: "Legg inn sporingsnummer" }, { status: 400 });
     }
 
     await admin.from("orders").update({
       status: "shipped",
       shipped_at: new Date().toISOString(),
-      carrier: carrier ?? null,
-      tracking_info: body.tracking_info?.trim() || null,
+      carrier: "bring",
+      tracking_info: body.tracking_info.trim(),
     }).eq("id", orderId);
 
     // Email buyer
@@ -54,9 +48,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     ]);
     const buyerEmail = buyerRes.data.user?.email;
     const itemTitle = (itemRes as { data: { title: string } | null }).data?.title ?? "varen";
-    const carrierLabel = carrier ? CARRIER_LABELS[carrier] : null;
-    const isTrackable = carrier && carrier !== "other";
-
     if (buyerEmail) {
       await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -66,9 +57,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           subject: `«${itemTitle}» er sendt!`,
           html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
             <h2 style="margin:0 0 8px;font-size:18px">Varen er på vei!</h2>
-            <p style="margin:0 0 12px;font-size:14px;color:#57534e">Selger har sendt <strong>${itemTitle}</strong>${carrierLabel ? ` via ${carrierLabel}` : ""}.</p>
-            ${body.tracking_info ? `<p style="margin:0 0 12px;font-size:14px;color:#57534e">Sporingsnummer: <strong>${body.tracking_info}</strong></p>` : ""}
-            <p style="margin:0 0 16px;font-size:14px;color:#57534e">${isTrackable ? "Vi følger pakken automatisk og varsler deg når den er levert." : "Bekreft mottak i Mine ordre når pakken ankommer."}</p>
+            <p style="margin:0 0 12px;font-size:14px;color:#57534e">Selger har sendt <strong>${itemTitle}</strong> via Posten / Bring.</p>
+            <p style="margin:0 0 12px;font-size:14px;color:#57534e">Sporingsnummer: <strong>${body.tracking_info}</strong></p>
+            <p style="margin:0 0 16px;font-size:14px;color:#57534e">Vi følger pakken automatisk og varsler deg når den er levert.</p>
             <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
             <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
           </div>`,
