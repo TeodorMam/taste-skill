@@ -31,14 +31,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const body = await req.json().catch(() => ({})) as { tracking_info?: string };
 
-    const now = new Date();
-    const deadline = new Date(now.getTime() + 48 * 60 * 60 * 1000);
-
     await admin.from("orders").update({
-      status: "delivered",
-      shipped_at: now.toISOString(),
-      delivered_at: now.toISOString(),
-      review_deadline: deadline.toISOString(),
+      status: "shipped",
+      shipped_at: new Date().toISOString(),
       tracking_info: body.tracking_info ?? null,
     }).eq("id", orderId);
 

@@ -27,8 +27,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .eq("id", orderId).maybeSingle();
 
     if (!order) return NextResponse.json({ error: "Ordre ikke funnet" }, { status: 404 });
-    if (order.seller_id !== user.id) return NextResponse.json({ error: "Ikke autorisert" }, { status: 403 });
-    if (order.status !== "shipped") return NextResponse.json({ error: `Ordre er i status '${order.status}', kan ikke markere som levert` }, { status: 400 });
+    // Buyer marks as received — not the seller
+    if (order.buyer_id !== user.id) return NextResponse.json({ error: "Ikke autorisert" }, { status: 403 });
+    if (order.status !== "shipped") return NextResponse.json({ error: `Ordre er i status '${order.status}'` }, { status: 400 });
 
     const now = new Date();
     const deadline = new Date(now.getTime() + REVIEW_HOURS * 60 * 60 * 1000);
@@ -39,28 +40,25 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       review_deadline: deadline.toISOString(),
     }).eq("id", orderId);
 
-    const [buyerRes, itemRes] = await Promise.all([
-      admin.auth.admin.getUserById(order.buyer_id),
+    // Email seller so they know buyer received it
+    const [sellerRes, itemRes] = await Promise.all([
+      admin.auth.admin.getUserById(order.seller_id),
       order.item_id ? admin.from("items").select("title").eq("id", order.item_id).maybeSingle() : Promise.resolve({ data: null }),
     ]);
-    const buyerEmail = buyerRes.data.user?.email;
+    const sellerEmail = sellerRes.data.user?.email;
     const itemTitle = (itemRes as { data: { title: string } | null }).data?.title ?? "varen";
 
-    if (buyerEmail) {
+    if (sellerEmail) {
       await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
-          from: FROM_EMAIL, to: buyerEmail,
-          subject: `Bekreft mottak av «${itemTitle}»`,
+          from: FROM_EMAIL, to: sellerEmail,
+          subject: `Kjøper har mottatt «${itemTitle}»`,
           html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
-            <h2 style="margin:0 0 8px;font-size:18px">Har du mottatt varen?</h2>
-            <p style="margin:0 0 12px;font-size:14px;color:#57534e">Selger har markert <strong>${itemTitle}</strong> som levert.</p>
-            <p style="margin:0 0 16px;font-size:14px;color:#57534e">Du har <strong>${REVIEW_HOURS} timer</strong> på å bekrefte mottak eller melde et problem. Hvis du ikke gjør noe, frigjøres betalingen automatisk til selger.</p>
-            <div style="display:flex;gap:12px;margin-bottom:16px">
-              <a href="${SITE_URL}/orders" style="display:inline-block;background:#16a34a;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Alt OK — bekreft mottak</a>
-              <a href="${SITE_URL}/orders" style="display:inline-block;background:#fff;color:#1c1917;border:1px solid #d6d3d1;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Meld problem</a>
-            </div>
+            <h2 style="margin:0 0 8px;font-size:18px">Kjøper bekreftet mottak!</h2>
+            <p style="font-size:14px;color:#57534e">Kjøper har mottatt <strong>${itemTitle}</strong> og har ${REVIEW_HOURS} timer på å bekrefte at alt er ok eller melde problem. Hvis de ikke gjør noe, utbetales betalingen automatisk til deg.</p>
+            <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
             <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
           </div>`,
         }),
