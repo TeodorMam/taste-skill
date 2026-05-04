@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createClient as createSupabaseServerClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,9 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const FROM_EMAIL = process.env.RESEND_FROM ?? "Aktivbruk <kontakt@aktivbruk.com>";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aktivbruk.com";
+const REVIEW_HOURS = 48;
 
+// Seller confirms in-person handover for meetup orders → starts buyer's 48h review window
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: orderId } = await params;
@@ -21,45 +24,43 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
     const { data: order } = await admin.from("orders")
-      .select("id, status, seller_id, buyer_id, item_id")
+      .select("id, status, seller_id, buyer_id, item_id, delivery_method")
       .eq("id", orderId).maybeSingle();
 
     if (!order) return NextResponse.json({ error: "Ordre ikke funnet" }, { status: 404 });
     if (order.seller_id !== user.id) return NextResponse.json({ error: "Ikke autorisert" }, { status: 403 });
+    if (order.delivery_method !== "meetup") return NextResponse.json({ error: "Kun for hentingsordrer" }, { status: 400 });
     if (order.status !== "paid") return NextResponse.json({ error: `Ordre er i status '${order.status}'` }, { status: 400 });
 
-    const body = await req.json().catch(() => ({})) as { tracking_info?: string };
-
-    if (!body.tracking_info?.trim()) {
-      return NextResponse.json({ error: "Legg inn sporingsnummer" }, { status: 400 });
-    }
+    const now = new Date();
+    const deadline = new Date(now.getTime() + REVIEW_HOURS * 60 * 60 * 1000);
 
     await admin.from("orders").update({
-      status: "shipped",
-      shipped_at: new Date().toISOString(),
-      carrier: "bring",
-      tracking_info: body.tracking_info.trim(),
+      status: "delivered",
+      delivered_at: now.toISOString(),
+      review_deadline: deadline.toISOString(),
     }).eq("id", orderId);
 
-    // Email buyer
     const [buyerRes, itemRes] = await Promise.all([
       admin.auth.admin.getUserById(order.buyer_id),
       order.item_id ? admin.from("items").select("title").eq("id", order.item_id).maybeSingle() : Promise.resolve({ data: null }),
     ]);
     const buyerEmail = buyerRes.data.user?.email;
     const itemTitle = (itemRes as { data: { title: string } | null }).data?.title ?? "varen";
+
     if (buyerEmail) {
       await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
-          from: FROM_EMAIL, to: buyerEmail,
-          subject: `Varen er sendt — ${itemTitle}`,
+          from: FROM_EMAIL,
+          to: buyerEmail,
+          subject: `Varen er levert — ${itemTitle}`,
           html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
-            <h2 style="margin:0 0 8px;font-size:18px">Varen er på vei!</h2>
-            <p style="margin:0 0 12px;font-size:14px;color:#57534e">Selger har sendt <strong>${itemTitle}</strong>.</p>
-            <p style="margin:0 0 16px;font-size:14px;color:#57534e">Sporingsinformasjon: <strong>${body.tracking_info}</strong></p>
-            <p style="margin:0 0 16px;font-size:14px;color:#57534e">Du får beskjed når varen er registrert som levert.</p>
+            <h2 style="margin:0 0 8px;font-size:18px">Varen er levert!</h2>
+            <p style="margin:0 0 12px;font-size:14px;color:#57534e">Selger har bekreftet overlevering av <strong>${itemTitle}</strong>.</p>
+            <p style="margin:0 0 12px;font-size:14px;color:#57534e">Du har nå <strong>${REVIEW_HOURS} timer</strong> på å bekrefte at alt er i orden, eller melde et problem.</p>
+            <p style="margin:0 0 16px;font-size:14px;color:#57534e">Hvis du bekrefter at alt er OK, utbetales pengene til selger med én gang. Hvis du ikke gjør noe innen ${REVIEW_HOURS} timer, skjer dette automatisk.</p>
             <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
             <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
           </div>`,
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[orders/ship POST]", err);
+    console.error("[orders/handover POST]", err);
     return NextResponse.json({ error: "Noe gikk galt, prøv igjen" }, { status: 500 });
   }
 }

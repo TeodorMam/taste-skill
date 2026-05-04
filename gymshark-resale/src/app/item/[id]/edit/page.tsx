@@ -15,6 +15,7 @@ import {
   type CategoryParent,
   parentOfCategory,
 } from "@/lib/supabase";
+import { POSTEN_PACKAGES } from "@/lib/shipping";
 import { createClient } from "@/utils/supabase/client";
 
 export default function EditItemPage() {
@@ -36,6 +37,7 @@ export default function EditItemPage() {
   const [location, setLocation] = useState<string>(AREAS[0]);
   const [description, setDescription] = useState("");
   const [shipping, setShipping] = useState<string>(SHIPPING_OPTIONS[0].value);
+  const [packageSize, setPackageSize] = useState<string>("small");
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +70,7 @@ export default function EditItemPage() {
         setLocation(it.location);
         setDescription(it.description ?? "");
         setShipping(it.shipping ?? SHIPPING_OPTIONS[0].value);
+        setPackageSize(it.package_size ?? "small");
       });
   }, [params.id, supabase]);
 
@@ -95,6 +98,7 @@ export default function EditItemPage() {
         location,
         description: description.trim() || null,
         shipping,
+        package_size: shipping !== "Kun henting" ? packageSize : null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", params.id);
@@ -285,6 +289,33 @@ export default function EditItemPage() {
             ))}
           </div>
         </div>
+
+        {shipping !== "Kun henting" && (
+          <div className="space-y-1.5">
+            <span className="block text-sm font-medium text-stone-800">Pakkestørrelse (Posten)</span>
+            <p className="text-xs text-stone-500">Kjøperen betaler fraktprisen basert på størrelsen du velger.</p>
+            <div className="space-y-2">
+              {POSTEN_PACKAGES.map((pkg) => (
+                <button
+                  key={pkg.id}
+                  type="button"
+                  onClick={() => setPackageSize(pkg.id)}
+                  className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition ${
+                    packageSize === pkg.id
+                      ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]"
+                      : "border-stone-200 bg-white hover:border-stone-400"
+                  }`}
+                >
+                  <div>
+                    <p className="text-sm font-medium">{pkg.label}</p>
+                    <p className="text-[11px] text-stone-500">Opp til {pkg.maxWeight}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-stone-800">{pkg.price} kr</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {error && (
           <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>

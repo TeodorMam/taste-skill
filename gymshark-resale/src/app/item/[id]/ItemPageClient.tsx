@@ -11,6 +11,7 @@ import {
   itemImages,
   profileDisplayName,
 } from "@/lib/supabase";
+import { getPackageOption } from "@/lib/shipping";
 import { Avatar } from "@/components/Avatar";
 import { createClient } from "@/utils/supabase/client";
 import { ChatPanel } from "@/components/ChatPanel";
@@ -85,6 +86,7 @@ export default function ItemPageClient() {
   const [buyingNow, setBuyingNow] = useState(false);
   const [payingOffer, setPayingOffer] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<"success" | "cancelled" | null>(null);
+  const [deliveryMethod, setDeliveryMethod] = useState<"shipping" | "meetup" | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -252,11 +254,14 @@ export default function ItemPageClient() {
   async function handleCheckout(offerId?: string) {
     const setter = offerId ? setPayingOffer : setBuyingNow;
     setter(true);
+    const dm = item?.shipping === "Kun henting" ? "meetup"
+      : item?.shipping === "Kan sendes" ? "shipping"
+      : deliveryMethod ?? "shipping";
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item_id: String(item!.id), ...(offerId ? { offer_id: offerId } : {}) }),
+        body: JSON.stringify({ item_id: String(item!.id), delivery_method: dm, ...(offerId ? { offer_id: offerId } : {}) }),
       });
       const json = await res.json() as { url?: string; error?: string };
       if (json.url) {
@@ -362,32 +367,81 @@ export default function ItemPageClient() {
             </Link>
           )}
 
-          {item.shipping && item.shipping !== "Kun henting" && (
-            <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm">
-              <p className="font-medium text-stone-800">📦 Fraktestimater</p>
-              <p className="mt-0.5 text-xs text-stone-500">Kjøper betaler frakt. Avtal betalingsmetode (Vipps) i chatten.</p>
-              <ul className="mt-3 space-y-2 text-xs text-stone-700">
-                <li className="flex items-center justify-between"><span>Posten Servicepakke (opp til 5 kg)</span><span className="font-semibold">ca. 99 kr</span></li>
-                <li className="flex items-center justify-between"><span>Posten ePakke (opp til 20 kg)</span><span className="font-semibold">ca. 129 kr</span></li>
-                <li className="flex items-center justify-between"><span>PostNord MyPack Collect</span><span className="font-semibold">ca. 89 kr</span></li>
-              </ul>
-              <p className="mt-3 text-[11px] text-stone-400">Selger dropper pakken på nærmeste Posten/PostNord-punkt etter betaling.</p>
-            </div>
-          )}
-
           {/* Kjøp nå — shown to logged-in buyers when seller has Stripe enabled */}
-          {userId && !isSeller && !item.is_sold && sellerChargesEnabled && (
-            <div className="space-y-1">
-              <button
-                onClick={() => handleCheckout()}
-                disabled={buyingNow}
-                className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
-              >
-                {buyingNow ? "Sender til betaling…" : `Kjøp nå — ${formatPrice(item.price)}`}
-              </button>
-              <p className="text-center text-[11px] text-stone-400">Sikker betaling via Stripe · 7% plattformavgift inkludert</p>
-            </div>
-          )}
+          {userId && !isSeller && !item.is_sold && sellerChargesEnabled && (() => {
+            const pkg = getPackageOption(item.package_size);
+            const canShip = item.shipping !== "Kun henting" && !!pkg;
+            const canMeet = item.shipping !== "Kan sendes";
+            const showToggle = canShip && canMeet;
+            const effectiveDm = item.shipping === "Kun henting" ? "meetup"
+              : item.shipping === "Kan sendes" ? "shipping"
+              : deliveryMethod;
+            const shippingCost = effectiveDm === "shipping" && pkg ? pkg.price : 0;
+            const totalPrice = item.price + shippingCost;
+            const canCheckout = item.shipping !== "Begge" || deliveryMethod !== null;
+
+            return (
+              <div className="space-y-3">
+                {showToggle && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryMethod("shipping")}
+                      className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "shipping" ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]" : "border-stone-200 hover:border-stone-400"}`}
+                    >
+                      <span className="text-xl">📦</span>
+                      <span className="text-sm font-medium">Frakt</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryMethod("meetup")}
+                      className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "meetup" ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]" : "border-stone-200 hover:border-stone-400"}`}
+                    >
+                      <span className="text-xl">🤝</span>
+                      <span className="text-sm font-medium">Møt selger</span>
+                    </button>
+                  </div>
+                )}
+
+                {(effectiveDm === "shipping" || (!showToggle && canShip)) && pkg && (
+                  <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm">
+                    <div>
+                      <p className="font-medium text-stone-800">📦 Frakt via Posten</p>
+                      <p className="text-xs text-stone-500">{pkg.label} · opp til {pkg.maxWeight}</p>
+                      <p className="mt-1 text-[11px] text-stone-400">Selger dropper pakken på nærmeste Posten-punkt etter betaling.</p>
+                    </div>
+                    <p className="ml-3 shrink-0 font-semibold text-stone-800">+{pkg.price} kr</p>
+                  </div>
+                )}
+
+                {(effectiveDm === "meetup" || item.shipping === "Kun henting") && (
+                  <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm">
+                    <p className="font-medium text-stone-800">🤝 Møt selger</p>
+                    <p className="mt-0.5 text-xs text-stone-500">Avtal tid og sted i chatten etter betaling. Pengene holdes trygt hos Aktivbruk til handelen er fullført.</p>
+                  </div>
+                )}
+
+                {!canCheckout && (
+                  <p className="text-center text-xs text-stone-400">Velg leveringsmetode for å fortsette</p>
+                )}
+
+                {canCheckout && (
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => handleCheckout()}
+                      disabled={buyingNow}
+                      className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+                    >
+                      {buyingNow ? "Sender til betaling…" : `Kjøp nå — ${formatPrice(totalPrice)}`}
+                    </button>
+                    <p className="text-center text-[11px] text-stone-400">
+                      {shippingCost > 0 ? `${formatPrice(item.price)} vare + ${formatPrice(shippingCost)} frakt · ` : ""}Sikker betaling via Stripe · 7% plattformavgift inkludert
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {userId === null && (
             <Link href={`/login?next=/item/${item.id}`} className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black">
@@ -428,15 +482,22 @@ export default function ItemPageClient() {
                       <p className="text-xs text-emerald-600">Selger godtok {formatPrice(myOffer.amount)}</p>
                     </div>
                   </div>
-                  {sellerChargesEnabled && (
-                    <button
-                      onClick={() => handleCheckout(myOffer.id)}
-                      disabled={payingOffer}
-                      className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
-                    >
-                      {payingOffer ? "Sender til betaling…" : `Betal nå — ${formatPrice(myOffer.amount)}`}
-                    </button>
-                  )}
+                  {sellerChargesEnabled && (() => {
+                    const pkg = getPackageOption(item.package_size);
+                    const effectiveDm = item.shipping === "Kun henting" ? "meetup"
+                      : item.shipping === "Kan sendes" ? "shipping"
+                      : deliveryMethod;
+                    const shippingCost = effectiveDm === "shipping" && pkg ? pkg.price : 0;
+                    return (
+                      <button
+                        onClick={() => handleCheckout(myOffer.id)}
+                        disabled={payingOffer}
+                        className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+                      >
+                        {payingOffer ? "Sender til betaling…" : `Betal nå — ${formatPrice(myOffer.amount + shippingCost)}`}
+                      </button>
+                    );
+                  })()}
                   <p className="text-center text-[11px] text-stone-400">Sikker betaling via Stripe · 7% plattformavgift inkludert</p>
                 </div>
               ) : (

@@ -15,6 +15,7 @@ export type Item = {
   is_sold: boolean;
   sold_to_buyer_id: string | null;
   shipping: string | null;
+  package_size: string | null;
   created_at: string;
   updated_at: string;
 };

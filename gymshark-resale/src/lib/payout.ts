@@ -18,16 +18,16 @@ export async function payoutOrder(
 
   if (!profile?.stripe_account_id) throw new Error("no_stripe_account");
 
-  const desiredOre = (amountNok - platformFeeNok) * 100;
-
   // Fetch the charge so we can use source_transaction and know the actual net
   // amount Stripe deposited (charge amount minus Stripe's own processing fees).
   const { data: orderRow } = await admin
     .from("orders")
-    .select("stripe_payment_intent_id")
+    .select("stripe_payment_intent_id, shipping_cost_nok")
     .eq("id", orderId)
     .maybeSingle();
 
+  // Seller receives item payout + shipping reimbursement
+  const desiredOre = (amountNok - platformFeeNok + (orderRow?.shipping_cost_nok ?? 0)) * 100;
   let transferAmountOre = desiredOre;
   let sourceTransaction: string | undefined;
 

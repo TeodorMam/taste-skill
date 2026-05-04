@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createClient as createSupabaseServerClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import Stripe from "stripe";
 import { stripe, calcFee } from "@/lib/stripe";
+import { getPackageOption } from "@/lib/shipping";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,13 +20,13 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Logg inn for å kjøpe" }, { status: 401 });
 
-  const body = await req.json() as { item_id: string; offer_id?: string };
-  const { item_id, offer_id } = body;
+  const body = await req.json() as { item_id: string; offer_id?: string; delivery_method?: "shipping" | "meetup" };
+  const { item_id, offer_id, delivery_method = "shipping" } = body;
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
-  // Fetch item (source of truth for price)
-  const { data: item } = await admin.from("items").select("id, title, seller_id, price, is_sold").eq("id", item_id).maybeSingle();
+  // Fetch item (source of truth for price and shipping)
+  const { data: item } = await admin.from("items").select("id, title, seller_id, price, is_sold, shipping, package_size").eq("id", item_id).maybeSingle();
   if (!item) return NextResponse.json({ error: "Annonsen finnes ikke" }, { status: 404 });
   if (item.is_sold) return NextResponse.json({ error: "Denne varen er allerede solgt" }, { status: 400 });
   if (item.seller_id === user.id) return NextResponse.json({ error: "Du kan ikke kjøpe din egen vare" }, { status: 400 });
@@ -38,6 +40,11 @@ export async function POST(req: NextRequest) {
     }
     amountNok = offer.amount;
   }
+
+  // Calculate shipping cost from seller's chosen package size
+  const shippingCostNok = delivery_method === "shipping" && item.package_size
+    ? (getPackageOption(item.package_size)?.price ?? 0)
+    : 0;
 
   // Check seller has Stripe enabled
   const { data: sellerProfile } = await admin.from("profiles")
@@ -70,6 +77,8 @@ export async function POST(req: NextRequest) {
     offer_id: offer_id ?? null,
     amount_nok: amountNok,
     platform_fee_nok: platformFeeNok,
+    delivery_method,
+    shipping_cost_nok: shippingCostNok,
     status: "pending",
   }).select("id").single();
 
@@ -81,10 +90,8 @@ export async function POST(req: NextRequest) {
   const { data: buyerData } = await admin.auth.admin.getUserById(user.id);
   const buyerEmail = buyerData.user?.email;
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    payment_method_types: ["card"],
-    line_items: [{
+  const lineItems: { price_data: { currency: string; unit_amount: number; product_data: { name: string; metadata?: Record<string, string> } }; quantity: number }[] = [
+    {
       price_data: {
         currency: "nok",
         unit_amount: amountNok * 100,
@@ -94,7 +101,25 @@ export async function POST(req: NextRequest) {
         },
       },
       quantity: 1,
-    }],
+    },
+  ];
+
+  if (shippingCostNok > 0) {
+    const pkg = getPackageOption(item.package_size);
+    lineItems.push({
+      price_data: {
+        currency: "nok",
+        unit_amount: shippingCostNok * 100,
+        product_data: { name: `Frakt — Posten ${pkg?.label ?? "Norgespakke"}` },
+      },
+      quantity: 1,
+    });
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    payment_method_types: ["card"],
+    line_items: lineItems,
     payment_intent_data: {
       // No transfer_data: funds held on platform until buyer confirms delivery
       metadata: {

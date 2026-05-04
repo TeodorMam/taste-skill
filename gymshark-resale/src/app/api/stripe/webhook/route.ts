@@ -76,9 +76,14 @@ export async function POST(req: NextRequest) {
       await sendEmail(buyerEmail, `Betaling bekreftet — ${itemTitle}`, `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1c1917;max-width:560px">
           <h2 style="margin:0 0 8px;font-size:18px">Betaling bekreftet!</h2>
-          <p style="margin:0 0 12px;color:#57534e;font-size:14px">Du har kjøpt <strong>${escapeHtml(itemTitle)}</strong> for <strong>${fmt(existing.amount_nok)}</strong>. Betalingen holdes hos Aktivbruk til du bekrefter mottak.</p>
-          <p style="margin:0 0 16px;font-size:14px;color:#57534e">Selger vil sende varen og markere den som levert. Når du mottar den, bekrefter du i <a href="${SITE_URL}/orders">dine ordre</a> — da frigjøres betalingen til selger. Har du 48 timer på deg, etter det skjer det automatisk.</p>
-          <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
+          <p style="margin:0 0 12px;color:#57534e;font-size:14px">Du har kjøpt <strong>${escapeHtml(itemTitle)}</strong> for <strong>${fmt(existing.amount_nok)}</strong>. Pengene holdes trygt hos Aktivbruk til handelen er fullført.</p>
+          <p style="margin:0 0 8px;font-size:14px;color:#57534e">Selger vil sende varen og markere den som sendt. Når varen er levert, får du beskjed og har <strong>48 timer</strong> på å:</p>
+          <ul style="margin:0 0 12px;padding-left:20px;font-size:14px;color:#57534e">
+            <li>Bekrefte at alt er i orden</li>
+            <li>Melde fra om et problem</li>
+          </ul>
+          <p style="margin:0 0 16px;font-size:14px;color:#57534e">Hvis du ikke gjør noe innen 48 timer, fullføres handelen automatisk og pengene utbetales til selger.</p>
+          <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
           <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
         </div>
       `);

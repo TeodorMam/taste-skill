@@ -15,6 +15,8 @@ type Order = {
   status: OrderStatus;
   amount_nok: number;
   platform_fee_nok: number;
+  shipping_cost_nok: number;
+  delivery_method: "shipping" | "meetup" | null;
   created_at: string;
   shipped_at: string | null;
   delivered_at: string | null;
@@ -111,7 +113,10 @@ function OrderCard({ order, role, onAction }: {
               <span className="text-stone-400">Annonse slettet</span>
             )}
           </p>
-          <p className="text-sm text-stone-700">{formatPrice(order.amount_nok)}</p>
+          <p className="text-sm text-stone-700">
+            {formatPrice(order.amount_nok + (order.shipping_cost_nok ?? 0))}
+            {order.shipping_cost_nok > 0 && <span className="ml-1 text-xs text-stone-400">inkl. frakt</span>}
+          </p>
           <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLOR[order.status]}`}>
             {STATUS_LABEL[order.status]}
           </span>
@@ -125,7 +130,7 @@ function OrderCard({ order, role, onAction }: {
       )}
 
       {/* Seller actions */}
-      {role === "seller" && order.status === "paid" && (
+      {role === "seller" && order.status === "paid" && order.delivery_method !== "meetup" && (
         <div className="border-t border-stone-100 p-4 space-y-3">
           <p className="text-xs text-stone-600">Send varen via Posten og legg inn sporingsnummeret — kjøper varsles automatisk når pakken er levert.</p>
           {showShipForm ? (
@@ -158,6 +163,19 @@ function OrderCard({ order, role, onAction }: {
               Marker som sendt →
             </button>
           )}
+        </div>
+      )}
+
+      {role === "seller" && order.status === "paid" && order.delivery_method === "meetup" && (
+        <div className="border-t border-stone-100 p-4 space-y-3">
+          <p className="text-xs text-stone-600">Avtal tid og sted med kjøper i chatten, og bekreft overlevering når dere møtes.</p>
+          <button
+            onClick={() => act("handover")}
+            disabled={!!busy}
+            className="w-full rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+          >
+            {busy === "handover" ? "Lagrer…" : "Bekreft overlevering →"}
+          </button>
         </div>
       )}
 
@@ -200,20 +218,17 @@ function OrderCard({ order, role, onAction }: {
       {/* Buyer actions */}
       {role === "buyer" && order.status === "paid" && (
         <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-stone-500">Betalt og bekreftet — venter på at selger sender varen.</p>
+          <p className="text-xs text-stone-500">
+            {order.delivery_method === "meetup"
+              ? "Betalt — avtal tid og sted med selger i chatten."
+              : "Betalt og bekreftet — venter på at selger sender varen."}
+          </p>
         </div>
       )}
 
       {role === "buyer" && order.status === "shipped" && (
-        <div className="border-t border-stone-100 p-4 space-y-2">
-          <p className="text-xs text-stone-600">Har du mottatt pakken?</p>
-          <button
-            onClick={() => act("deliver")}
-            disabled={!!busy}
-            className="w-full rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-50"
-          >
-            {busy === "deliver" ? "Lagrer…" : "Jeg har mottatt varen →"}
-          </button>
+        <div className="border-t border-stone-100 px-4 py-3">
+          <p className="text-xs text-stone-500">Varen er sendt — vi følger pakken og varsler deg når den er levert.</p>
         </div>
       )}
 
@@ -331,6 +346,7 @@ export default function OrdersPage() {
 
     const messages: Record<string, string> = {
       ship: "Merket som sendt",
+      handover: "Overlevering bekreftet — kjøper har 48 timer på å bekrefte",
       deliver: "Merket som levert — kjøper har 48 timer på å bekrefte",
       confirm: "Mottak bekreftet — betaling frigjøres til selger",
       dispute: "Problem meldt — betaling satt på vent",
