@@ -10,7 +10,7 @@ import {
 } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 
-export function ProfileEditor() {
+export function ProfileEditor({ email }: { email?: string | null }) {
   const toast = useToast();
   const supabase = useMemo(() => createClient(), []);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
@@ -99,21 +99,22 @@ export function ProfileEditor() {
     const isIncomplete = missingName || missingAvatar;
 
     return (
-      <div className="rounded-2xl border border-stone-200 bg-white p-4">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen(true)}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setOpen(true)}
+        className="cursor-pointer rounded-2xl border border-[#5a6b32]/40 bg-white p-4 transition hover:border-[#5a6b32] hover:bg-[#5a6b32]/5"
+      >
         <div className="flex items-center gap-3">
           <Avatar url={avatarUrl} displayName={displayName} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold tracking-tight">{name}</p>
-            <p className="truncate text-xs text-stone-500">
-              {profile?.bio ?? "Legg til navn, bilde og bio så kjøpere ser hvem du er."}
-            </p>
+            <p className="truncate text-xs text-stone-500">{email ?? ""}</p>
           </div>
-          <button
-            onClick={() => setOpen(true)}
-            className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500"
-          >
-            Rediger profil
-          </button>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-stone-400" aria-hidden>
+            <path d="M9 18l6-6-6-6" />
+          </svg>
         </div>
 
         {isIncomplete && (
@@ -126,13 +127,6 @@ export function ProfileEditor() {
                   ? "Legg til et visningsnavn så kjøpere vet hvem de handler med."
                   : "Legg til et profilbilde for å øke tilliten hos kjøperne."}
             </p>
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="mt-2 rounded-full bg-[#5a6b32] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#435022]"
-            >
-              Fullfør profil
-            </button>
           </div>
         )}
       </div>

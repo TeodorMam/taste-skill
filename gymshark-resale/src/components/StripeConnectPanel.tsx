@@ -9,6 +9,7 @@ type Status = "loading" | "none" | "pending" | "active";
 export function StripeConnectPanel() {
   const [status, setStatus] = useState<Status>("loading");
   const [connecting, setConnecting] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const toast = useToast();
   const searchParams = useSearchParams();
 
@@ -16,7 +17,6 @@ export function StripeConnectPanel() {
     fetchStatus();
     if (searchParams.get("stripe") === "return") {
       toast("Kobler til Stripe — dette tar noen sekunder…");
-      // Re-check after a short delay to catch webhook sync
       const t = setTimeout(fetchStatus, 4000);
       return () => clearTimeout(t);
     }
@@ -49,6 +49,24 @@ export function StripeConnectPanel() {
     }
   }
 
+  async function handleDisconnect() {
+    setDisconnecting(true);
+    try {
+      const res = await fetch("/api/stripe/connect", { method: "DELETE" });
+      const json = await res.json() as { error?: string };
+      if (res.ok) {
+        setStatus("none");
+        toast("Stripe-konto koblet fra");
+      } else {
+        toast(json.error ?? "Noe gikk galt");
+      }
+    } catch {
+      toast("Noe gikk galt, prøv igjen");
+    } finally {
+      setDisconnecting(false);
+    }
+  }
+
   if (status === "loading") return null;
 
   return (
@@ -75,13 +93,22 @@ export function StripeConnectPanel() {
           <p className="text-sm text-stone-700">
             Stripe behandler informasjonen din. Fullfør verifiseringen for å aktivere betaling.
           </p>
-          <button
-            onClick={handleConnect}
-            disabled={connecting}
-            className="rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
-          >
-            {connecting ? "Sender til Stripe…" : "Fortsett verifisering →"}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleConnect}
+              disabled={connecting}
+              className="rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+            >
+              {connecting ? "Sender til Stripe…" : "Fortsett verifisering →"}
+            </button>
+            <button
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500 disabled:opacity-50"
+            >
+              {disconnecting ? "Kobler fra…" : "Koble fra"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -89,14 +116,23 @@ export function StripeConnectPanel() {
         <div className="mt-3 space-y-1">
           <p className="text-sm font-medium text-emerald-700">✓ Selgerkonto aktivert</p>
           <p className="text-xs text-stone-500">Betalinger er aktivert. Utbetalinger skjer automatisk via Stripe Express-dashbordet ditt.</p>
-          <a
-            href="https://dashboard.stripe.com/express"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-block text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
-          >
-            Åpne Stripe-dashboard ↗
-          </a>
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <a
+              href="https://dashboard.stripe.com/express"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+            >
+              Åpne Stripe-dashboard ↗
+            </a>
+            <button
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+              className="text-xs text-stone-400 underline underline-offset-2 hover:text-stone-600 disabled:opacity-50"
+            >
+              {disconnecting ? "Kobler fra…" : "Koble fra"}
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -70,12 +70,9 @@ export default function ProfilPage() {
     <section className="space-y-5">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Min profil</h1>
-        <p className="mt-1 text-sm text-stone-500">
-          Sett navn, bilde og bio så kjøpere ser hvem du er.
-        </p>
       </div>
 
-      <ProfileEditor />
+      <ProfileEditor email={email} />
 
       {reviews && reviews.length > 0 && (
         <div className="rounded-2xl border border-stone-200 bg-white p-4">

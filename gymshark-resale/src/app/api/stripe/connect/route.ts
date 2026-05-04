@@ -87,3 +87,24 @@ export async function GET() {
     return NextResponse.json({ error: "Noe gikk galt" }, { status: 500 });
   }
 }
+
+export async function DELETE() {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createSupabaseServerClient(cookieStore);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Logg inn først" }, { status: 401 });
+
+    const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+    await admin.from("profiles").update({
+      stripe_account_id: null,
+      stripe_charges_enabled: false,
+      stripe_onboarding_complete: false,
+    }).eq("user_id", user.id);
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[stripe/connect DELETE]", err);
+    return NextResponse.json({ error: "Noe gikk galt, prøv igjen" }, { status: 500 });
+  }
+}
