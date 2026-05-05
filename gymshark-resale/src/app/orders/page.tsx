@@ -129,7 +129,17 @@ function OrderCard({ order, role, onAction }: {
 
       {order.tracking_info && (
         <div className="border-t border-stone-100 px-4 py-2">
-          <p className="text-xs text-stone-500">Sporing: <span className="font-medium text-stone-700">{order.tracking_info}</span></p>
+          <p className="text-xs text-stone-500">
+            Sporing:{" "}
+            <a
+              href={`https://sporing.posten.no/sporing/${order.tracking_info}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+            >
+              {order.tracking_info} ↗
+            </a>
+          </p>
         </div>
       )}
 
