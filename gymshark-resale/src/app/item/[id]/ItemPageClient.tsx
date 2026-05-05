@@ -269,6 +269,9 @@ export default function ItemPageClient() {
         window.location.href = json.url;
       } else {
         toast(json.error ?? "Noe gikk galt");
+        if (json.error?.includes("leveringsinformasjon")) {
+          setTimeout(() => router.push("/profil"), 1200);
+        }
         setter(false);
       }
     } catch {

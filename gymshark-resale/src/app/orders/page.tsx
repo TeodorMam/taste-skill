@@ -27,6 +27,11 @@ type Order = {
   tracking_info: string | null;
   buyer_id: string;
   seller_id: string;
+  buyer_name: string | null;
+  buyer_address: string | null;
+  buyer_postal_code: string | null;
+  buyer_city: string | null;
+  buyer_phone: string | null;
   item: { id: number; title: string; image_urls: string[] | null } | null;
 };
 
@@ -79,7 +84,6 @@ function OrderCard({ order, role, onAction }: {
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
   const [trackingInput, setTrackingInput] = useState("");
-  const [showShipForm, setShowShipForm] = useState(false);
   const [showDispute, setShowDispute] = useState(false);
   const [disputeReason, setDisputeReason] = useState("");
 
@@ -131,39 +135,60 @@ function OrderCard({ order, role, onAction }: {
 
       {/* Seller actions */}
       {role === "seller" && order.status === "paid" && order.delivery_method !== "meetup" && (
-        <div className="border-t border-stone-100 p-4 space-y-3">
-          <p className="text-xs text-stone-600">Send varen via Posten og legg inn sporingsnummeret — kjøper varsles automatisk når pakken er levert.</p>
-          <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg px-3 py-2">⚠ Varen må sendes innen 7 dager etter betaling, ellers kanselleres ordren automatisk og kjøper refunderes.</p>
-          {showShipForm ? (
-            <div className="space-y-2">
-              <input
-                type="text"
-                value={trackingInput}
-                onChange={(e) => setTrackingInput(e.target.value)}
-                placeholder="Sporingsnummer (Posten / Bring)"
-                className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={() => act("ship", { tracking_info: trackingInput })}
-                  disabled={!!busy || !trackingInput.trim()}
-                  className="flex-1 rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
-                >
-                  {busy === "ship" ? "Lagrer…" : "Marker som sendt"}
-                </button>
-                <button onClick={() => setShowShipForm(false)} className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500">
-                  Avbryt
-                </button>
-              </div>
+        <div className="border-t border-stone-100 p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-stone-800">Send pakken</p>
+            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">Send innen 7 dager</span>
+          </div>
+
+          {order.buyer_name && (
+            <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400">Mottaker</p>
+              <p className="text-sm font-medium text-stone-900">{order.buyer_name}</p>
+              <p className="text-sm text-stone-700">{order.buyer_address}</p>
+              <p className="text-sm text-stone-700">{order.buyer_postal_code} {order.buyer_city}</p>
+              {order.buyer_phone && <p className="text-sm text-stone-700">{order.buyer_phone}</p>}
+              <button
+                type="button"
+                onClick={() => {
+                  const text = [order.buyer_name, order.buyer_address, `${order.buyer_postal_code} ${order.buyer_city}`, order.buyer_phone].filter(Boolean).join("\n");
+                  void navigator.clipboard.writeText(text);
+                  toast("Kopiert!");
+                }}
+                className="mt-2 text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+              >
+                Kopier alt
+              </button>
             </div>
-          ) : (
-            <button
-              onClick={() => setShowShipForm(true)}
-              className="w-full rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022]"
-            >
-              Marker som sendt →
-            </button>
           )}
+
+          <ol className="space-y-1.5 text-xs text-stone-600">
+            <li className="flex gap-2"><span className="font-semibold text-stone-800">1.</span><span>Gå til posten.no og velg «Send pakke»</span></li>
+            <li className="flex gap-2"><span className="font-semibold text-stone-800">2.</span><span>Lim inn mottakerinformasjonen</span></li>
+            <li className="flex gap-2"><span className="font-semibold text-stone-800">3.</span><span>Betal og lever pakken hos Posten / Post i butikk</span></li>
+          </ol>
+
+          <div className="space-y-0.5 text-xs text-stone-500">
+            <p>Frakten er allerede betalt av kjøper — du får dette tilbake i utbetalingen.</p>
+            <p>Levering tar vanligvis 2–5 virkedager.</p>
+          </div>
+
+          <div className="space-y-2 pt-1">
+            <input
+              type="text"
+              value={trackingInput}
+              onChange={(e) => setTrackingInput(e.target.value)}
+              placeholder="Sporingsnummer (valgfritt)"
+              className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
+            />
+            <button
+              onClick={() => act("ship", trackingInput.trim() ? { tracking_info: trackingInput } : {})}
+              disabled={!!busy}
+              className="w-full rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+            >
+              {busy === "ship" ? "Lagrer…" : "Marker som sendt →"}
+            </button>
+          </div>
         </div>
       )}
 

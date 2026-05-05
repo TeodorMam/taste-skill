@@ -20,6 +20,11 @@ export function ProfileEditor({ email }: { email?: string | null }) {
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [fullName, setFullName] = useState("");
+  const [address, setAddress] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [city, setCity] = useState("");
+  const [phone, setPhone] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -43,6 +48,11 @@ export function ProfileEditor({ email }: { email?: string | null }) {
         setBio(p?.bio ?? "");
         setLocation(p?.location ?? "");
         setAvatarUrl(p?.avatar_url ?? null);
+        setFullName(p?.full_name ?? "");
+        setAddress(p?.address ?? "");
+        setPostalCode(p?.postal_code ?? "");
+        setCity(p?.city ?? "");
+        setPhone(p?.phone ?? "");
       });
   }, [userId, supabase]);
 
@@ -77,6 +87,11 @@ export function ProfileEditor({ email }: { email?: string | null }) {
       bio: bio.trim() || null,
       location: location || null,
       avatar_url: avatarUrl,
+      full_name: fullName.trim() || null,
+      address: address.trim() || null,
+      postal_code: postalCode.trim() || null,
+      city: city.trim() || null,
+      phone: phone.trim() || null,
     };
     const { data, error: upErr } = await supabase
       .from("profiles")
@@ -94,9 +109,9 @@ export function ProfileEditor({ email }: { email?: string | null }) {
   }
 
   if (!open) {
-    const missingName = !profile?.display_name;
-    const missingAvatar = !avatarUrl;
-    const isIncomplete = missingName || missingAvatar;
+    const missingShipping = !profile?.full_name || !profile?.address || !profile?.postal_code || !profile?.city || !profile?.phone;
+    const missingProfile = !profile?.display_name || !avatarUrl;
+    const isIncomplete = missingShipping || missingProfile;
 
     return (
       <div
@@ -118,14 +133,14 @@ export function ProfileEditor({ email }: { email?: string | null }) {
         </div>
 
         {isIncomplete && (
-          <div className="mt-3 rounded-xl border border-[#5a6b32]/25 bg-[#5a6b32]/8 p-3">
-            <p className="text-xs font-semibold text-[#3d4a22]">Profilen din er ikke fullført</p>
-            <p className="mt-0.5 text-xs text-stone-600">
-              {missingName && missingAvatar
-                ? "Legg til navn og profilbilde — kjøpere stoler mer på selgere med fullstendig profil."
-                : missingName
-                  ? "Legg til et visningsnavn så kjøpere vet hvem de handler med."
-                  : "Legg til et profilbilde for å øke tilliten hos kjøperne."}
+          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+            <p className="text-xs font-semibold text-amber-900">
+              {missingShipping ? "Leveringsinformasjon mangler" : "Profilen din er ikke fullført"}
+            </p>
+            <p className="mt-0.5 text-xs text-amber-800">
+              {missingShipping
+                ? "Fyll inn navn, adresse og telefon for å kunne kjøpe og motta varer."
+                : "Legg til visningsnavn og profilbilde — kjøpere stoler mer på fullstendige profiler."}
             </p>
           </div>
         )}
@@ -212,6 +227,29 @@ export function ProfileEditor({ email }: { email?: string | null }) {
         />
         <p className="mt-1 text-[10px] text-stone-400">{bio.length}/280</p>
       </Field>
+
+      <div className="border-t border-stone-100 pt-3">
+        <p className="mb-2 text-xs font-semibold text-stone-700">Leveringsinformasjon <span className="font-normal text-stone-500">(kreves for kjøp)</span></p>
+        <div className="space-y-2.5">
+          <Field label="Fullt navn *">
+            <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ola Nordmann" className={input} />
+          </Field>
+          <Field label="Adresse *">
+            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Storgata 1" className={input} />
+          </Field>
+          <div className="grid grid-cols-2 gap-2">
+            <Field label="Postnummer *">
+              <input type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="0123" inputMode="numeric" className={input} />
+            </Field>
+            <Field label="Sted *">
+              <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Oslo" className={input} />
+            </Field>
+          </div>
+          <Field label="Telefon *">
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="40012345" inputMode="tel" className={input} />
+          </Field>
+        </div>
+      </div>
 
       {error && (
         <p className="rounded-lg bg-red-50 p-3 text-xs text-red-700">{error}</p>

@@ -29,16 +29,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (order.status !== "paid") return NextResponse.json({ error: `Ordre er i status '${order.status}'` }, { status: 400 });
 
     const body = await req.json().catch(() => ({})) as { tracking_info?: string };
-
-    if (!body.tracking_info?.trim()) {
-      return NextResponse.json({ error: "Legg inn sporingsnummer" }, { status: 400 });
-    }
+    const trackingInfo = body.tracking_info?.trim() || null;
 
     await admin.from("orders").update({
       status: "shipped",
       shipped_at: new Date().toISOString(),
       carrier: "bring",
-      tracking_info: body.tracking_info.trim(),
+      tracking_info: trackingInfo,
     }).eq("id", orderId);
 
     // Email buyer
@@ -58,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
             <h2 style="margin:0 0 8px;font-size:18px">Varen er på vei!</h2>
             <p style="margin:0 0 12px;font-size:14px;color:#57534e">Selger har sendt <strong>${itemTitle}</strong>.</p>
-            <p style="margin:0 0 16px;font-size:14px;color:#57534e">Sporingsinformasjon: <strong>${body.tracking_info}</strong></p>
+            ${trackingInfo ? `<p style="margin:0 0 16px;font-size:14px;color:#57534e">Sporingsinformasjon: <strong>${trackingInfo}</strong></p>` : ""}
             <p style="margin:0 0 16px;font-size:14px;color:#57534e">Du får beskjed når varen er registrert som levert.</p>
             <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
             <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>

@@ -46,6 +46,18 @@ export async function POST(req: NextRequest) {
     ? (getPackageOption(item.package_size)?.price ?? 0)
     : 0;
 
+  // Validate buyer has shipping info
+  const { data: buyerProfile } = await admin.from("profiles")
+    .select("full_name, address, postal_code, city, phone")
+    .eq("user_id", user.id).maybeSingle();
+
+  if (delivery_method === "shipping" && (
+    !buyerProfile?.full_name || !buyerProfile?.address ||
+    !buyerProfile?.postal_code || !buyerProfile?.city || !buyerProfile?.phone
+  )) {
+    return NextResponse.json({ error: "Fyll inn leveringsinformasjon i profilen din før du kjøper" }, { status: 400 });
+  }
+
   // Check seller has Stripe enabled
   const { data: sellerProfile } = await admin.from("profiles")
     .select("stripe_account_id, stripe_charges_enabled")
@@ -80,6 +92,11 @@ export async function POST(req: NextRequest) {
     delivery_method,
     shipping_cost_nok: shippingCostNok,
     status: "pending",
+    buyer_name: buyerProfile?.full_name ?? null,
+    buyer_address: buyerProfile?.address ?? null,
+    buyer_postal_code: buyerProfile?.postal_code ?? null,
+    buyer_city: buyerProfile?.city ?? null,
+    buyer_phone: buyerProfile?.phone ?? null,
   }).select("id").single();
 
   if (orderErr || !order) {
