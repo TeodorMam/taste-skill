@@ -181,7 +181,7 @@ export default function ChatPage() {
     setError(null);
     const { data, error } = await supabase
       .from("messages")
-      .insert({ item_id: itemId, buyer_id: buyerId, sender_id: meId, body: text, message_type: "text" })
+      .insert({ item_id: itemId, buyer_id: buyerId, sender_id: meId, body: text })
       .select("*")
       .single();
     setSending(false);
@@ -202,7 +202,7 @@ export default function ChatPage() {
     const { data: urlData } = supabase.storage.from("item-images").getPublicUrl(path);
     const { data, error } = await supabase
       .from("messages")
-      .insert({ item_id: itemId, buyer_id: buyerId, sender_id: meId, body: "", message_type: "image", image_url: urlData.publicUrl })
+      .insert({ item_id: itemId, buyer_id: buyerId, sender_id: meId, body: "", image_url: urlData.publicUrl })
       .select("*")
       .single();
     setUploading(false);
@@ -222,7 +222,7 @@ export default function ChatPage() {
     if (data) setOffersMap((prev) => ({ ...prev, [offerId]: data as Offer }));
 
     if (status === "accepted") {
-      // Insert a bid_accepted event message so both parties see it in the timeline
+      // Insert a bid_accepted event message — silently skipped if migration not yet applied
       await supabase.from("messages").insert({
         item_id: itemId,
         buyer_id: buyerId,
@@ -230,7 +230,7 @@ export default function ChatPage() {
         body: "",
         message_type: "bid_accepted",
         metadata: { offer_id: offerId, amount },
-      });
+      }).then(() => null);
       toast("Bud godtatt ✓");
     } else {
       toast("Bud avslått");

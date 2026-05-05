@@ -207,7 +207,7 @@ export default function ItemPageClient() {
       const offer = data as Offer;
       setMyOffer(offer);
       setOfferAmount("");
-      // Create a bid message so it shows up in chat timeline + inbox
+      // Create a bid message — silently skipped if migration not yet applied
       await supabase.from("messages").insert({
         item_id: item.id,
         buyer_id: userId,
@@ -215,7 +215,7 @@ export default function ItemPageClient() {
         body: "",
         message_type: "bid",
         metadata: { offer_id: offer.id, amount },
-      });
+      }).then(() => null);
       toast("Bud sendt");
       void supabase.rpc("notify_seller_of_offer", { p_item_id: String(item.id), p_amount: amount }).then(() => null);
     } else if (oErr) { toast(`Feil: ${oErr.message}`); }
