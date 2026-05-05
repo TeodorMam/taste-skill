@@ -50,12 +50,13 @@ export default function VilkarPage() {
           <li>Du har 48 timer etter levering til å bekrefte mottak eller melde et problem. Gjøres ingenting, frigjøres betalingen automatisk til selger.</li>
           <li>Du kan melde problem dersom varen ikke er levert, er vesentlig feilbeskrevet, eller er skadet på en måte som ikke fremgikk av annonsen.</li>
           <li>Angrerett etter forbrukerkjøpsloven gjelder ikke for handel mellom privatpersoner med mindre selger er næringsdrivende.</li>
+          <li>Misbruk av «meld problem»-funksjonen kan føre til begrensning eller stenging av konto.</li>
         </ul>
       </Block>
 
       <Block title="5. Betaling og gebyrer">
         <ul className="space-y-1.5">
-          <li>Betalingen holdes trygt hos Aktivbruk via Stripe til kjøper enten bekrefter at alt er OK, eller 48 timer har gått etter registrert levering.</li>
+          <li>Betalingen behandles via Stripe og holdes sikkert frem til kjøper enten bekrefter at alt er OK, eller 48 timer har gått etter registrert levering.</li>
           <li>Aktivbruk tar et transaksjonsgebyr per gjennomført salg. Gebyret fremgår av kjøpsprosessen.</li>
           <li>Fraktkostnader betales av kjøper og legges til i kassen basert på selgers valgte pakkestørrelse.</li>
           <li>Refusjoner behandles via Stripe og kan ta 5–10 virkedager avhengig av kortutstederen.</li>
@@ -63,7 +64,7 @@ export default function VilkarPage() {
       </Block>
 
       <Block title="6. Tvister">
-        <p>Oppstår det en tvist mellom kjøper og selger, kan begge parter kontakte oss på <a href="mailto:kontakt@aktivbruk.com" className="underline underline-offset-2 hover:text-stone-900">kontakt@aktivbruk.com</a>. Aktivbruk vil vurdere saken basert på tilgjengelig dokumentasjon — annonsen, kommunikasjon og eventuelle bilder — og gjøre en rimelig og balansert vurdering. Vi tar hensyn til begge parters situasjon og tilstreber en rettferdig løsning.</p>
+        <p>Oppstår det en tvist mellom kjøper og selger, kan begge parter kontakte oss på <a href="mailto:kontakt@aktivbruk.com" className="underline underline-offset-2 hover:text-stone-900">kontakt@aktivbruk.com</a>. Aktivbruk vil vurdere saken basert på tilgjengelig dokumentasjon — annonsen, kommunikasjon og eventuelle bilder — og gjøre en rimelig og balansert vurdering. Vi tar hensyn til begge parters situasjon og tilstreber en rettferdig løsning. Aktivbruk forbeholder seg retten til å ta en endelig beslutning i saken.</p>
       </Block>
 
       <Block title="7. Forbudt innhold og atferd">

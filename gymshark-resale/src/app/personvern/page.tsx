@@ -48,7 +48,7 @@ export default function PersonvernPage() {
       <Block title="4. Deling med tredjeparter">
         <p>Vi deler kun opplysninger med tredjeparter der det er nødvendig for å levere tjenesten:</p>
         <ul className="mt-2 space-y-2">
-          <li><strong>Stripe</strong> — betalingsbehandling og utbetalinger til selgere. <a href="https://stripe.com/en-no/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-stone-900">Stripes personvernpolicy ↗</a></li>
+          <li><strong>Stripe</strong> — betalingsbehandling og utbetalinger til selgere. Stripe er selvstendig behandlingsansvarlig for betalingsdata. <a href="https://stripe.com/en-no/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-stone-900">Stripes personvernpolicy ↗</a></li>
           <li><strong>Supabase</strong> — lagring av brukerdata og innhold. Dataene lagres i EU (Frankfurt). <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-stone-900">Supabase personvernpolicy ↗</a></li>
           <li><strong>Resend</strong> — utsending av transaksjons-e-poster. <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-stone-900">Resends personvernpolicy ↗</a></li>
         </ul>
