@@ -41,6 +41,7 @@ export default function VilkarPage() {
           <li>Forfalskninger, stjålgods eller varer som bryter norsk lov er ikke tillatt.</li>
           <li>Du plikter å sende varen innen 7 dager etter betaling. Sender du ikke innen fristen, kanselleres ordren og kjøper refunderes fullt.</li>
           <li>For å motta betaling må du koble til en Stripe Express-konto og akseptere Stripes vilkår.</li>
+          <li>Leveringstid kan variere, og Aktivbruk er ikke ansvarlig for forsinkelser hos fraktselskap.</li>
         </ul>
       </Block>
 
@@ -54,7 +55,7 @@ export default function VilkarPage() {
 
       <Block title="5. Betaling og gebyrer">
         <ul className="space-y-1.5">
-          <li>Betaling skjer via Stripe og holdes i escrow hos Aktivbruk frem til kjøper bekrefter mottak.</li>
+          <li>Betalingen holdes trygt hos Aktivbruk via Stripe til kjøper enten bekrefter at alt er OK, eller 48 timer har gått etter registrert levering.</li>
           <li>Aktivbruk tar et transaksjonsgebyr per gjennomført salg. Gebyret fremgår av kjøpsprosessen.</li>
           <li>Fraktkostnader betales av kjøper og legges til i kassen basert på selgers valgte pakkestørrelse.</li>
           <li>Refusjoner behandles via Stripe og kan ta 5–10 virkedager avhengig av kortutstederen.</li>
@@ -62,7 +63,7 @@ export default function VilkarPage() {
       </Block>
 
       <Block title="6. Tvister">
-        <p>Oppstår det en tvist mellom kjøper og selger, kan begge parter kontakte oss på <a href="mailto:kontakt@aktivbruk.com" className="underline underline-offset-2 hover:text-stone-900">kontakt@aktivbruk.com</a>. Aktivbruk vil vurdere saken basert på annonsen, kommunikasjon og dokumentasjon, og ta en endelig avgjørelse. Vi er ikke forpliktet til å fatte en avgjørelse i favor av noen part, men tilstreber en rettferdig behandling.</p>
+        <p>Oppstår det en tvist mellom kjøper og selger, kan begge parter kontakte oss på <a href="mailto:kontakt@aktivbruk.com" className="underline underline-offset-2 hover:text-stone-900">kontakt@aktivbruk.com</a>. Aktivbruk vil vurdere saken basert på tilgjengelig dokumentasjon — annonsen, kommunikasjon og eventuelle bilder — og gjøre en rimelig og balansert vurdering. Vi tar hensyn til begge parters situasjon og tilstreber en rettferdig løsning.</p>
       </Block>
 
       <Block title="7. Forbudt innhold og atferd">

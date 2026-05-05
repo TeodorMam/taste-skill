@@ -39,7 +39,7 @@ export default function PersonvernPage() {
         <Table rows={[
           ["Levere tjenesten", "Opprette konto, vise annonser, gjennomføre kjøp og salg", "Avtale (GDPR art. 6b)"],
           ["Betaling og utbetaling", "Prosessere betaling via Stripe, utbetale til selger", "Avtale (GDPR art. 6b)"],
-          ["Kommunikasjon", "Sende e-postvarsler om ordre, levering og tvister", "Avtale (GDPR art. 6b)"],
+          ["Kommunikasjon", "Sende e-postvarsler om ordre, levering og tvister. Vi sender kun e-post som er nødvendig for å levere tjenesten — ikke markedsføring uten samtykke.", "Avtale (GDPR art. 6b)"],
           ["Sikkerhet og misbruk", "Oppdage og forebygge svindel og ulovlig aktivitet", "Berettiget interesse (GDPR art. 6f)"],
           ["Lovpålagte krav", "Regnskapsplikt og andre rettslige forpliktelser", "Rettslig forpliktelse (GDPR art. 6c)"],
         ]} cols={["Formål", "Beskrivelse", "Rettslig grunnlag"]} />
