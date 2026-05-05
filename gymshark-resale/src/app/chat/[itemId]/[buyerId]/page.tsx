@@ -358,11 +358,19 @@ export default function ChatPage() {
           if (type === "bid") {
             const meta = m.metadata as { offer_id: string; amount: number } | null;
             const offer = meta?.offer_id ? offersMap[meta.offer_id] : undefined;
+            // Fallback: if offersMap hasn't updated yet (e.g. realtime hiccup),
+            // scan the message timeline for a matching bid_accepted event
+            const acceptedInTimeline = !!meta?.offer_id && messages.some(
+              (m2) => m2.message_type === "bid_accepted"
+                && (m2.metadata as { offer_id?: string } | null)?.offer_id === meta.offer_id
+            );
+            const derivedStatus: "pending" | "accepted" | "declined" =
+              offer?.status ?? (acceptedInTimeline ? "accepted" : "pending");
             return (
               <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
                 <BidCard
                   amount={meta?.amount ?? 0}
-                  offer={offer}
+                  status={derivedStatus}
                   isSeller={isSeller}
                   onRespond={(status) =>
                     respondOffer(meta!.offer_id, meta?.amount ?? 0, status)
@@ -502,16 +510,15 @@ export default function ChatPage() {
 
 function BidCard({
   amount,
-  offer,
+  status,
   isSeller,
   onRespond,
 }: {
   amount: number;
-  offer: Offer | undefined;
+  status: "pending" | "accepted" | "declined";
   isSeller: boolean;
   onRespond: (status: "accepted" | "declined") => void;
 }) {
-  const status = offer?.status ?? "pending";
 
   return (
     <div className="w-56 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 text-sm shadow-sm transition-all">

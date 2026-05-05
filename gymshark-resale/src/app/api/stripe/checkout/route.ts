@@ -41,6 +41,28 @@ export async function POST(req: NextRequest) {
     amountNok = offer.amount;
   }
 
+  // Idempotency: reject if a non-cancelled order already exists for this item/offer
+  // to prevent double-payment from double-clicks or duplicate requests
+  {
+    const dupQuery = admin
+      .from("orders")
+      .select("id, stripe_checkout_session_id, status")
+      .eq("item_id", Number(item_id))
+      .neq("status", "cancelled");
+    const { data: dup } = await (offer_id
+      ? dupQuery.eq("offer_id", offer_id)
+      : dupQuery.eq("buyer_id", user.id)
+    ).maybeSingle();
+
+    if (dup) {
+      if (dup.stripe_checkout_session_id) {
+        const existing = await stripe.checkout.sessions.retrieve(dup.stripe_checkout_session_id);
+        if (existing.url) return NextResponse.json({ url: existing.url });
+      }
+      return NextResponse.json({ error: "En betaling er allerede i gang for denne varen" }, { status: 409 });
+    }
+  }
+
   // Calculate shipping cost from seller's chosen package size
   const shippingCostNok = delivery_method === "shipping" && item.package_size
     ? (getPackageOption(item.package_size)?.price ?? 0)
