@@ -172,7 +172,7 @@ export default function InboxPage() {
             return (
               <li
                 key={key}
-                onClick={() => router.push(`/item/${item.id}`)}
+                onClick={() => router.push(`/chat/${item.id}/${lastMessage.buyer_id}`)}
                 className="flex cursor-pointer items-center gap-3 px-4 py-3 transition hover:bg-stone-50 active:bg-stone-100"
               >
                 {/* User avatar */}

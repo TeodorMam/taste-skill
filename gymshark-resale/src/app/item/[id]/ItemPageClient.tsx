@@ -15,7 +15,6 @@ import { getPackageOption } from "@/lib/shipping";
 import { ReportButton } from "@/components/ReportButton";
 import { Avatar } from "@/components/Avatar";
 import { createClient } from "@/utils/supabase/client";
-import { ChatPanel } from "@/components/ChatPanel";
 import { ItemCard } from "@/components/ItemCard";
 import { Carousel } from "@/components/Carousel";
 import { ShareButton } from "@/components/ShareButton";
@@ -26,17 +25,6 @@ import { ItemLikes } from "@/components/ItemLikes";
 import { FirstListingSuccess } from "@/components/FirstListingSuccess";
 import { useToast } from "@/components/ToastProvider";
 
-function fmtBuyerTime(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "nå";
-  if (diffMin < 60) return `${diffMin}m`;
-  const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${diffH}t`;
-  return `${Math.floor(diffH / 24)}d`;
-}
 
 function fmtLastSeen(iso: string | null | undefined): string | null {
   if (!iso) return null;
@@ -68,11 +56,9 @@ export default function ItemPageClient() {
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
 
   const [buyerThreads, setBuyerThreads] = useState<string[]>([]);
-  const [buyerLastMsg, setBuyerLastMsg] = useState<Record<string, string>>({});
   const [buyerProfiles, setBuyerProfiles] = useState<Record<string, Profile>>({});
   const [showSoldPicker, setShowSoldPicker] = useState(false);
   const [soldToBuyer, setSoldToBuyer] = useState<string | null>(null);
-  const [activeBuyer, setActiveBuyer] = useState<string | null>(null);
   const [hasChatted, setHasChatted] = useState(false);
   const [myOffer, setMyOffer] = useState<Offer | null | undefined>(undefined);
   const [buyerOffers, setBuyerOffers] = useState<Record<string, Offer>>({});
@@ -114,33 +100,19 @@ export default function ItemPageClient() {
     if (!item || !isSeller) return;
     (async () => {
       const [msgRes, offersRes] = await Promise.all([
-        supabase.from("messages").select("buyer_id, created_at").eq("item_id", item.id).order("created_at", { ascending: false }),
+        supabase.from("messages").select("buyer_id").eq("item_id", item.id),
         supabase.from("offers").select("*").eq("item_id", item.id).order("created_at", { ascending: false }),
       ]);
 
-      // Build messages metadata
-      const seen = new Set<string>();
-      const ordered: string[] = [];
-      const lastMsg: Record<string, string> = {};
-      for (const row of (msgRes.data ?? []) as { buyer_id: string; created_at: string }[]) {
-        if (!seen.has(row.buyer_id)) {
-          seen.add(row.buyer_id);
-          ordered.push(row.buyer_id);
-          lastMsg[row.buyer_id] = row.created_at;
-        }
-      }
-      setBuyerLastMsg(lastMsg);
+      const msgBuyers = [...new Set((msgRes.data ?? []).map((r) => (r as { buyer_id: string }).buyer_id))];
 
-      // Build offers map
       const offerMap: Record<string, Offer> = {};
       for (const o of (offersRes.data ?? []) as Offer[]) if (!offerMap[o.buyer_id]) offerMap[o.buyer_id] = o;
       setBuyerOffers(offerMap);
 
-      // Combined buyer list: message-senders first, then offer-only buyers
-      const offerOnlyBuyers = Object.keys(offerMap).filter((id) => !seen.has(id));
-      const allBuyers = [...ordered, ...offerOnlyBuyers];
+      const offerOnlyBuyers = Object.keys(offerMap).filter((id) => !msgBuyers.includes(id));
+      const allBuyers = [...msgBuyers, ...offerOnlyBuyers];
       setBuyerThreads(allBuyers);
-      setActiveBuyer((prev) => prev ?? allBuyers[0] ?? null);
 
       if (allBuyers.length === 0) return;
       const { data: pData } = await supabase.from("profiles").select("*").in("user_id", allBuyers);
@@ -216,7 +188,7 @@ export default function ItemPageClient() {
     if (data) setItem(data as Item);
     setShowSoldPicker(false);
     toast("Annonsen er markert som solgt");
-    if (buyerId) { setSoldToBuyer(buyerId); setActiveBuyer(buyerId); localStorage.setItem(`soldToBuyer:${item.id}`, buyerId); }
+    if (buyerId) { setSoldToBuyer(buyerId); localStorage.setItem(`soldToBuyer:${item.id}`, buyerId); }
   }
 
   async function toggleSold() {
@@ -520,48 +492,44 @@ export default function ItemPageClient() {
           )}
 
           {userId && item.seller_id && !isSeller && (
-            <ChatPanel itemId={item.id} buyerId={userId} sellerId={item.seller_id} meId={userId} />
+            <Link
+              href={`/chat/${item.id}/${userId}`}
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-800 hover:border-stone-500 hover:bg-stone-50"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z" />
+              </svg>
+              Skriv til selger
+            </Link>
           )}
 
           {isSeller && item.seller_id && (
             <div className="space-y-3">
-              <h2 className="text-sm font-medium text-stone-800">{buyerThreads.length ? `Samtaler (${buyerThreads.length})` : "Ingen meldinger enda"}</h2>
-              {buyerThreads.length > 1 && (
-                <div className="flex flex-wrap gap-2">
-                  {buyerThreads.map((b, i) => {
-                    const isActive = activeBuyer === b;
-                    const t = buyerLastMsg[b];
-                    return (
-                      <button key={b} onClick={() => setActiveBuyer(b)} className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs ${isActive ? "border-[#5a6b32] bg-[#5a6b32] text-white" : "border-stone-300 text-stone-700 hover:border-stone-500"}`}>
-                        {i === 0 && !isActive && <span className="h-1.5 w-1.5 rounded-full bg-red-400" />}
-                        {profileDisplayName(buyerProfiles[b], b)}
-                        {t && <span className={isActive ? "opacity-70" : "text-stone-400"}>· {fmtBuyerTime(t)}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {activeBuyer && buyerOffers[activeBuyer] && (
-                <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
-                  {buyerOffers[activeBuyer].status === "pending" ? (
+              {Object.entries(buyerOffers).map(([bId, offer]) => (
+                <div key={bId} className="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                  {offer.status === "pending" ? (
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs font-medium text-stone-500">
-                          Tilbud fra {profileDisplayName(buyerProfiles[activeBuyer], activeBuyer)}
+                          Tilbud fra {profileDisplayName(buyerProfiles[bId], bId)}
                         </p>
-                        <p className="text-base font-semibold">{formatPrice(buyerOffers[activeBuyer].amount)}</p>
+                        <p className="text-base font-semibold">{formatPrice(offer.amount)}</p>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => respondOffer(buyerOffers[activeBuyer].id, activeBuyer, "accepted")} className="rounded-full bg-[#5a6b32] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#435022]">Godta</button>
-                        <button onClick={() => respondOffer(buyerOffers[activeBuyer].id, activeBuyer, "declined")} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500">Avslå</button>
+                        <button onClick={() => respondOffer(offer.id, bId, "accepted")} className="rounded-full bg-[#5a6b32] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#435022]">Godta</button>
+                        <button onClick={() => respondOffer(offer.id, bId, "declined")} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500">Avslå</button>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-stone-500">Tilbud {formatPrice(buyerOffers[activeBuyer].amount)} · {buyerOffers[activeBuyer].status === "accepted" ? <span className="font-medium text-emerald-700">Godtatt ✓</span> : <span className="font-medium text-stone-500">Avslått</span>}</p>
+                    <p className="text-xs text-stone-500">
+                      Tilbud {formatPrice(offer.amount)} ·{" "}
+                      {offer.status === "accepted"
+                        ? <span className="font-medium text-emerald-700">Godtatt ✓</span>
+                        : <span className="font-medium text-stone-500">Avslått</span>}
+                    </p>
                   )}
                 </div>
-              )}
-              {activeBuyer && <ChatPanel itemId={item.id} buyerId={activeBuyer} sellerId={item.seller_id} meId={userId} />}
+              ))}
               {!item.is_sold && (
                 showSoldPicker ? (
                   <div className="space-y-2 rounded-xl border border-stone-200 bg-stone-50 p-3">
