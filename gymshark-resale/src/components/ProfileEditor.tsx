@@ -29,9 +29,13 @@ export function ProfileEditor({ email }: { email?: string | null }) {
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dob, setDob] = useState("");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id ?? null);
+      setDob(data.user?.user_metadata?.date_of_birth ?? "");
+    });
   }, [supabase]);
 
   useEffect(() => {
@@ -59,6 +63,13 @@ export function ProfileEditor({ email }: { email?: string | null }) {
   if (!userId) return null;
 
   const name = profileDisplayName(profile, userId);
+
+  function formatDob(raw: string): string {
+    const digits = raw.replace(/\D/g, "").slice(0, 8);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+    return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`;
+  }
 
   async function onAvatarFile(file: File) {
     setError(null);
@@ -93,17 +104,18 @@ export function ProfileEditor({ email }: { email?: string | null }) {
       city: city.trim() || null,
       phone: phone.trim() || null,
     };
-    const { data, error: upErr } = await supabase
-      .from("profiles")
-      .upsert(payload, { onConflict: "user_id" })
-      .select("*")
-      .single();
+    const [profileRes] = await Promise.all([
+      supabase.from("profiles").upsert(payload, { onConflict: "user_id" }).select("*").single(),
+      dob.length === 10
+        ? supabase.auth.updateUser({ data: { date_of_birth: dob } })
+        : Promise.resolve(null),
+    ]);
     setSaving(false);
-    if (upErr) {
-      setError(upErr.message);
+    if (profileRes.error) {
+      setError(profileRes.error.message);
       return;
     }
-    if (data) setProfile(data as Profile);
+    if (profileRes.data) setProfile(profileRes.data as Profile);
     setSavedAt(Date.now());
     setOpen(false);
     toast("Profil lagret");
@@ -255,6 +267,22 @@ export function ProfileEditor({ email }: { email?: string | null }) {
             <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="40012345" inputMode="tel" className={input} />
           </Field>
         </div>
+      </div>
+
+      <div className="border-t border-stone-100 pt-3">
+        <p className="mb-2 text-xs font-semibold text-stone-700">Fødselsdato</p>
+        <Field label="DD.MM.ÅÅÅÅ">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={dob}
+            onChange={(e) => setDob(formatDob(e.target.value))}
+            placeholder="DD.MM.ÅÅÅÅ"
+            maxLength={10}
+            className={`${input} tracking-widest`}
+          />
+        </Field>
+        <p className="mt-1 text-[10px] text-stone-400">Lagres privat — vises ikke på profilen din.</p>
       </div>
 
       {error && (
