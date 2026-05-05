@@ -31,6 +31,7 @@ type ActivityEntry = {
   item: Item;
   latestAt: string;
   messagePreview?: string;
+  latestFav?: { name: string; createdAt: string; isUnread: boolean };
   pendingOffer?: PendingOffer;
   acceptedOffer?: { id: string; amount: number };
   isUnread: boolean;
@@ -59,6 +60,7 @@ export default function InboxPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [myAcceptedOffers, setMyAcceptedOffers] = useState<Offer[]>([]);
   const [threads, setThreads] = useState<{ item: Item; lastMessage: Message; buyerId: string; role: "buyer" | "seller" }[]>([]);
+  const [favsByItem, setFavsByItem] = useState<Record<string, { userId: string; createdAt: string }[]>>({});
 
   const [itemsMap, setItemsMap] = useState<Record<string, Item>>({});
   const [profilesMap, setProfilesMap] = useState<Record<string, Profile>>({});
@@ -79,14 +81,28 @@ export default function InboxPage() {
       const myItems = (myItemsData ?? []) as Item[];
       const myItemIds = myItems.map((i) => i.id);
 
-      const [offersRes, msgRes, myOffersRes] = await Promise.all([
+      const [offersRes, msgRes, myOffersRes, favsRes] = await Promise.all([
         myItemIds.length > 0
           ? supabase.from("offers").select("*").in("item_id", myItemIds).neq("buyer_id", userId)
               .order("created_at", { ascending: false }).limit(50)
           : Promise.resolve({ data: [] as Offer[], error: null }),
         supabase.from("messages").select("*").order("created_at", { ascending: false }),
         supabase.from("offers").select("*").eq("buyer_id", userId).eq("status", "accepted"),
+        myItemIds.length > 0
+          ? supabase.from("favorites").select("user_id, item_id, created_at")
+              .in("item_id", myItemIds).neq("user_id", userId)
+              .order("created_at", { ascending: false })
+          : Promise.resolve({ data: [] as FavoriteRow[], error: null }),
       ]);
+
+      // Group favorites by item
+      const fMap: Record<string, { userId: string; createdAt: string }[]> = {};
+      for (const f of (favsRes.data ?? []) as FavoriteRow[]) {
+        const key = String(f.item_id);
+        if (!fMap[key]) fMap[key] = [];
+        fMap[key].push({ userId: f.user_id, createdAt: f.created_at });
+      }
+      setFavsByItem(fMap);
       setMyAcceptedOffers((myOffersRes.data ?? []) as Offer[]);
 
       if (offersRes.error) setError(`Tilbud: ${offersRes.error.message}`);
@@ -129,6 +145,7 @@ export default function InboxPage() {
         const other = item.seller_id === userId ? m.buyer_id : item.seller_id;
         if (other) personIds.add(other);
       }
+      for (const f of (favsRes.data ?? []) as FavoriteRow[]) personIds.add(f.user_id);
       const personList = Array.from(personIds);
       if (personList.length > 0) {
         const { data: pData } = await supabase.from("profiles").select("*").in("user_id", personList);
@@ -195,7 +212,8 @@ export default function InboxPage() {
       buyersByItem[key].add(t.buyerId);
       const isOther = t.lastMessage.sender_id !== userId;
       const name = profileDisplayName(profilesMap[t.buyerId], t.buyerId);
-      const preview = isOther ? `${name}: ${t.lastMessage.body}` : `Du: ${t.lastMessage.body}`;
+      const msgText = t.lastMessage.image_url && !t.lastMessage.body.trim() ? "📷 Bilde" : t.lastMessage.body;
+      const preview = isOther ? `${name}: ${msgText}` : `Du: ${msgText}`;
       const isUnread = isOther && new Date(t.lastMessage.created_at).getTime() > lastVisit;
       if (!activityByItem[key]) activityByItem[key] = { item, latestAt: t.lastMessage.created_at, isUnread, contactCount: 0 };
       // Always update messagePreview to the latest message
@@ -209,7 +227,8 @@ export default function InboxPage() {
       const key = `buyer:${t.item.id}`;
       const isOther = t.lastMessage.sender_id !== userId;
       const sellerName = t.item.seller_id ? profileDisplayName(profilesMap[t.item.seller_id], t.item.seller_id) : "Selger";
-      const preview = isOther ? `${sellerName}: ${t.lastMessage.body}` : `Du: ${t.lastMessage.body}`;
+      const msgText = t.lastMessage.image_url && !t.lastMessage.body.trim() ? "📷 Bilde" : t.lastMessage.body;
+      const preview = isOther ? `${sellerName}: ${msgText}` : `Du: ${msgText}`;
       if (!activityByItem[key] || t.lastMessage.created_at > activityByItem[key].latestAt) {
         activityByItem[key] = {
           item: t.item, latestAt: t.lastMessage.created_at, messagePreview: preview,
@@ -231,6 +250,22 @@ export default function InboxPage() {
     if (activityByItem[key]) {
       activityByItem[key].acceptedOffer = { id: o.id, amount: o.amount };
     }
+  }
+
+  // Overlay latest favorite per item
+  for (const [key, favs] of Object.entries(favsByItem)) {
+    const item = itemsMap[key];
+    if (!item) continue;
+    const latest = favs[0];
+    if (!latest) continue;
+    const name = profileDisplayName(profilesMap[latest.userId], latest.userId);
+    const isUnread = new Date(latest.createdAt).getTime() > lastVisit;
+    if (!activityByItem[key]) {
+      activityByItem[key] = { item, latestAt: latest.createdAt, isUnread, contactCount: 0 };
+    }
+    activityByItem[key].latestFav = { name, createdAt: latest.createdAt, isUnread };
+    if (latest.createdAt > activityByItem[key].latestAt) activityByItem[key].latestAt = latest.createdAt;
+    if (isUnread) activityByItem[key].isUnread = true;
   }
 
   const activityList = Object.values(activityByItem).sort(
@@ -301,7 +336,7 @@ function ActivityTab({
 
   return (
     <ul className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
-      {activities.map(({ item, latestAt, messagePreview, pendingOffer, acceptedOffer, isUnread, contactCount }) => {
+      {activities.map(({ item, latestAt, messagePreview, latestFav, pendingOffer, acceptedOffer, isUnread, contactCount }) => {
         const cover = itemImages(item)[0];
         return (
           <li
@@ -381,6 +416,15 @@ function ActivityTab({
                       {paying === acceptedOffer.id ? "Sender…" : `Betal nå — ${formatPrice(acceptedOffer.amount)}`}
                     </button>
                   </div>
+                )}
+
+                {latestFav && (
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-stone-500">
+                    <span className="text-rose-400">♥</span>
+                    <span className={latestFav.isUnread ? "font-medium text-stone-700" : ""}>
+                      {latestFav.name} favoriserte annonsen
+                    </span>
+                  </p>
                 )}
 
                 {contactCount > 1 && (
