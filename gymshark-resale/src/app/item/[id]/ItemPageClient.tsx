@@ -24,6 +24,7 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import { ItemLikes } from "@/components/ItemLikes";
 import { FirstListingSuccess } from "@/components/FirstListingSuccess";
 import { useToast } from "@/components/ToastProvider";
+import { BidModal } from "@/components/BidModal";
 
 
 function fmtLastSeen(iso: string | null | undefined): string | null {
@@ -61,7 +62,7 @@ export default function ItemPageClient() {
   const [soldToBuyer, setSoldToBuyer] = useState<string | null>(null);
   const [hasChatted, setHasChatted] = useState(false);
   const [myOffer, setMyOffer] = useState<Offer | null | undefined>(undefined);
-  const [offerAmount, setOfferAmount] = useState("");
+  const [showBidModal, setShowBidModal] = useState(false);
   const [submittingOffer, setSubmittingOffer] = useState(false);
 
   const [similar, setSimilar] = useState<Item[]>([]);
@@ -197,17 +198,13 @@ export default function ItemPageClient() {
     router.push("/mine");
   }
 
-  async function submitOffer() {
-    if (!item || !userId || !offerAmount) return;
-    const amount = parseInt(offerAmount.replace(/\D/g, ""), 10);
-    if (!amount || amount <= 0) return;
+  async function submitOffer(amount: number) {
+    if (!item || !userId || amount <= 0) return;
     setSubmittingOffer(true);
     const { data, error: oErr } = await supabase.from("offers").insert({ item_id: item.id, buyer_id: userId, amount }).select("*").single();
     if (!oErr && data) {
       const offer = data as Offer;
       setMyOffer(offer);
-      setOfferAmount("");
-      // Create a bid message — silently skipped if migration not yet applied
       await supabase.from("messages").insert({
         item_id: item.id,
         buyer_id: userId,
@@ -216,8 +213,10 @@ export default function ItemPageClient() {
         message_type: "bid",
         metadata: { offer_id: offer.id, amount },
       }).then(() => null);
-      toast("Bud sendt");
       void supabase.rpc("notify_seller_of_offer", { p_item_id: String(item.id), p_amount: amount }).then(() => null);
+      toast("💸 Bud sendt");
+      setShowBidModal(false);
+      router.push(`/chat/${item.id}/${userId}`);
     } else if (oErr) { toast(`Feil: ${oErr.message}`); }
     setSubmittingOffer(false);
   }
@@ -430,31 +429,31 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           )}
 
           {userId && item.seller_id && !isSeller && !item.is_sold && myOffer !== undefined && (
-            <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-2">
+            <>
               {myOffer === null ? (
-                <>
-                  <p className="text-xs font-medium text-stone-700">Gi et tilbud</p>
-                  <div className="flex gap-2">
-                    <input type="text" inputMode="numeric" value={offerAmount} onChange={(e) => setOfferAmount(e.target.value.replace(/\D/g, ""))} placeholder={`Beløp (listepris ${formatPrice(item.price)})`} className="flex-1 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30" />
-                    <button onClick={submitOffer} disabled={submittingOffer || !offerAmount} className="shrink-0 rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50">{submittingOffer ? "…" : "Send"}</button>
-                  </div>
-                  <p className="text-[11px] text-stone-400">Selger kan godta, avslå eller ignorere tilbudet ditt.</p>
-                </>
+                <button
+                  onClick={() => setShowBidModal(true)}
+                  className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+                >
+                  💸 Gi bud
+                </button>
               ) : myOffer.status === "pending" ? (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-stone-600">Ditt tilbud</p>
-                    <p className="text-sm font-semibold">{formatPrice(myOffer.amount)}</p>
-                    <p className="text-[11px] text-stone-400">Venter på svar fra selger</p>
+                <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-stone-600">Ditt bud</p>
+                      <p className="text-sm font-semibold">{formatPrice(myOffer.amount)}</p>
+                      <p className="text-[11px] text-stone-400">Venter på svar fra selger</p>
+                    </div>
+                    <button onClick={withdrawOffer} className="text-xs text-stone-400 hover:text-red-600 underline underline-offset-2">Trekk tilbake</button>
                   </div>
-                  <button onClick={withdrawOffer} className="text-xs text-stone-400 hover:text-red-600 underline underline-offset-2">Trekk tilbake</button>
                 </div>
               ) : myOffer.status === "accepted" ? (
-                <div className="space-y-3">
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 space-y-3">
                   <div className="flex items-center gap-2 text-emerald-700">
                     <span className="text-lg">✓</span>
                     <div>
-                      <p className="text-sm font-semibold">Tilbud godtatt!</p>
+                      <p className="text-sm font-semibold">Bud godtatt!</p>
                       <p className="text-xs text-emerald-600">Selger godtok {formatPrice(myOffer.amount)}</p>
                     </div>
                   </div>
@@ -477,12 +476,12 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                   <p className="text-center text-[11px] text-stone-400">Sikker betaling via Stripe · 7% plattformavgift inkludert</p>
                 </div>
               ) : (
-                <div>
-                  <p className="text-sm text-stone-600">Tilbudet på {formatPrice(myOffer.amount)} ble avslått.</p>
-                  <button onClick={() => setMyOffer(null)} className="mt-1 text-xs font-medium text-[#5a6b32] underline underline-offset-2">Gi nytt tilbud</button>
+                <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+                  <p className="text-sm text-stone-600">Budet på {formatPrice(myOffer.amount)} ble avslått.</p>
+                  <button onClick={() => { setMyOffer(null); setShowBidModal(true); }} className="mt-1 text-xs font-medium text-[#5a6b32] underline underline-offset-2">Gi nytt bud</button>
                 </div>
               )}
-            </div>
+            </>
           )}
 
           {userId && item.seller_id && !isSeller && (
@@ -547,6 +546,15 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           )}
         </div>
       </div>
+
+      {showBidModal && item && userId && (
+        <BidModal
+          item={item}
+          onClose={() => setShowBidModal(false)}
+          onSubmit={submitOffer}
+          submitting={submittingOffer}
+        />
+      )}
 
       {similar.length > 0 && (
         <section className="space-y-3">
