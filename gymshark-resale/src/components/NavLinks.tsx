@@ -14,7 +14,7 @@ function authHref(isLoggedIn: boolean, href: string) {
 
 export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
-  const { inbox, varsler } = useNavCounts(isLoggedIn);
+  const { inbox, varsler, orders } = useNavCounts(isLoggedIn);
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -49,8 +49,9 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
         Innboks
         {inbox > 0 && <Badge count={inbox} />}
       </Link>
-      <Link href={authHref(isLoggedIn, "/orders")} className={textCls("/orders")}>
+      <Link href={authHref(isLoggedIn, "/orders")} className={`relative ${textCls("/orders")}`}>
         Ordre
+        {orders > 0 && <Badge count={orders} />}
       </Link>
       <Link href={authHref(isLoggedIn, "/sell")} className={textCls("/sell")}>
         Selg

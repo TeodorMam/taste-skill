@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
-export function useNavCounts(isLoggedIn: boolean): { inbox: number; varsler: number } {
+export function useNavCounts(isLoggedIn: boolean): { inbox: number; varsler: number; orders: number } {
   const path = usePathname();
-  const [counts, setCounts] = useState({ inbox: 0, varsler: 0 });
+  const [counts, setCounts] = useState({ inbox: 0, varsler: 0, orders: 0 });
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -73,7 +73,17 @@ export function useNavCounts(isLoggedIn: boolean): { inbox: number; varsler: num
 
       if (path === "/varsler") varslerCount = 0;
 
-      setCounts({ inbox: inboxCount, varsler: varslerCount });
+      // --- ORDERS COUNT ---
+      const TERMINAL = ["paid_out", "confirmed", "cancelled", "refunded"];
+      const { data: activeOrders } = await supabase
+        .from("orders")
+        .select("id, buyer_id, seller_id, status")
+        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
+        .not("status", "in", `(${TERMINAL.join(",")})`);
+
+      const ordersCount = path.startsWith("/orders") ? 0 : (activeOrders ?? []).length;
+
+      setCounts({ inbox: inboxCount, varsler: varslerCount, orders: ordersCount });
     })();
   }, [isLoggedIn, path]);
 
