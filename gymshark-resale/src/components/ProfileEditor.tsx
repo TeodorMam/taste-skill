@@ -111,8 +111,9 @@ export function ProfileEditor({ email }: { email?: string | null }) {
 
   if (!open) {
     const missingShipping = !profile?.full_name || !profile?.address || !profile?.postal_code || !profile?.city || !profile?.phone;
-    const missingProfile = !profile?.display_name || !avatarUrl;
-    const isIncomplete = missingShipping || missingProfile;
+    const missingName = !profile?.display_name;
+    const missingAvatar = !avatarUrl;
+    const isIncomplete = missingShipping || missingName || missingAvatar;
 
     return (
       <div
@@ -141,7 +142,11 @@ export function ProfileEditor({ email }: { email?: string | null }) {
             <p className="mt-0.5 text-xs text-amber-800">
               {missingShipping
                 ? "Fyll inn navn, adresse og telefon for å kunne kjøpe og motta varer."
-                : "Legg til visningsnavn og profilbilde — kjøpere stoler mer på fullstendige profiler."}
+                : missingName && missingAvatar
+                  ? "Legg til visningsnavn og profilbilde — kjøpere stoler mer på fullstendige profiler."
+                  : missingName
+                    ? "Legg til et visningsnavn — kjøpere stoler mer på fullstendige profiler."
+                    : "Legg til profilbilde — kjøpere stoler mer på fullstendige profiler."}
             </p>
           </div>
         )}
