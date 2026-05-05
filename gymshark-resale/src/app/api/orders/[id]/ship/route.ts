@@ -59,7 +59,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
             <h2 style="margin:0 0 8px;font-size:18px">Varen er på vei!</h2>
             <p style="margin:0 0 12px;font-size:14px;color:#57534e">Selger har sendt <strong>${itemTitle}</strong>.</p>
-            <p style="margin:0 0 16px;font-size:14px;color:#57534e">Sporingsinformasjon: <strong>${trackingInfo}</strong></p>
+            <p style="margin:0 0 16px;font-size:14px;color:#57534e">Sporingsnummer: <a href="https://sporing.posten.no/sporing/${trackingInfo}" style="color:#5a6b32;font-weight:600">${trackingInfo} ↗</a></p>
             <p style="margin:0 0 16px;font-size:14px;color:#57534e">Du får beskjed når varen er registrert som levert.</p>
             <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
             <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
