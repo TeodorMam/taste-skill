@@ -61,7 +61,6 @@ export default function ItemPageClient() {
   const [soldToBuyer, setSoldToBuyer] = useState<string | null>(null);
   const [hasChatted, setHasChatted] = useState(false);
   const [myOffer, setMyOffer] = useState<Offer | null | undefined>(undefined);
-  const [buyerOffers, setBuyerOffers] = useState<Record<string, Offer>>({});
   const [offerAmount, setOfferAmount] = useState("");
   const [submittingOffer, setSubmittingOffer] = useState(false);
 
@@ -99,21 +98,10 @@ export default function ItemPageClient() {
   useEffect(() => {
     if (!item || !isSeller) return;
     (async () => {
-      const [msgRes, offersRes] = await Promise.all([
-        supabase.from("messages").select("buyer_id").eq("item_id", item.id),
-        supabase.from("offers").select("*").eq("item_id", item.id).order("created_at", { ascending: false }),
-      ]);
-
-      const msgBuyers = [...new Set((msgRes.data ?? []).map((r) => (r as { buyer_id: string }).buyer_id))];
-
-      const offerMap: Record<string, Offer> = {};
-      for (const o of (offersRes.data ?? []) as Offer[]) if (!offerMap[o.buyer_id]) offerMap[o.buyer_id] = o;
-      setBuyerOffers(offerMap);
-
-      const offerOnlyBuyers = Object.keys(offerMap).filter((id) => !msgBuyers.includes(id));
-      const allBuyers = [...msgBuyers, ...offerOnlyBuyers];
+      const { data: msgData } = await supabase
+        .from("messages").select("buyer_id").eq("item_id", item.id);
+      const allBuyers = [...new Set((msgData ?? []).map((r) => (r as { buyer_id: string }).buyer_id))];
       setBuyerThreads(allBuyers);
-
       if (allBuyers.length === 0) return;
       const { data: pData } = await supabase.from("profiles").select("*").in("user_id", allBuyers);
       const map: Record<string, Profile> = {};
@@ -215,13 +203,23 @@ export default function ItemPageClient() {
     if (!amount || amount <= 0) return;
     setSubmittingOffer(true);
     const { data, error: oErr } = await supabase.from("offers").insert({ item_id: item.id, buyer_id: userId, amount }).select("*").single();
-    setSubmittingOffer(false);
     if (!oErr && data) {
-      setMyOffer(data as Offer);
+      const offer = data as Offer;
+      setMyOffer(offer);
       setOfferAmount("");
-      toast("Tilbud sendt");
+      // Create a bid message so it shows up in chat timeline + inbox
+      await supabase.from("messages").insert({
+        item_id: item.id,
+        buyer_id: userId,
+        sender_id: userId,
+        body: "",
+        message_type: "bid",
+        metadata: { offer_id: offer.id, amount },
+      });
+      toast("Bud sendt");
       void supabase.rpc("notify_seller_of_offer", { p_item_id: String(item.id), p_amount: amount }).then(() => null);
     } else if (oErr) { toast(`Feil: ${oErr.message}`); }
+    setSubmittingOffer(false);
   }
 
   async function handleCheckout(offerId?: string) {
@@ -258,12 +256,8 @@ export default function ItemPageClient() {
     setMyOffer(null);
   }
 
-  async function respondOffer(offerId: string, buyerId: string, status: "accepted" | "declined") {
-    const { data } = await supabase.from("offers").update({ status }).eq("id", offerId).select("*").single();
-    if (data) { setBuyerOffers((prev) => ({ ...prev, [buyerId]: data as Offer })); toast(status === "accepted" ? "Tilbud godtatt" : "Tilbud avslått"); }
-  }
 
-  if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>;
+if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>;
   if (!item) return <p className="text-sm text-stone-500">Laster…</p>;
 
   return (
@@ -505,31 +499,6 @@ export default function ItemPageClient() {
 
           {isSeller && item.seller_id && (
             <div className="space-y-3">
-              {Object.entries(buyerOffers).map(([bId, offer]) => (
-                <div key={bId} className="rounded-xl border border-stone-200 bg-stone-50 p-3">
-                  {offer.status === "pending" ? (
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-medium text-stone-500">
-                          Tilbud fra {profileDisplayName(buyerProfiles[bId], bId)}
-                        </p>
-                        <p className="text-base font-semibold">{formatPrice(offer.amount)}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => respondOffer(offer.id, bId, "accepted")} className="rounded-full bg-[#5a6b32] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#435022]">Godta</button>
-                        <button onClick={() => respondOffer(offer.id, bId, "declined")} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500">Avslå</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-stone-500">
-                      Tilbud {formatPrice(offer.amount)} ·{" "}
-                      {offer.status === "accepted"
-                        ? <span className="font-medium text-emerald-700">Godtatt ✓</span>
-                        : <span className="font-medium text-stone-500">Avslått</span>}
-                    </p>
-                  )}
-                </div>
-              ))}
               {!item.is_sold && (
                 showSoldPicker ? (
                   <div className="space-y-2 rounded-xl border border-stone-200 bg-stone-50 p-3">

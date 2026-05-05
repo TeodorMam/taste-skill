@@ -12,6 +12,10 @@ import {
   profileDisplayName,
 } from "@/lib/supabase";
 
+function fmtAmount(n: number): string {
+  return `${new Intl.NumberFormat("nb-NO").format(n)} kr`;
+}
+
 type Thread = {
   key: string;          // `${itemId}:${buyerId}`
   item: Item;
@@ -36,6 +40,18 @@ function fmtTime(iso: string): string {
 function msgPreview(msg: Message, meId: string): string {
   const mine = msg.sender_id === meId;
   const prefix = mine ? "Du: " : "";
+  const type = msg.message_type ?? "text";
+
+  if (type === "bid") {
+    const amount = (msg.metadata as { amount?: number } | null)?.amount;
+    return `${prefix}💸 Bud: ${amount ? fmtAmount(amount) : "?"}`;
+  }
+  if (type === "bid_accepted") return mine ? "✅ Du godtok budet" : "✅ Budet ble godtatt";
+  if (type === "payment") return "✅ Betaling gjennomført";
+  if (type === "shipped") return "📦 Varen er sendt";
+  if (type === "delivered") return "📬 Varen er levert";
+  if (type === "payout") return "💰 Utbetaling sendt";
+
   if (msg.image_url && !msg.body.trim()) return `${prefix}📷 Bilde`;
   return `${prefix}${msg.body}`;
 }

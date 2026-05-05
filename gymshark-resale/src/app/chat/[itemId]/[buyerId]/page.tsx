@@ -7,10 +7,14 @@ import { createClient } from "@/utils/supabase/client";
 import {
   type Item,
   type Message,
+  type MessageType,
+  type Offer,
   type Profile,
+  formatPrice,
   itemImages,
   profileDisplayName,
 } from "@/lib/supabase";
+import { useToast } from "@/components/ToastProvider";
 
 function fmtTime(iso: string): string {
   const d = new Date(iso);
@@ -23,9 +27,22 @@ function fmtTime(iso: string): string {
   return d.toLocaleDateString("nb-NO", { day: "numeric", month: "short" }) + ` ${hm}`;
 }
 
+// ─── Event card config ────────────────────────────────────────────────────────
+
+const EVENT_CONFIGS: Partial<Record<MessageType, { icon: string; title: string; sub: string }>> = {
+  bid_accepted: { icon: "🎉", title: "Bud akseptert!", sub: "Kjøper kan nå gå til annonsen for å betale" },
+  payment:      { icon: "✅", title: "Betaling gjennomført", sub: "🔒 Pengene holdes trygt til varen er mottatt" },
+  shipped:      { icon: "📦", title: "Varen er sendt", sub: "Du får beskjed når varen er registrert levert" },
+  delivered:    { icon: "📬", title: "Varen er levert", sub: "Kjøper har bekreftet mottak" },
+  payout:       { icon: "💰", title: "Utbetaling sendt", sub: "Pengene er overført til selger" },
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function ChatPage() {
   const params = useParams<{ itemId: string; buyerId: string }>();
   const router = useRouter();
+  const toast = useToast();
   const supabase = useMemo(() => createClient(), []);
   const { itemId, buyerId } = params;
 
@@ -33,6 +50,7 @@ export default function ChatPage() {
   const [item, setItem] = useState<Item | null>(null);
   const [otherProfile, setOtherProfile] = useState<Profile | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [offersMap, setOffersMap] = useState<Record<string, Offer>>({});
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -41,10 +59,12 @@ export default function ChatPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
+  // Auth
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMeId(data.user?.id ?? null));
   }, [supabase]);
 
+  // Item
   useEffect(() => {
     supabase.from("items").select("*").eq("id", itemId).single()
       .then(({ data }) => setItem(data as Item));
@@ -53,6 +73,7 @@ export default function ChatPage() {
   const isSeller = !!meId && !!item && meId === item.seller_id;
   const otherId = meId ? (isSeller ? buyerId : (item?.seller_id ?? "")) : "";
 
+  // Other user's profile
   useEffect(() => {
     if (!meId || !item) return;
     const id = isSeller ? buyerId : (item.seller_id ?? "");
@@ -61,6 +82,7 @@ export default function ChatPage() {
       .then(({ data }) => setOtherProfile(data as Profile | null));
   }, [meId, item, isSeller, buyerId, supabase]);
 
+  // Messages + real-time subscription
   useEffect(() => {
     if (!meId) return;
     let cancelled = false;
@@ -86,6 +108,32 @@ export default function ChatPage() {
     return () => { cancelled = true; supabase.removeChannel(channel); };
   }, [supabase, itemId, buyerId, meId]);
 
+  // Offers + real-time subscription (for bid card status)
+  useEffect(() => {
+    if (!meId) return;
+    let cancelled = false;
+    supabase
+      .from("offers")
+      .select("*")
+      .eq("item_id", itemId)
+      .eq("buyer_id", buyerId)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const map: Record<string, Offer> = {};
+        for (const o of (data ?? []) as Offer[]) map[o.id] = o;
+        setOffersMap(map);
+      });
+    const channel = supabase
+      .channel(`offers:${itemId}:${buyerId}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "offers", filter: `item_id=eq.${itemId}` }, (payload) => {
+        const o = payload.new as Offer;
+        if (o.buyer_id === buyerId) setOffersMap((prev) => ({ ...prev, [o.id]: o }));
+      })
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(channel); };
+  }, [supabase, itemId, buyerId, meId]);
+
+  // Other person's last_read + subscription
   useEffect(() => {
     if (!meId || !otherId) return;
     let cancelled = false;
@@ -109,6 +157,7 @@ export default function ChatPage() {
     return () => { cancelled = true; supabase.removeChannel(channel); };
   }, [supabase, itemId, buyerId, otherId, meId]);
 
+  // Mark conversation as read whenever it's open or new messages arrive
   useEffect(() => {
     if (!meId) return;
     supabase.from("chat_reads").upsert(
@@ -117,9 +166,12 @@ export default function ChatPage() {
     );
   }, [supabase, itemId, buyerId, meId, messages.length]);
 
+  // Scroll to bottom on new messages
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages.length]);
+
+  // ─── Actions ───────────────────────────────────────────────────────────────
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -129,7 +181,7 @@ export default function ChatPage() {
     setError(null);
     const { data, error } = await supabase
       .from("messages")
-      .insert({ item_id: itemId, buyer_id: buyerId, sender_id: meId, body: text })
+      .insert({ item_id: itemId, buyer_id: buyerId, sender_id: meId, body: text, message_type: "text" })
       .select("*")
       .single();
     setSending(false);
@@ -150,7 +202,7 @@ export default function ChatPage() {
     const { data: urlData } = supabase.storage.from("item-images").getPublicUrl(path);
     const { data, error } = await supabase
       .from("messages")
-      .insert({ item_id: itemId, buyer_id: buyerId, sender_id: meId, body: "", image_url: urlData.publicUrl })
+      .insert({ item_id: itemId, buyer_id: buyerId, sender_id: meId, body: "", message_type: "image", image_url: urlData.publicUrl })
       .select("*")
       .single();
     setUploading(false);
@@ -159,9 +211,39 @@ export default function ChatPage() {
     setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
   }
 
+  async function respondOffer(offerId: string, amount: number, status: "accepted" | "declined") {
+    const { data, error } = await supabase
+      .from("offers")
+      .update({ status })
+      .eq("id", offerId)
+      .select("*")
+      .single();
+    if (error) { toast(`Feil: ${error.message}`); return; }
+    if (data) setOffersMap((prev) => ({ ...prev, [offerId]: data as Offer }));
+
+    if (status === "accepted") {
+      // Insert a bid_accepted event message so both parties see it in the timeline
+      await supabase.from("messages").insert({
+        item_id: itemId,
+        buyer_id: buyerId,
+        sender_id: meId,
+        body: "",
+        message_type: "bid_accepted",
+        metadata: { offer_id: offerId, amount },
+      });
+      toast("Bud godtatt ✓");
+    } else {
+      toast("Bud avslått");
+    }
+  }
+
+  // ─── Derived values ────────────────────────────────────────────────────────
+
   const lastSentIdx = messages.reduce((acc, m, i) => (m.sender_id === meId ? i : acc), -1);
   const cover = item ? itemImages(item)[0] : null;
   const otherName = profileDisplayName(otherProfile, otherId);
+
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   if (meId === undefined) return <p className="py-6 text-sm text-stone-500">Laster…</p>;
 
@@ -184,7 +266,7 @@ export default function ChatPage() {
       className="-mx-4 -mt-6 flex flex-col bg-white"
       style={{ height: "calc(100dvh - 3.5rem)" }}
     >
-      {/* Top bar */}
+      {/* ── Top bar ──────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 items-center gap-3 border-b border-stone-200 px-4 py-3">
         <button
           onClick={() => router.push("/inbox")}
@@ -213,8 +295,8 @@ export default function ChatPage() {
         )}
       </div>
 
-      {/* Messages */}
-      <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
+      {/* ── Messages ─────────────────────────────────────────────────────── */}
+      <div ref={listRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
         {messages.length === 0 && (
           <p className="py-10 text-center text-xs text-stone-400">
             {isSeller
@@ -222,25 +304,70 @@ export default function ChatPage() {
               : "Si hei — spør om størrelse, henting eller tilstand."}
           </p>
         )}
+
         {messages.map((m, i) => {
           const mine = m.sender_id === meId;
+          const type = m.message_type ?? "text";
           const isLastSent = mine && i === lastSentIdx;
           const isSeen =
             isLastSent &&
             otherLastRead !== null &&
             new Date(m.created_at) <= new Date(otherLastRead);
-          return (
-            <div key={m.id} className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
-              {m.image_url ? (
-                <a href={m.image_url} target="_blank" rel="noopener noreferrer" className="max-w-[75%]">
+
+          // ── Lifecycle event cards (centered) ──
+          if (type in EVENT_CONFIGS) {
+            return (
+              <div key={m.id} className="flex flex-col items-center py-3">
+                <EventCard type={type as MessageType} />
+                <span className="mt-1 text-[10px] text-stone-400">{fmtTime(m.created_at)}</span>
+              </div>
+            );
+          }
+
+          // ── Bid card (positioned as a message bubble) ──
+          if (type === "bid") {
+            const meta = m.metadata as { offer_id: string; amount: number } | null;
+            const offer = meta?.offer_id ? offersMap[meta.offer_id] : undefined;
+            return (
+              <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
+                <BidCard
+                  amount={meta?.amount ?? 0}
+                  offer={offer}
+                  isSeller={isSeller}
+                  onRespond={(status) =>
+                    respondOffer(meta!.offer_id, meta?.amount ?? 0, status)
+                  }
+                />
+                <span className="mt-0.5 px-1 text-[10px] text-stone-400">{fmtTime(m.created_at)}</span>
+              </div>
+            );
+          }
+
+          // ── Image ──
+          if (type === "image" || (m.image_url && !m.body.trim())) {
+            return (
+              <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
+                <a href={m.image_url!} target="_blank" rel="noopener noreferrer" className="max-w-[75%]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.image_url} alt="" className="max-h-56 w-full rounded-2xl object-cover" />
+                  <img src={m.image_url!} alt="" className="max-h-56 w-full rounded-2xl object-cover" />
                 </a>
-              ) : (
-                <div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${mine ? "bg-stone-900 text-stone-50" : "bg-stone-100 text-stone-900"}`}>
-                  {m.body}
-                </div>
-              )}
+                <span className="mt-0.5 px-1 text-[10px] text-stone-400">
+                  {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
+                </span>
+              </div>
+            );
+          }
+
+          // ── Regular text bubble ──
+          return (
+            <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
+              <div
+                className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
+                  mine ? "bg-stone-900 text-stone-50" : "bg-stone-100 text-stone-900"
+                }`}
+              >
+                {m.body}
+              </div>
               <span className="mt-0.5 px-1 text-[10px] text-stone-400">
                 {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
               </span>
@@ -249,7 +376,7 @@ export default function ChatPage() {
         })}
       </div>
 
-      {/* Input bar */}
+      {/* ── Input bar ────────────────────────────────────────────────────── */}
       <div className="shrink-0 border-t border-stone-200 bg-white">
         <form onSubmit={send} className="flex items-center gap-2 p-2">
           <button
@@ -295,6 +422,71 @@ export default function ChatPage() {
 
       {/* Spacer so input clears the mobile bottom nav */}
       <div className="h-14 shrink-0 sm:hidden" />
+    </div>
+  );
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function BidCard({
+  amount,
+  offer,
+  isSeller,
+  onRespond,
+}: {
+  amount: number;
+  offer: Offer | undefined;
+  isSeller: boolean;
+  onRespond: (status: "accepted" | "declined") => void;
+}) {
+  const status = offer?.status ?? "pending";
+
+  return (
+    <div className="w-56 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 text-sm shadow-sm transition-all">
+      <div className="px-4 pt-3 pb-2">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400">Bud</p>
+        <p className="mt-0.5 text-xl font-semibold text-stone-900">{formatPrice(amount)}</p>
+      </div>
+
+      <div className="border-t border-stone-200 px-4 py-2.5">
+        {status === "pending" && isSeller && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => onRespond("accepted")}
+              className="flex-1 rounded-full bg-[#5a6b32] py-1.5 text-xs font-semibold text-white transition hover:bg-[#435022] active:scale-95"
+            >
+              Godta
+            </button>
+            <button
+              onClick={() => onRespond("declined")}
+              className="flex-1 rounded-full border border-stone-300 bg-white py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-500 active:scale-95"
+            >
+              Avslå
+            </button>
+          </div>
+        )}
+        {status === "pending" && !isSeller && (
+          <p className="text-xs text-stone-500">Venter på svar fra selger…</p>
+        )}
+        {status === "accepted" && (
+          <p className="text-xs font-semibold text-[#5a6b32]">✓ Godtatt</p>
+        )}
+        {status === "declined" && (
+          <p className="text-xs text-stone-400">Avslått</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EventCard({ type }: { type: MessageType }) {
+  const cfg = EVENT_CONFIGS[type];
+  if (!cfg) return null;
+  return (
+    <div className="mx-auto max-w-xs rounded-2xl border border-stone-200 bg-stone-50 px-5 py-3 text-center">
+      <p className="text-xl">{cfg.icon}</p>
+      <p className="mt-1 text-xs font-semibold text-stone-800">{cfg.title}</p>
+      <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500">{cfg.sub}</p>
     </div>
   );
 }

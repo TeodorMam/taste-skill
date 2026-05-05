@@ -26,6 +26,16 @@ export const SHIPPING_OPTIONS = [
   { value: "Begge", label: "📦🤝 Begge", hint: "Fleksibel" },
 ] as const;
 
+export type MessageType =
+  | "text"
+  | "image"
+  | "bid"
+  | "bid_accepted"
+  | "payment"
+  | "shipped"
+  | "delivered"
+  | "payout";
+
 export type Message = {
   id: string;
   item_id: string;
@@ -33,6 +43,8 @@ export type Message = {
   sender_id: string;
   body: string;
   image_url: string | null;
+  message_type: MessageType;
+  metadata: Record<string, unknown> | null;
   created_at: string;
 };
 

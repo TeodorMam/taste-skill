@@ -42,6 +42,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       tracking_info: trackingInfo,
     }).eq("id", orderId);
 
+    // Insert a shipped system message into the chat timeline
+    await admin.from("messages").insert({
+      item_id: String(order.item_id),
+      buyer_id: order.buyer_id,
+      sender_id: order.seller_id,
+      body: "",
+      message_type: "shipped",
+      metadata: { order_id: orderId, tracking_info: trackingInfo },
+    });
+
     // Email buyer
     const [buyerRes, itemRes] = await Promise.all([
       admin.auth.admin.getUserById(order.buyer_id),

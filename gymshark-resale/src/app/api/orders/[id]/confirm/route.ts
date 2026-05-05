@@ -35,6 +35,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       confirmed_at: new Date().toISOString(),
     });
 
+    // Insert a payout system message into the chat timeline
+    await admin.from("messages").insert({
+      item_id: String(order.item_id),
+      buyer_id: order.buyer_id,
+      sender_id: order.buyer_id,
+      body: "",
+      message_type: "payout",
+      metadata: { order_id: orderId, amount_nok: order.amount_nok - order.platform_fee_nok },
+    });
+
     // Send emails
     const [buyerRes, sellerRes, itemRes] = await Promise.all([
       admin.auth.admin.getUserById(order.buyer_id),

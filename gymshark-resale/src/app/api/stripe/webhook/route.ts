@@ -57,6 +57,16 @@ export async function POST(req: NextRequest) {
     console.log("[webhook] orders update error:", ordersUpdate.error?.message);
     console.log("[webhook] items update error:", itemsUpdate.error?.message, "itemId used:", Number(itemId));
 
+    // Insert a payment system message so it appears in both parties' chat timeline
+    await admin.from("messages").insert({
+      item_id: itemId,
+      buyer_id: existing.buyer_id,
+      sender_id: existing.buyer_id,
+      body: "",
+      message_type: "payment",
+      metadata: { amount_nok: existing.amount_nok, order_id: orderId },
+    });
+
     // Send confirmation emails
     const [buyerRes, sellerRes, itemRes] = await Promise.all([
       admin.auth.admin.getUserById(existing.buyer_id),
