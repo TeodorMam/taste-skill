@@ -179,12 +179,12 @@ function OrderCard({ order, role, onAction }: {
               type="text"
               value={trackingInput}
               onChange={(e) => setTrackingInput(e.target.value)}
-              placeholder="Sporingsnummer (valgfritt)"
+              placeholder="Sporingsnummer (påkrevd)"
               className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
             />
             <button
-              onClick={() => act("ship", trackingInput.trim() ? { tracking_info: trackingInput } : {})}
-              disabled={!!busy}
+              onClick={() => act("ship", { tracking_info: trackingInput })}
+              disabled={!!busy || !trackingInput.trim()}
               className="w-full rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
             >
               {busy === "ship" ? "Lagrer…" : "Marker som sendt →"}
