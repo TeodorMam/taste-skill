@@ -77,31 +77,31 @@ export default function ProfilPage() {
 
       <ProfileEditor email={email} />
 
-      {reviews && reviews.length > 0 && (
+      {reviews !== null && (
         <div className="rounded-2xl border border-stone-200 bg-white p-4">
           <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
             Mine vurderinger
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-            {rated ? (
-              <>
-                <span className="text-3xl font-semibold tracking-tight">
-                  {rated.avg.toFixed(1)}
-                </span>
-                <Stars avg={rated.avg} />
-                <span className="text-sm text-stone-500">
-                  {rated.total} vurdering{rated.total !== 1 ? "er" : ""}
-                </span>
-              </>
-            ) : summary && summary.total > 0 ? (
-              <>
-                <span className="text-2xl font-semibold">{summary.pct}%</span>
-                <span className="text-sm text-stone-500">
-                  positive · {summary.total} vurdering{summary.total !== 1 ? "er" : ""}
-                </span>
-              </>
-            ) : null}
-          </div>
+          {reviews.length === 0 ? (
+            <p className="mt-3 text-sm text-stone-400">Ingen vurderinger ennå — de vises her etter første salg.</p>
+          ) : rated ? (
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <span className="text-3xl font-semibold tracking-tight">
+                {rated.avg.toFixed(1)}
+              </span>
+              <Stars avg={rated.avg} />
+              <span className="text-sm text-stone-500">
+                {rated.total} vurdering{rated.total !== 1 ? "er" : ""}
+              </span>
+            </div>
+          ) : summary && summary.total > 0 ? (
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <span className="text-2xl font-semibold">{summary.pct}%</span>
+              <span className="text-sm text-stone-500">
+                positive · {summary.total} vurdering{summary.total !== 1 ? "er" : ""}
+              </span>
+            </div>
+          ) : null}
         </div>
       )}
 
