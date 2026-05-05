@@ -74,12 +74,15 @@ export function useNavCounts(isLoggedIn: boolean): { inbox: number; varsler: num
       if (path === "/varsler") varslerCount = 0;
 
       // --- ORDERS COUNT ---
-      const TERMINAL = ["paid_out", "confirmed", "cancelled", "refunded"];
       const { data: activeOrders } = await supabase
         .from("orders")
-        .select("id, buyer_id, seller_id, status")
+        .select("id")
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-        .not("status", "in", `(${TERMINAL.join(",")})`);
+        .neq("status", "pending")
+        .neq("status", "paid_out")
+        .neq("status", "confirmed")
+        .neq("status", "cancelled")
+        .neq("status", "refunded");
 
       const ordersCount = path.startsWith("/orders") ? 0 : (activeOrders ?? []).length;
 
