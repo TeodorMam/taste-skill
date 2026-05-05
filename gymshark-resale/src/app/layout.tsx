@@ -100,6 +100,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/about" className="text-stone-500 underline hover:text-black">
                 Om & FAQ
               </Link>
+              <Link href="/vilkar" className="text-stone-500 underline hover:text-black">
+                Vilkår
+              </Link>
+              <Link href="/personvern" className="text-stone-500 underline hover:text-black">
+                Personvern
+              </Link>
             </div>
           </div>
         </footer>
