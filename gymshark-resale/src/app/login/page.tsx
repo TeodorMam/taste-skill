@@ -14,6 +14,7 @@ export default function LoginPage() {
 
 type Tab = "signin" | "signup";
 type ForgotStage = "idle" | "sent" | "verified";
+type SignupStage = "email" | "code" | "password";
 
 function LoginInner() {
   const router = useRouter();
@@ -23,6 +24,7 @@ function LoginInner() {
   const [tab, setTab] = useState<Tab>("signin");
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotStage, setForgotStage] = useState<ForgotStage>("idle");
+  const [signupStage, setSignupStage] = useState<SignupStage>("email");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,6 +41,7 @@ function LoginInner() {
     setCode("");
     setPassword("");
     setConfirmPassword("");
+    setSignupStage("email");
   }
 
   function closeForgot() {
@@ -122,6 +125,58 @@ function LoginInner() {
   }
 
   async function setNewPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (password.length < 6) return setError("Passord må være minst 6 tegn");
+    if (password !== confirmPassword) return setError("Passordene er ikke like");
+    setSubmitting(true);
+    const sb = createClient();
+    const { error } = await sb.auth.updateUser({
+      password,
+      data: { has_password: true },
+    });
+    setSubmitting(false);
+    if (error) return setError(error.message);
+    router.push(next);
+    router.refresh();
+  }
+
+  async function sendSignupCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!email) return setError("Skriv inn e-posten din");
+    setSubmitting(true);
+    const sb = createClient();
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true },
+    });
+    setSubmitting(false);
+    if (error) return setError(error.message);
+    setSignupStage("code");
+    setInfo("Vi sendte en bekreftelseskode til e-posten din.");
+  }
+
+  async function verifySignupCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const token = code.trim();
+    if (token.length < 6) return setError("Skriv inn hele koden");
+    setSubmitting(true);
+    const sb = createClient();
+    const { error } = await sb.auth.verifyOtp({
+      email,
+      token,
+      type: "email",
+    });
+    setSubmitting(false);
+    if (error) return setError(error.message);
+    setSignupStage("password");
+    setInfo(null);
+    setCode("");
+  }
+
+  async function setSignupPassword(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     if (password.length < 6) return setError("Passord må være minst 6 tegn");
@@ -262,12 +317,22 @@ function LoginInner() {
     <section className="space-y-5 py-8">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">
-          {tab === "signin" ? "Logg inn" : "Opprett ny bruker"}
+          {tab === "signin"
+            ? "Logg inn"
+            : signupStage === "code"
+              ? "Bekreft e-post"
+              : signupStage === "password"
+                ? "Velg passord"
+                : "Opprett ny bruker"}
         </h1>
         <p className="mt-1 text-sm text-stone-500">
           {tab === "signin"
             ? "Med e-post og passord. Du forblir innlogget på denne enheten."
-            : "Lag en konto på under ett minutt."}
+            : signupStage === "code"
+              ? `Vi sendte en kode til ${email}.`
+              : signupStage === "password"
+                ? "Nesten ferdig — velg et passord for kontoen din."
+                : "Lag en konto på under ett minutt."}
         </p>
       </div>
 
@@ -333,8 +398,8 @@ function LoginInner() {
         </form>
       )}
 
-      {tab === "signup" && (
-        <form onSubmit={signUp} className="space-y-3">
+      {tab === "signup" && signupStage === "email" && (
+        <form onSubmit={sendSignupCode} className="space-y-3">
           <input
             type="email"
             value={email}
@@ -344,6 +409,63 @@ function LoginInner() {
             autoComplete="email"
             className={input}
           />
+          {error && (
+            <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+              {error}
+            </p>
+          )}
+          <button type="submit" disabled={submitting} className={primaryBtn}>
+            {submitting ? "Sender…" : "Send bekreftelseskode"}
+          </button>
+        </form>
+      )}
+
+      {tab === "signup" && signupStage === "code" && (
+        <form onSubmit={verifySignupCode} className="space-y-3">
+          {info && (
+            <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">
+              {info}
+            </p>
+          )}
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={code}
+            onChange={(e) =>
+              setCode(e.target.value.replace(/\D/g, "").slice(0, 10))
+            }
+            placeholder="Bekreftelseskode"
+            autoFocus
+            autoComplete="one-time-code"
+            className={`${input} text-center text-lg tracking-[0.3em]`}
+          />
+          {error && (
+            <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+              {error}
+            </p>
+          )}
+          <button type="submit" disabled={submitting} className={primaryBtn}>
+            {submitting ? "Verifiserer…" : "Bekreft kode"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSignupStage("email");
+              setCode("");
+              setInfo(null);
+              setError(null);
+            }}
+            className="w-full text-center text-xs text-stone-500 hover:text-black"
+          >
+            Bruk en annen e-post
+          </button>
+        </form>
+      )}
+
+      {tab === "signup" && signupStage === "password" && (
+        <form onSubmit={setSignupPassword} className="space-y-3">
+          <p className="text-sm text-stone-500">E-post bekreftet. Velg et passord.</p>
           <input
             type="password"
             value={password}
@@ -351,6 +473,7 @@ function LoginInner() {
             placeholder="Passord (minst 6 tegn)"
             required
             minLength={6}
+            autoFocus
             autoComplete="new-password"
             className={input}
           />
@@ -366,11 +489,6 @@ function LoginInner() {
           {error && (
             <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
               {error}
-            </p>
-          )}
-          {info && (
-            <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">
-              {info}
             </p>
           )}
           <button type="submit" disabled={submitting} className={primaryBtn}>
