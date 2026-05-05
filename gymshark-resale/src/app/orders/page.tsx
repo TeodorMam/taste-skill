@@ -163,9 +163,10 @@ function OrderCard({ order, role, onAction }: {
           )}
 
           <ol className="space-y-1.5 text-xs text-stone-600">
-            <li className="flex gap-2"><span className="font-semibold text-stone-800">1.</span><span>Gå til posten.no og velg «Send pakke»</span></li>
-            <li className="flex gap-2"><span className="font-semibold text-stone-800">2.</span><span>Lim inn mottakerinformasjonen</span></li>
-            <li className="flex gap-2"><span className="font-semibold text-stone-800">3.</span><span>Betal og lever pakken hos Posten / Post i butikk</span></li>
+            <li className="flex gap-2"><span className="font-semibold text-stone-800">1.</span><span>Gå til posten.no og velg «Send i Norge»</span></li>
+            <li className="flex gap-2"><span className="font-semibold text-stone-800">2.</span><span>Velg pakkestørrelse ved å trykke «Kjøp sendekode»</span></li>
+            <li className="flex gap-2"><span className="font-semibold text-stone-800">3.</span><span>Fyll inn avsender- og mottakerinformasjon, og innleveringsmåte</span></li>
+            <li className="flex gap-2"><span className="font-semibold text-stone-800">4.</span><span>Betal frakt og send inn</span></li>
           </ol>
 
           <div className="space-y-0.5 text-xs text-stone-500">
