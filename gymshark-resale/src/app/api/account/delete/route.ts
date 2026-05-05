@@ -9,8 +9,6 @@ export const dynamic = "force-dynamic";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-const TERMINAL = ["cancelled", "refunded", "paid_out"];
-
 export async function POST() {
   const cookieStore = await cookies();
   const supabase = createServerClient(cookieStore);
@@ -29,7 +27,9 @@ export async function POST() {
     .from("orders")
     .select("id")
     .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-    .not("status", "in", `(${TERMINAL.join(",")})`);
+    .neq("status", "cancelled")
+    .neq("status", "refunded")
+    .neq("status", "paid_out");
 
   if (activeOrders && activeOrders.length > 0) {
     return NextResponse.json(
