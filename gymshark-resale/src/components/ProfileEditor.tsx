@@ -105,6 +105,7 @@ export function ProfileEditor({ email }: { email?: string | null }) {
     }
     if (data) setProfile(data as Profile);
     setSavedAt(Date.now());
+    setOpen(false);
     toast("Profil lagret");
   }
 
