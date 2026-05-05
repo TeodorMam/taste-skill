@@ -92,6 +92,8 @@ export function BidModal({
             value={raw}
             onChange={(e) => setRaw(e.target.value.replace(/\D/g, ""))}
             placeholder="F.eks. 300"
+            // eslint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
             className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
           />
         </div>
@@ -115,6 +117,9 @@ export function BidModal({
         >
           {submitting ? "Sender…" : "Send bud"}
         </button>
+        <p className="mt-3 text-center text-[11px] leading-relaxed text-stone-400">
+          Bud er ikke bindende – du betaler først hvis du velger å kjøpe etter aksept.
+        </p>
       </div>
     </div>
   );
