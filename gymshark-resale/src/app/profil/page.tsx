@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { type Review, averageRating, summarizeReviews } from "@/lib/supabase";
 import { ProfileEditor } from "@/components/ProfileEditor";
@@ -147,14 +148,41 @@ export default function ProfilPage() {
 
       <PasswordSetter />
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-4">
-        <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
-          Konto
-        </p>
-        <p className="mt-2 text-sm text-stone-700">
-          Innlogget som <span className="font-medium">{email ?? "ukjent"}</span>
-        </p>
-        <form action="/auth/signout" method="post" className="mt-3">
+      <AccountSection email={email} />
+    </section>
+  );
+}
+
+function AccountSection({ email }: { email: string | null }) {
+  const router = useRouter();
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function deleteAccount() {
+    setDeleting(true);
+    setError(null);
+    const res = await fetch("/api/account/delete", { method: "POST" });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      setError(json.error ?? "Noe gikk galt");
+      setDeleting(false);
+      return;
+    }
+    router.push("/");
+    router.refresh();
+  }
+
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white p-4">
+      <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
+        Konto
+      </p>
+      <p className="mt-2 text-sm text-stone-700">
+        Innlogget som <span className="font-medium">{email ?? "ukjent"}</span>
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <form action="/auth/signout" method="post">
           <button
             type="submit"
             className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-medium text-stone-700 hover:border-stone-500"
@@ -162,7 +190,45 @@ export default function ProfilPage() {
             Logg ut
           </button>
         </form>
+        {!confirming && (
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            className="rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-medium text-red-600 hover:border-red-400"
+          >
+            Slett konto
+          </button>
+        )}
       </div>
-    </section>
+
+      {confirming && (
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 space-y-3">
+          <p className="text-sm font-semibold text-red-900">Er du sikker?</p>
+          <p className="text-xs text-red-800">
+            Alle data slettes permanent innen 30 dager. Aktive ordre må fullføres først. Dette kan ikke angres.
+          </p>
+          {error && (
+            <p className="text-xs text-red-700">{error}</p>
+          )}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={deleteAccount}
+              disabled={deleting}
+              className="rounded-full bg-red-600 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleting ? "Sletter…" : "Ja, slett kontoen min"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setConfirming(false); setError(null); }}
+              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-medium text-stone-700 hover:border-stone-500"
+            >
+              Avbryt
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

@@ -27,7 +27,7 @@ export default function VilkarPage() {
 
       <Block title="2. Brukerkonto">
         <ul className="space-y-1.5">
-          <li>Du må være minst 15 år for å opprette konto. Er du under 18, trenger du foresattes samtykke.</li>
+          <li>Du må være minst 15 år for å opprette konto.</li>
           <li>Du er ansvarlig for all aktivitet som skjer fra kontoen din.</li>
           <li>Du kan ikke overføre eller dele kontoen din med andre.</li>
           <li>Vi kan suspendere eller slette kontoer som bryter disse vilkårene.</li>
@@ -38,7 +38,7 @@ export default function VilkarPage() {
         <ul className="space-y-1.5">
           <li>Annonsen skal gi en ærlig og nøyaktig beskrivelse av varen, inkludert feil og slitasje.</li>
           <li>Du kan bare selge treningsklær og treningsrelatert utstyr.</li>
-          <li>Forfalskninger, stjålgods eller varer som bryter norsk lov er ikke tillatt.</li>
+          <li>Forfalskninger, tyvegods eller varer som bryter norsk lov er ikke tillatt.</li>
           <li>Du plikter å sende varen innen 7 dager etter betaling. Sender du ikke innen fristen, kanselleres ordren og kjøper refunderes fullt.</li>
           <li>For å motta betaling må du koble til en Stripe Express-konto og akseptere Stripes vilkår.</li>
           <li>Leveringstid kan variere, og Aktivbruk er ikke ansvarlig for forsinkelser hos fraktselskap.</li>
@@ -57,7 +57,7 @@ export default function VilkarPage() {
       <Block title="5. Betaling og gebyrer">
         <ul className="space-y-1.5">
           <li>Betalingen behandles via Stripe og holdes sikkert frem til kjøper enten bekrefter at alt er OK, eller 48 timer har gått etter registrert levering.</li>
-          <li>Aktivbruk tar et transaksjonsgebyr per gjennomført salg. Gebyret fremgår av kjøpsprosessen.</li>
+          <li>Aktivbruk tar et transaksjonsgebyr per gjennomført salg. Gebyret vises i kjøpsprosessen.</li>
           <li>Fraktkostnader betales av kjøper og legges til i kassen basert på selgers valgte pakkestørrelse.</li>
           <li>Refusjoner behandles via Stripe og kan ta 5–10 virkedager avhengig av kortutstederen.</li>
         </ul>
