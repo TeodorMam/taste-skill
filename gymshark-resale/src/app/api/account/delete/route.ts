@@ -22,22 +22,6 @@ export async function POST() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // Block if the user has any non-terminal orders
-  const { data: activeOrders } = await admin
-    .from("orders")
-    .select("id")
-    .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-    .neq("status", "cancelled")
-    .neq("status", "refunded")
-    .neq("status", "paid_out");
-
-  if (activeOrders && activeOrders.length > 0) {
-    return NextResponse.json(
-      { error: "Du har aktive ordre. Fullfør dem før du sletter kontoen." },
-      { status: 400 },
-    );
-  }
-
   const { error } = await admin.auth.admin.deleteUser(user.id);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
