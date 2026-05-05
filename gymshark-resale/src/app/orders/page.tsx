@@ -151,37 +151,40 @@ function OrderCard({ order, role, onAction }: {
             <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">Send innen 7 dager</span>
           </div>
 
-          {order.buyer_name && (
-            <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400">Mottaker</p>
-              <p className="text-sm font-medium text-stone-900">{order.buyer_name}</p>
-              <p className="text-sm text-stone-700">{order.buyer_address}</p>
-              <p className="text-sm text-stone-700">{order.buyer_postal_code} {order.buyer_city}</p>
-              {order.buyer_phone && <p className="text-sm text-stone-700">{order.buyer_phone}</p>}
-              <button
-                type="button"
-                onClick={() => {
-                  const text = [order.buyer_name, order.buyer_address, `${order.buyer_postal_code} ${order.buyer_city}`, order.buyer_phone].filter(Boolean).join("\n");
-                  void navigator.clipboard.writeText(text);
-                  toast("Kopiert!");
-                }}
-                className="mt-2 text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
-              >
-                Kopier alt
-              </button>
+          <div className="flex gap-4">
+            <div className="flex-1 space-y-3">
+              <ol className="space-y-1.5 text-xs text-stone-600">
+                <li className="flex gap-2"><span className="font-semibold text-stone-800">1.</span><span>Gå til posten.no og velg «Send i Norge»</span></li>
+                <li className="flex gap-2"><span className="font-semibold text-stone-800">2.</span><span>Velg pakkestørrelse ved å trykke «Kjøp sendekode»</span></li>
+                <li className="flex gap-2"><span className="font-semibold text-stone-800">3.</span><span>Fyll inn avsender- og mottakerinformasjon, og innleveringsmåte</span></li>
+                <li className="flex gap-2"><span className="font-semibold text-stone-800">4.</span><span>Betal frakt og send inn</span></li>
+              </ol>
+              <div className="space-y-0.5 text-xs text-stone-500">
+                <p>Frakten er allerede betalt av kjøper — du får dette tilbake i utbetalingen.</p>
+                <p>Levering tar vanligvis 2–5 virkedager.</p>
+              </div>
             </div>
-          )}
 
-          <ol className="space-y-1.5 text-xs text-stone-600">
-            <li className="flex gap-2"><span className="font-semibold text-stone-800">1.</span><span>Gå til posten.no og velg «Send i Norge»</span></li>
-            <li className="flex gap-2"><span className="font-semibold text-stone-800">2.</span><span>Velg pakkestørrelse ved å trykke «Kjøp sendekode»</span></li>
-            <li className="flex gap-2"><span className="font-semibold text-stone-800">3.</span><span>Fyll inn avsender- og mottakerinformasjon, og innleveringsmåte</span></li>
-            <li className="flex gap-2"><span className="font-semibold text-stone-800">4.</span><span>Betal frakt og send inn</span></li>
-          </ol>
-
-          <div className="space-y-0.5 text-xs text-stone-500">
-            <p>Frakten er allerede betalt av kjøper — du får dette tilbake i utbetalingen.</p>
-            <p>Levering tar vanligvis 2–5 virkedager.</p>
+            {order.buyer_name && (
+              <div className="w-40 shrink-0 rounded-xl border border-stone-200 bg-stone-50 p-3">
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400">Mottaker</p>
+                <p className="text-xs font-medium text-stone-900">{order.buyer_name}</p>
+                <p className="text-xs text-stone-700">{order.buyer_address}</p>
+                <p className="text-xs text-stone-700">{order.buyer_postal_code} {order.buyer_city}</p>
+                {order.buyer_phone && <p className="text-xs text-stone-700">{order.buyer_phone}</p>}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = [order.buyer_name, order.buyer_address, `${order.buyer_postal_code} ${order.buyer_city}`, order.buyer_phone].filter(Boolean).join("\n");
+                    void navigator.clipboard.writeText(text);
+                    toast("Kopiert!");
+                  }}
+                  className="mt-2 text-[10px] font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+                >
+                  Kopier alt
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2 pt-1">
