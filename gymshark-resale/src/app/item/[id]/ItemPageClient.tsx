@@ -343,8 +343,8 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
             </div>
           )}
 
-          {/* Kjøp nå — shown to logged-in buyers when seller has Stripe enabled */}
-          {userId && !isSeller && !item.is_sold && sellerChargesEnabled && (() => {
+          {/* Kjøp nå — hidden when buyer already has an accepted bid (use Betal nå instead) */}
+          {userId && !isSeller && !item.is_sold && sellerChargesEnabled && myOffer?.status !== "accepted" && (() => {
             const pkg = getPackageOption(item.package_size);
             const canShip = item.shipping !== "Kun henting" && !!pkg;
             const canMeet = item.shipping !== "Kan sendes";

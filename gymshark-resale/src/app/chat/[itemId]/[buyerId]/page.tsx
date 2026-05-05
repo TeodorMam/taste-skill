@@ -54,6 +54,9 @@ export default function ChatPage() {
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [bidMode, setBidMode] = useState(false);
+  const [bidAmount, setBidAmount] = useState("");
+  const [submittingBid, setSubmittingBid] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [otherLastRead, setOtherLastRead] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -125,7 +128,7 @@ export default function ChatPage() {
       });
     const channel = supabase
       .channel(`offers:${itemId}:${buyerId}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "offers", filter: `item_id=eq.${itemId}` }, (payload) => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "offers", filter: `item_id=eq.${itemId}` }, (payload) => {
         const o = payload.new as Offer;
         if (o.buyer_id === buyerId) setOffersMap((prev) => ({ ...prev, [o.id]: o }));
       })
@@ -209,6 +212,33 @@ export default function ChatPage() {
     if (error) { setError(error.message); return; }
     const m = data as Message;
     setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+  }
+
+  async function submitBid() {
+    if (!meId || !bidAmount || isSeller) return;
+    const amount = parseInt(bidAmount.replace(/\D/g, ""), 10);
+    if (!amount || amount <= 0) return;
+    setSubmittingBid(true);
+    const { data, error } = await supabase
+      .from("offers")
+      .insert({ item_id: itemId, buyer_id: buyerId, amount })
+      .select("*")
+      .single();
+    if (error) { toast(`Feil: ${error.message}`); setSubmittingBid(false); return; }
+    const offer = data as Offer;
+    setOffersMap((prev) => ({ ...prev, [offer.id]: offer }));
+    await supabase.from("messages").insert({
+      item_id: itemId,
+      buyer_id: buyerId,
+      sender_id: meId,
+      body: "",
+      message_type: "bid",
+      metadata: { offer_id: offer.id, amount },
+    }).then(() => null);
+    setBidAmount("");
+    setBidMode(false);
+    setSubmittingBid(false);
+    toast("Bud sendt");
   }
 
   async function respondOffer(offerId: string, amount: number, status: "accepted" | "declined") {
@@ -378,45 +408,87 @@ export default function ChatPage() {
 
       {/* ── Input bar ────────────────────────────────────────────────────── */}
       <div className="shrink-0 border-t border-stone-200 bg-white">
-        <form onSubmit={send} className="flex items-center gap-2 p-2">
+        {bidMode ? (
+          <div className="flex items-center gap-2 p-2">
+            <button
+              type="button"
+              onClick={() => { setBidMode(false); setBidAmount(""); }}
+              className="shrink-0 rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+              aria-label="Avbryt bud"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={bidAmount}
+              onChange={(e) => setBidAmount(e.target.value.replace(/\D/g, ""))}
+              placeholder="Budbeløp (kr)"
+              className="min-w-0 flex-1 rounded-full border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32]"
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={submitBid}
+              disabled={submittingBid || !bidAmount}
+              className="shrink-0 rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-40"
+            >
+              {submittingBid ? "…" : "Send bud"}
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={send} className="flex items-center gap-2 p-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || sending}
+              className="shrink-0 rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-40"
+              aria-label="Send bilde"
+            >
+              {uploading ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) sendImage(f); e.target.value = ""; }}
+            />
+            <input
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Skriv en melding…"
+              className="min-w-0 flex-1 rounded-full border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32]"
+            />
+            <button
+              type="submit"
+              disabled={sending || !body.trim()}
+              className="shrink-0 rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-40"
+            >
+              Send
+            </button>
+          </form>
+        )}
+        {!bidMode && !isSeller && item && !item.is_sold && (
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading || sending}
-            className="shrink-0 rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-40"
-            aria-label="Send bilde"
+            onClick={() => setBidMode(true)}
+            className="w-full pb-2 text-center text-xs font-medium text-stone-400 hover:text-stone-700"
           >
-            {uploading ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-              </svg>
-            )}
+            💸 Gi bud
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) sendImage(f); e.target.value = ""; }}
-          />
-          <input
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Skriv en melding…"
-            className="min-w-0 flex-1 rounded-full border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32]"
-          />
-          <button
-            type="submit"
-            disabled={sending || !body.trim()}
-            className="shrink-0 rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-40"
-          >
-            Send
-          </button>
-        </form>
+        )}
         {error && <p className="px-3 pb-2 text-xs text-red-700">{error}</p>}
       </div>
 
