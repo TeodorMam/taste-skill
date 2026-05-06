@@ -74,16 +74,24 @@ export function StripeConnectPanel() {
       <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Selgerkonto</p>
 
       {status === "none" && (
-        <div className="mt-3 space-y-3">
+        <div className="mt-3 space-y-4">
           <p className="text-sm text-stone-700">
-            For å selge må du koble til Stripe (trygg betaling).<br />
-            Det tar ca. 2 minutter, og du trenger ikke ha et firma.
+            For å selge må du koble til Stripe (trygg betaling). Det tar ca. 2 minutter.
           </p>
-          <p className="text-sm text-stone-600">
-            Stripe ber om noen opplysninger for utbetalinger.<br />
-            Har du ikke nettside, velg <strong>«Produktbeskrivelse»</strong> og skriv f.eks:<br />
-            <span className="italic">«Jeg selger brukte treningsklær via Aktivbruk»</span>
-          </p>
+          <ol className="space-y-2.5">
+            {[
+              { n: "1", label: "Klikk «Koble til Stripe»" },
+              { n: "2", label: <>Velg bransje: <strong>Klær og tilbehør</strong> og skriv inn nettsted: <strong>aktivbruk.com</strong></> },
+              { n: "3", label: "Fyll inn personlig info og bankinfo" },
+            ].map(({ n, label }) => (
+              <li key={n} className="flex items-start gap-2.5 text-sm text-stone-600">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-stone-100 text-[11px] font-semibold text-stone-500">
+                  {n}
+                </span>
+                <span>{label}</span>
+              </li>
+            ))}
+          </ol>
           <button
             onClick={handleConnect}
             disabled={connecting}

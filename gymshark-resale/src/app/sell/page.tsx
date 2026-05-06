@@ -114,19 +114,20 @@ export default function SellPage() {
           </p>
         </div>
 
-        <div className="space-y-3 text-sm text-stone-700">
-          <p>
-            Du trenger ikke ha et firma.<br />
-            Velg det som passer best — dette gjelder også privatpersoner.
-          </p>
-          <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
-            <p className="mb-1 font-medium text-stone-800">Har du ikke nettside?</p>
-            <p className="text-stone-600">
-              Velg <strong>«Produktbeskrivelse»</strong> og skriv f.eks:<br />
-              <span className="italic">«Jeg selger brukte treningsklær via Aktivbruk»</span>
-            </p>
-          </div>
-        </div>
+        <ol className="space-y-3">
+          {[
+            { step: "1", text: "Klikk «Koble til Stripe» nedenfor" },
+            { step: "2", text: <>Velg bransje: <strong>Klær og tilbehør</strong> — skriv inn nettsted: <strong>aktivbruk.com</strong></> },
+            { step: "3", text: "Fyll inn personlig info og bankinfo som vanlig" },
+          ].map(({ step, text }) => (
+            <li key={step} className="flex items-start gap-3 text-sm text-stone-700">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-semibold text-stone-600">
+                {step}
+              </span>
+              <span className="pt-0.5">{text}</span>
+            </li>
+          ))}
+        </ol>
 
         <button
           onClick={handleConnect}
