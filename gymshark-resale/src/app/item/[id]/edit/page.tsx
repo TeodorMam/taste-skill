@@ -287,9 +287,16 @@ export default function EditItemPage() {
         <Field label="Beskrivelse">
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className={`${input} resize-none`}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              const el = e.target;
+              const scrollY = window.scrollY;
+              el.style.height = "auto";
+              el.style.height = `${el.scrollHeight}px`;
+              window.scrollTo(0, scrollY);
+            }}
+            rows={6}
+            className={`${input} resize-none overflow-hidden`}
           />
         </Field>
 

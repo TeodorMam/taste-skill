@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BUCKET,
@@ -45,7 +45,6 @@ export default function PostPage() {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [shipping, setShipping] = useState<string>(SHIPPING_OPTIONS[0].value);
   const [packageSize, setPackageSize] = useState<string>("small");
-  const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [uploadIdx, setUploadIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -381,13 +380,14 @@ export default function PostPage() {
 
         <Field label="Beskrivelse (valgfritt)">
           <textarea
-            ref={descriptionRef}
             value={description}
             onChange={(e) => {
               setDescription(e.target.value);
               const el = e.target;
+              const scrollY = window.scrollY;
               el.style.height = "auto";
               el.style.height = `${el.scrollHeight}px`;
+              window.scrollTo(0, scrollY);
             }}
             placeholder="Fortell om varen — størrelse, bruk, tilstand, grunnen til salg…"
             rows={6}
