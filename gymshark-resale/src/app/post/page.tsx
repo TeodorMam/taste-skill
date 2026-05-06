@@ -9,6 +9,7 @@ import {
   SIZES,
   CONDITIONS,
   AREAS,
+  GENDERS,
   MAX_IMAGES,
   SHIPPING_OPTIONS,
   CATEGORY_TREE,
@@ -35,6 +36,7 @@ export default function PostPage() {
   const [brand, setBrand] = useState("");
   const [categoryParent, setCategoryParent] = useState<CategoryParent | "">("");
   const [category, setCategory] = useState("");
+  const [gender, setGender] = useState("");
   const [size, setSize] = useState("M");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState<(typeof CONDITIONS)[number]>("God");
@@ -134,6 +136,7 @@ export default function PostPage() {
           image_urls,
           shipping,
           package_size: shipping !== "Kun henting" ? packageSize : null,
+          gender: gender || null,
         })
         .select("id")
         .single();
@@ -317,6 +320,26 @@ export default function PostPage() {
               )}
             </div>
           )}
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Kjønn</span>
+          <div className="flex flex-wrap gap-2">
+            {GENDERS.map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setGender(gender === g ? "" : g)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  gender === g
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
