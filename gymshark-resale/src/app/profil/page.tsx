@@ -126,21 +126,6 @@ export default function ProfilPage() {
             <p className="text-xs text-stone-500">Alt du har lagt ut</p>
           </div>
         </Link>
-        <Link
-          href="/varsler"
-          className="relative flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:border-stone-400"
-        >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg">🔔</span>
-          <div>
-            <p className="text-sm font-medium text-stone-900">Varsler</p>
-            <p className="text-xs text-stone-500">Prisfall og søk</p>
-          </div>
-          {varslerCount > 0 && (
-            <span className="absolute right-3 top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-              {varslerCount > 9 ? "9+" : varslerCount}
-            </span>
-          )}
-        </Link>
       </div>
 
       <Link
@@ -155,6 +140,22 @@ export default function ProfilPage() {
         {orderCount > 0 && (
           <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
             {orderCount > 9 ? "9+" : orderCount}
+          </span>
+        )}
+      </Link>
+
+      <Link
+        href="/varsler"
+        className="relative flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:border-stone-400"
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg">🔔</span>
+        <div className="flex-1">
+          <p className="text-sm font-medium text-stone-900">Varsler</p>
+          <p className="text-xs text-stone-500">Prisfall og søk</p>
+        </div>
+        {varslerCount > 0 && (
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+            {varslerCount > 9 ? "9+" : varslerCount}
           </span>
         )}
       </Link>

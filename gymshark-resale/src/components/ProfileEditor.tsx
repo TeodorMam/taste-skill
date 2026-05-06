@@ -3,14 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import {
-  AREAS,
   AVATAR_BUCKET,
   type Profile,
   profileDisplayName,
 } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 
-export function ProfileEditor({ email }: { email?: string | null }) {
+type EmailStage = "idle" | "editing" | "code";
+
+export function ProfileEditor({ email: initialEmail }: { email?: string | null }) {
   const toast = useToast();
   const supabase = useMemo(() => createClient(), []);
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
@@ -18,7 +19,6 @@ export function ProfileEditor({ email }: { email?: string | null }) {
   const [open, setOpen] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
-  const [location, setLocation] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [fullName, setFullName] = useState("");
   const [address, setAddress] = useState("");
@@ -31,10 +31,19 @@ export function ProfileEditor({ email }: { email?: string | null }) {
   const [error, setError] = useState<string | null>(null);
   const [dob, setDob] = useState("");
 
+  // Email change state
+  const [currentEmail, setCurrentEmail] = useState<string | null>(initialEmail ?? null);
+  const [emailStage, setEmailStage] = useState<EmailStage>("idle");
+  const [newEmail, setNewEmail] = useState("");
+  const [emailCode, setEmailCode] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data.user?.id ?? null);
       setDob(data.user?.user_metadata?.date_of_birth ?? "");
+      setCurrentEmail(data.user?.email ?? null);
     });
   }, [supabase]);
 
@@ -50,7 +59,6 @@ export function ProfileEditor({ email }: { email?: string | null }) {
         setProfile(p);
         setDisplayName(p?.display_name ?? "");
         setBio(p?.bio ?? "");
-        setLocation(p?.location ?? "");
         setAvatarUrl(p?.avatar_url ?? null);
         setFullName(p?.full_name ?? "");
         setAddress(p?.address ?? "");
@@ -88,6 +96,38 @@ export function ProfileEditor({ email }: { email?: string | null }) {
     setAvatarUrl(data.publicUrl);
   }
 
+  async function sendEmailChange() {
+    setEmailError(null);
+    setSavingEmail(true);
+    const { error: err } = await supabase.auth.updateUser({ email: newEmail.trim() });
+    setSavingEmail(false);
+    if (err) {
+      setEmailError(err.message);
+      return;
+    }
+    setEmailStage("code");
+  }
+
+  async function verifyEmailChange() {
+    setEmailError(null);
+    setSavingEmail(true);
+    const { error: err } = await supabase.auth.verifyOtp({
+      email: newEmail.trim(),
+      token: emailCode.trim(),
+      type: "email_change",
+    });
+    setSavingEmail(false);
+    if (err) {
+      setEmailError(err.message);
+      return;
+    }
+    setCurrentEmail(newEmail.trim());
+    setEmailStage("idle");
+    setNewEmail("");
+    setEmailCode("");
+    toast("E-post oppdatert");
+  }
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -96,7 +136,6 @@ export function ProfileEditor({ email }: { email?: string | null }) {
       user_id: userId!,
       display_name: displayName.trim() || null,
       bio: bio.trim() || null,
-      location: location || null,
       avatar_url: avatarUrl,
       full_name: fullName.trim() || null,
       address: address.trim() || null,
@@ -139,7 +178,7 @@ export function ProfileEditor({ email }: { email?: string | null }) {
           <Avatar url={avatarUrl} displayName={displayName} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold tracking-tight">{name}</p>
-            <p className="truncate text-xs text-stone-500">{email ?? ""}</p>
+            <p className="truncate text-xs text-stone-500">{currentEmail ?? ""}</p>
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-stone-400" aria-hidden>
             <path d="M9 18l6-6-6-6" />
@@ -217,22 +256,95 @@ export function ProfileEditor({ email }: { email?: string | null }) {
           onChange={(e) => setDisplayName(e.target.value)}
           maxLength={40}
           placeholder="f.eks. Kari N. eller Treningskari"
-          className={input}
+          className={inp}
         />
       </Field>
 
-      <Field label="Sted (valgfritt)">
-        <select
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className={input}
-        >
-          <option value="">Ikke oppgitt</option>
-          {AREAS.map((a) => (
-            <option key={a}>{a}</option>
-          ))}
-        </select>
-      </Field>
+      {/* Email change */}
+      <div>
+        <span className="block text-xs font-medium text-stone-600">E-post</span>
+        {emailStage === "idle" && (
+          <div className="mt-1 flex items-center gap-2">
+            <span className="flex-1 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700">
+              {currentEmail ?? ""}
+            </span>
+            <button
+              type="button"
+              onClick={() => { setEmailStage("editing"); setEmailError(null); }}
+              className="shrink-0 rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500"
+            >
+              Endre
+            </button>
+          </div>
+        )}
+        {emailStage === "editing" && (
+          <div className="mt-1 space-y-2">
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="Ny e-postadresse"
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
+              className={inp}
+            />
+            {emailError && <p className="text-xs text-red-600">{emailError}</p>}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={sendEmailChange}
+                disabled={savingEmail || !newEmail.trim()}
+                className="rounded-full bg-stone-900 px-4 py-2 text-xs font-medium text-white hover:bg-black disabled:opacity-50"
+              >
+                {savingEmail ? "Sender…" : "Send bekreftelseskode"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEmailStage("idle"); setEmailError(null); setNewEmail(""); }}
+                className="rounded-full border border-stone-300 px-3 py-2 text-xs font-medium text-stone-700 hover:border-stone-500"
+              >
+                Avbryt
+              </button>
+            </div>
+          </div>
+        )}
+        {emailStage === "code" && (
+          <div className="mt-1 space-y-2">
+            <p className="text-xs text-stone-500">
+              Vi sendte en kode til <span className="font-medium">{newEmail}</span>. Sjekk innboksen din.
+            </p>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={emailCode}
+              onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, ""))}
+              placeholder="6-sifret kode"
+              maxLength={6}
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
+              className={`${inp} tracking-widest`}
+            />
+            {emailError && <p className="text-xs text-red-600">{emailError}</p>}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={verifyEmailChange}
+                disabled={savingEmail || emailCode.length < 6}
+                className="rounded-full bg-stone-900 px-4 py-2 text-xs font-medium text-white hover:bg-black disabled:opacity-50"
+              >
+                {savingEmail ? "Verifiserer…" : "Bekreft"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEmailStage("idle"); setEmailError(null); setNewEmail(""); setEmailCode(""); }}
+                className="rounded-full border border-stone-300 px-3 py-2 text-xs font-medium text-stone-700 hover:border-stone-500"
+              >
+                Avbryt
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       <Field label="Bio (valgfritt)">
         <textarea
@@ -241,7 +353,7 @@ export function ProfileEditor({ email }: { email?: string | null }) {
           rows={3}
           maxLength={280}
           placeholder="Litt om deg — hva du selger, hvor du trener, osv."
-          className={`${input} resize-none`}
+          className={`${inp} resize-none`}
         />
         <p className="mt-1 text-[10px] text-stone-400">{bio.length}/280</p>
       </Field>
@@ -250,21 +362,21 @@ export function ProfileEditor({ email }: { email?: string | null }) {
         <p className="mb-2 text-xs font-semibold text-stone-700">Leveringsinformasjon <span className="font-normal text-stone-500">(kreves for kjøp)</span></p>
         <div className="space-y-2.5">
           <Field label="Fullt navn *">
-            <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ola Nordmann" className={input} />
+            <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ola Nordmann" className={inp} />
           </Field>
           <Field label="Adresse *">
-            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Storgata 1" className={input} />
+            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Storgata 1" className={inp} />
           </Field>
           <div className="grid grid-cols-2 gap-2">
             <Field label="Postnummer *">
-              <input type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="0123" inputMode="numeric" className={input} />
+              <input type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="0123" inputMode="numeric" className={inp} />
             </Field>
             <Field label="Sted *">
-              <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Oslo" className={input} />
+              <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Oslo" className={inp} />
             </Field>
           </div>
           <Field label="Telefon *">
-            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="40012345" inputMode="tel" className={input} />
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="40012345" inputMode="tel" className={inp} />
           </Field>
         </div>
       </div>
@@ -279,7 +391,7 @@ export function ProfileEditor({ email }: { email?: string | null }) {
             onChange={(e) => setDob(formatDob(e.target.value))}
             placeholder="DD.MM.ÅÅÅÅ"
             maxLength={10}
-            className={`${input} tracking-widest`}
+            className={`${inp} tracking-widest`}
           />
         </Field>
         <p className="mt-1 text-[10px] text-stone-400">Lagres privat — vises ikke på profilen din.</p>
@@ -349,5 +461,5 @@ function Field({
   );
 }
 
-const input =
+const inp =
   "block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30";
