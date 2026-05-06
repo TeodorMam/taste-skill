@@ -85,15 +85,29 @@ export default function ProfilPage() {
           {reviews.length === 0 ? (
             <p className="mt-3 text-sm text-stone-400">Ingen vurderinger ennå — de vises her etter første salg.</p>
           ) : rated ? (
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-              <span className="text-3xl font-semibold tracking-tight">
-                {rated.avg.toFixed(1)}
-              </span>
-              <Stars avg={rated.avg} />
-              <span className="text-sm text-stone-500">
-                {rated.total} vurdering{rated.total !== 1 ? "er" : ""}
-              </span>
-            </div>
+            <>
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                <span className="text-3xl font-semibold tracking-tight">
+                  {rated.avg.toFixed(1)}
+                </span>
+                <Stars avg={rated.avg} />
+                <span className="text-sm text-stone-500">
+                  {rated.total} vurdering{rated.total !== 1 ? "er" : ""}
+                </span>
+              </div>
+              <div className="mt-4 space-y-3">
+                {reviews.filter((r) => r.comment).slice(0, 5).map((r) => (
+                  <div key={r.id} className="rounded-xl border border-stone-100 bg-stone-50 px-3 py-2.5">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {[1,2,3,4,5].map((n) => (
+                        <span key={n} className={n <= (r.rating ?? 0) ? "text-amber-400 text-xs" : "text-stone-200 text-xs"}>★</span>
+                      ))}
+                    </div>
+                    <p className="text-sm text-stone-700">{r.comment}</p>
+                  </div>
+                ))}
+              </div>
+            </>
           ) : summary && summary.total > 0 ? (
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
               <span className="text-2xl font-semibold">{summary.pct}%</span>
