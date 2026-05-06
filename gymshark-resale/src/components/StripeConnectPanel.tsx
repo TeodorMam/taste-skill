@@ -99,6 +99,10 @@ export function StripeConnectPanel() {
           >
             {connecting ? "Sender til Stripe…" : "Koble til Stripe →"}
           </button>
+          <p className="text-xs text-stone-400">
+            <span className="font-medium text-stone-500">Under 18?</span>{" "}
+            Be en foresatt opprette Stripe-konto og motta betaling for deg.
+          </p>
         </div>
       )}
 
