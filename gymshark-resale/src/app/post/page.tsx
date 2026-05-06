@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   BUCKET,
   BRANDS,
@@ -10,6 +9,8 @@ import {
   CONDITIONS,
   AREAS,
   GENDERS,
+  COLORS,
+  FITS,
   MAX_IMAGES,
   SHIPPING_OPTIONS,
   CATEGORY_TREE,
@@ -37,6 +38,8 @@ export default function PostPage() {
   const [categoryParent, setCategoryParent] = useState<CategoryParent | "">("");
   const [category, setCategory] = useState("");
   const [gender, setGender] = useState("");
+  const [color, setColor] = useState("");
+  const [fit, setFit] = useState("");
   const [size, setSize] = useState("M");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState<(typeof CONDITIONS)[number]>("God");
@@ -137,6 +140,8 @@ export default function PostPage() {
           shipping,
           package_size: shipping !== "Kun henting" ? packageSize : null,
           gender: gender || null,
+          color: color || null,
+          fit: fit || null,
         })
         .select("id")
         .single();
@@ -153,20 +158,8 @@ export default function PostPage() {
     return <p className="py-6 text-sm text-stone-500">Laster…</p>;
   }
   if (userId === null) {
-    return (
-      <section className="space-y-4 py-10">
-        <h1 className="text-3xl font-semibold tracking-tight">Logg inn for å selge</h1>
-        <p className="text-sm text-stone-600">
-          Du trenger en kort innlogging så kjøpere kan sende deg melding.
-        </p>
-        <Link
-          href="/login?next=/post"
-          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
-        >
-          Logg inn
-        </Link>
-      </section>
-    );
+    router.replace("/login?next=/post");
+    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
   }
 
   return (
@@ -337,6 +330,46 @@ export default function PostPage() {
                 }`}
               >
                 {g}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Farge (valgfritt)</span>
+          <div className="flex flex-wrap gap-2">
+            {COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(color === c ? "" : c)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  color === c
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Passform (valgfritt)</span>
+          <div className="flex flex-wrap gap-2">
+            {FITS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFit(fit === f ? "" : f)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  fit === f
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {f}
               </button>
             ))}
           </div>

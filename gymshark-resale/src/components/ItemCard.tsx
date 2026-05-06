@@ -14,15 +14,6 @@ function shippingIcon(s: string | null) {
   return "📦";
 }
 
-function relativeAge(iso: string): string {
-  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
-  if (days === 0) return "i dag";
-  if (days === 1) return "i går";
-  if (days < 7) return `${days}d`;
-  if (days < 30) return `${Math.floor(days / 7)}u`;
-  return `${Math.floor(days / 30)}mnd`;
-}
-
 export function ItemCard({
   item,
   seller,
@@ -95,7 +86,7 @@ export function ItemCard({
         </div>
         <div className="flex items-center justify-between gap-1">
           <p className="line-clamp-1 text-xs text-stone-500">
-            Str. {item.size} · {item.condition} · {relativeAge(item.updated_at || item.created_at)}
+            Str. {item.size} · {item.condition}
           </p>
           {shippingIcon(item.shipping) && (
             <span className="shrink-0 text-xs" title={item.shipping ?? ""}>

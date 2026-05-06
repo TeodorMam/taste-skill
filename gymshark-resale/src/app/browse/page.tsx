@@ -11,6 +11,8 @@ import {
   AREAS,
   PRICE_BUCKETS,
   GENDERS,
+  COLORS,
+  FITS,
   type PriceBucketKey,
   CATEGORY_TREE,
   CATEGORY_PARENTS,
@@ -54,6 +56,8 @@ function BrowseInner() {
   const q = params.get("q") ?? "";
   const brand = params.get("brand") ?? "";
   const gender = params.get("gender") ?? "";
+  const color = params.get("color") ?? "";
+  const fit = params.get("fit") ?? "";
   const cat = params.get("cat") ?? "";
   const sub = params.get("sub") ?? "";
   const size = params.get("size") ?? "";
@@ -96,6 +100,8 @@ function BrowseInner() {
     const filters: Record<string, string> = {};
     if (q) filters.q = q;
     if (gender) filters.gender = gender;
+    if (color) filters.color = color;
+    if (fit) filters.fit = fit;
     if (brand) filters.brand = brand;
     if (cat) filters.cat = cat;
     if (sub) filters.sub = sub;
@@ -154,6 +160,8 @@ function BrowseInner() {
 
       if (hideSold) q = q.eq("is_sold", false);
       if (gender) q = q.eq("gender", gender);
+      if (color) q = q.eq("color", color);
+      if (fit) q = q.eq("fit", fit);
       if (brand) q = q.eq("brand", brand);
       if (sub) {
         q = q.eq("category", sub);
@@ -174,7 +182,7 @@ function BrowseInner() {
 
       return q.range(from, from + PAGE_SIZE - 1);
     },
-    [debouncedQ, gender, brand, cat, sub, size, condition, location, price, sort, hideSold, shipping],
+    [debouncedQ, gender, color, fit, brand, cat, sub, size, condition, location, price, sort, hideSold, shipping],
   );
 
   useEffect(() => {
@@ -256,7 +264,7 @@ function BrowseInner() {
     ? CATEGORY_TREE.find((g) => g.name === activeParent)
     : null;
   const hasActiveFilter =
-    !!(q || gender || brand || cat || sub || size || condition || location || price || shipping) ||
+    !!(q || gender || color || fit || brand || cat || sub || size || condition || location || price || shipping) ||
     sort !== "newest" ||
     !hideSold;
 
@@ -287,6 +295,22 @@ function BrowseInner() {
           <Chip active={gender === ""} onClick={() => setParam("gender", "")}>Alle</Chip>
           {GENDERS.map((g) => (
             <Chip key={g} active={gender === g} onClick={() => setParam("gender", g)}>{g}</Chip>
+          ))}
+        </FilterRow>
+
+        {/* Farge */}
+        <FilterRow>
+          <Chip active={color === ""} onClick={() => setParam("color", "")}>Alle farger</Chip>
+          {COLORS.map((c) => (
+            <Chip key={c} active={color === c} onClick={() => setParam("color", c)}>{c}</Chip>
+          ))}
+        </FilterRow>
+
+        {/* Passform */}
+        <FilterRow>
+          <Chip active={fit === ""} onClick={() => setParam("fit", "")}>Alle passformer</Chip>
+          {FITS.map((f) => (
+            <Chip key={f} active={fit === f} onClick={() => setParam("fit", f)}>{f}</Chip>
           ))}
         </FilterRow>
 

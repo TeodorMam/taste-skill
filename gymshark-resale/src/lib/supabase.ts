@@ -17,6 +17,8 @@ export type Item = {
   shipping: string | null;
   package_size: string | null;
   gender: string | null;
+  color: string | null;
+  fit: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -262,6 +264,16 @@ export function categoryMatchesParent(
 export const SIZES = ["XS", "S", "M", "L", "XL", "XXL"] as const;
 
 export const GENDERS = ["Herre", "Dame", "Unisex"] as const;
+
+export const COLORS = [
+  "Svart", "Hvit", "Grå", "Marineblå", "Blå", "Lyseblå",
+  "Grønn", "Oliven", "Rød", "Rosa", "Lilla", "Oransje",
+  "Gul", "Beige", "Brun", "Flerfarge",
+] as const;
+
+export const FITS = [
+  "Slim fit", "Regular fit", "Oversized", "Compression", "Athletic fit",
+] as const;
 
 export const CONDITIONS = [
   "Ny med merkelapp",

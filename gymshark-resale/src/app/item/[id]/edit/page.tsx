@@ -10,6 +10,8 @@ import {
   CONDITIONS,
   AREAS,
   GENDERS,
+  COLORS,
+  FITS,
   SHIPPING_OPTIONS,
   CATEGORY_TREE,
   CATEGORY_PARENTS,
@@ -40,6 +42,8 @@ export default function EditItemPage() {
   const [shipping, setShipping] = useState<string>(SHIPPING_OPTIONS[0].value);
   const [packageSize, setPackageSize] = useState<string>("small");
   const [gender, setGender] = useState("");
+  const [color, setColor] = useState("");
+  const [fit, setFit] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +78,8 @@ export default function EditItemPage() {
         setShipping(it.shipping ?? SHIPPING_OPTIONS[0].value);
         setPackageSize(it.package_size ?? "small");
         setGender(it.gender ?? "");
+        setColor(it.color ?? "");
+        setFit(it.fit ?? "");
       });
   }, [params.id, supabase]);
 
@@ -103,6 +109,8 @@ export default function EditItemPage() {
         shipping,
         package_size: shipping !== "Kun henting" ? packageSize : null,
         gender: gender || null,
+        color: color || null,
+        fit: fit || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", params.id);
@@ -248,6 +256,46 @@ export default function EditItemPage() {
                 }`}
               >
                 {g}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Farge (valgfritt)</span>
+          <div className="flex flex-wrap gap-2">
+            {COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(color === c ? "" : c)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  color === c
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Passform (valgfritt)</span>
+          <div className="flex flex-wrap gap-2">
+            {FITS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFit(fit === f ? "" : f)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  fit === f
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {f}
               </button>
             ))}
           </div>
