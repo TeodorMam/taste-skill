@@ -16,6 +16,7 @@ export type Item = {
   sold_to_buyer_id: string | null;
   shipping: string | null;
   package_size: string | null;
+  gender: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -259,6 +260,8 @@ export function categoryMatchesParent(
 }
 
 export const SIZES = ["XS", "S", "M", "L", "XL", "XXL"] as const;
+
+export const GENDERS = ["Herre", "Dame", "Unisex"] as const;
 
 export const CONDITIONS = [
   "Ny med merkelapp",

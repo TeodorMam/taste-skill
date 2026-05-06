@@ -10,6 +10,7 @@ import {
   CONDITIONS,
   AREAS,
   PRICE_BUCKETS,
+  GENDERS,
   type PriceBucketKey,
   CATEGORY_TREE,
   CATEGORY_PARENTS,
@@ -52,6 +53,7 @@ function BrowseInner() {
 
   const q = params.get("q") ?? "";
   const brand = params.get("brand") ?? "";
+  const gender = params.get("gender") ?? "";
   const cat = params.get("cat") ?? "";
   const sub = params.get("sub") ?? "";
   const size = params.get("size") ?? "";
@@ -74,6 +76,7 @@ function BrowseInner() {
 
   function autoLabel(f: Record<string, string>): string {
     const parts: string[] = [];
+    if (f.gender) parts.push(f.gender);
     if (f.brand) parts.push(f.brand);
     if (f.sub) parts.push(f.sub);
     else if (f.cat) parts.push(f.cat);
@@ -92,6 +95,7 @@ function BrowseInner() {
     const supabase = createClient();
     const filters: Record<string, string> = {};
     if (q) filters.q = q;
+    if (gender) filters.gender = gender;
     if (brand) filters.brand = brand;
     if (cat) filters.cat = cat;
     if (sub) filters.sub = sub;
@@ -149,6 +153,7 @@ function BrowseInner() {
       let q = supabase.from("items").select("*", { count: "exact" });
 
       if (hideSold) q = q.eq("is_sold", false);
+      if (gender) q = q.eq("gender", gender);
       if (brand) q = q.eq("brand", brand);
       if (sub) {
         q = q.eq("category", sub);
@@ -169,7 +174,7 @@ function BrowseInner() {
 
       return q.range(from, from + PAGE_SIZE - 1);
     },
-    [debouncedQ, brand, cat, sub, size, condition, location, price, sort, hideSold, shipping],
+    [debouncedQ, gender, brand, cat, sub, size, condition, location, price, sort, hideSold, shipping],
   );
 
   useEffect(() => {
@@ -251,15 +256,15 @@ function BrowseInner() {
     ? CATEGORY_TREE.find((g) => g.name === activeParent)
     : null;
   const hasActiveFilter =
-    !!(q || brand || cat || sub || size || condition || location || price || shipping) ||
+    !!(q || gender || brand || cat || sub || size || condition || location || price || shipping) ||
     sort !== "newest" ||
     !hideSold;
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-4">
       <div className="flex items-end justify-between">
         <h1 className="text-3xl font-semibold tracking-tight">Utforsk</h1>
-        <p className="flex items-center gap-1.5 text-xs text-stone-500">
+        <p className="flex items-center gap-1.5 text-xs text-stone-400">
           {initialLoading && !isFirstLoad.current && (
             <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
           )}
@@ -267,7 +272,8 @@ function BrowseInner() {
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
+        {/* Search */}
         <input
           type="search"
           value={q}
@@ -276,78 +282,70 @@ function BrowseInner() {
           className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
         />
 
-        {availableBrands.length > 0 && (
-          <Row>
-            <Chip active={brand === ""} onClick={() => setParam("brand", "")}>
-              Alle merker
-            </Chip>
-            {availableBrands.map((b) => (
-              <Chip key={b} active={brand === b} onClick={() => setParam("brand", b)}>
-                {b}
-              </Chip>
-            ))}
-          </Row>
-        )}
-
-        <Row>
-          <Chip active={cat === ""} onClick={() => setCat("")}>
-            Alle kategorier
-          </Chip>
-          {CATEGORY_PARENTS.map((c) => (
-            <Chip key={c} active={cat === c} onClick={() => setCat(c)}>
-              {c}
-            </Chip>
+        {/* Kjønn */}
+        <FilterRow>
+          <Chip active={gender === ""} onClick={() => setParam("gender", "")}>Alle</Chip>
+          {GENDERS.map((g) => (
+            <Chip key={g} active={gender === g} onClick={() => setParam("gender", g)}>{g}</Chip>
           ))}
-        </Row>
+        </FilterRow>
 
+        {/* Kategori */}
+        <FilterRow>
+          <Chip active={cat === ""} onClick={() => setCat("")}>Alle kategorier</Chip>
+          {CATEGORY_PARENTS.map((c) => (
+            <Chip key={c} active={cat === c} onClick={() => setCat(c)}>{c}</Chip>
+          ))}
+        </FilterRow>
+
+        {/* Sub-kategori */}
         {activeGroup && (
-          <Row>
+          <FilterRow>
             <Chip active={sub === ""} onClick={() => setParam("sub", "")}>
               Alle i {activeGroup.name.toLowerCase()}
             </Chip>
             {activeGroup.children.map((c) => (
-              <Chip key={c} active={sub === c} onClick={() => setParam("sub", c)}>
-                {c}
-              </Chip>
+              <Chip key={c} active={sub === c} onClick={() => setParam("sub", c)}>{c}</Chip>
             ))}
-          </Row>
+          </FilterRow>
         )}
 
-        <Row>
-          <Chip active={size === ""} onClick={() => setParam("size", "")}>
-            Alle str.
-          </Chip>
+        {/* Størrelse */}
+        <FilterRow>
+          <Chip active={size === ""} onClick={() => setParam("size", "")}>Alle str.</Chip>
           {SIZES.map((s) => (
-            <Chip key={s} active={size === s} onClick={() => setParam("size", s)}>
-              {s}
-            </Chip>
+            <Chip key={s} active={size === s} onClick={() => setParam("size", s)}>{s}</Chip>
           ))}
-        </Row>
+        </FilterRow>
 
-        <Row>
-          <Chip active={price === ""} onClick={() => setParam("price", "")}>
-            Alle priser
-          </Chip>
+        {/* Pris */}
+        <FilterRow>
+          <Chip active={price === ""} onClick={() => setParam("price", "")}>Alle priser</Chip>
           {PRICE_BUCKETS.map((b) => (
-            <Chip key={b.key} active={price === b.key} onClick={() => setParam("price", b.key)}>
-              {b.label}
-            </Chip>
+            <Chip key={b.key} active={price === b.key} onClick={() => setParam("price", b.key)}>{b.label}</Chip>
           ))}
-        </Row>
+        </FilterRow>
 
-        <Row>
-          <Chip active={shipping === ""} onClick={() => setParam("shipping", "")}>
-            Alle
-          </Chip>
-          <Chip
-            active={shipping === "sendes"}
-            onClick={() => setParam("shipping", "sendes")}
-          >
+        {/* Frakt */}
+        <FilterRow>
+          <Chip active={shipping === ""} onClick={() => setParam("shipping", "")}>Alle</Chip>
+          <Chip active={shipping === "sendes"} onClick={() => setParam("shipping", "sendes")}>
             📦 Kan sendes
           </Chip>
-        </Row>
+        </FilterRow>
 
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Merker — secondary, only show if there are some */}
+        {availableBrands.length > 0 && (
+          <FilterRow>
+            <Chip active={brand === ""} onClick={() => setParam("brand", "")}>Alle merker</Chip>
+            {availableBrands.map((b) => (
+              <Chip key={b} active={brand === b} onClick={() => setParam("brand", b)}>{b}</Chip>
+            ))}
+          </FilterRow>
+        )}
+
+        {/* Secondary dropdowns */}
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
           <select
             value={condition}
             onChange={(e) => setParam("condition", e.target.value)}
@@ -379,7 +377,7 @@ function BrowseInner() {
             <option value="price_asc">Pris lav → høy</option>
             <option value="price_desc">Pris høy → lav</option>
           </select>
-          <label className="inline-flex cursor-pointer select-none items-center gap-2 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700">
+          <label className="inline-flex cursor-pointer select-none items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-500">
             <input
               type="checkbox"
               checked={hideSold}
@@ -388,6 +386,7 @@ function BrowseInner() {
             />
             Skjul solgte
           </label>
+
           {hasActiveFilter && (
             <div className="ml-auto flex items-center gap-3">
               {savedOk && (
@@ -396,10 +395,10 @@ function BrowseInner() {
               {userId && !savedOk && !showSaveForm && (
                 <button
                   onClick={() => {
-                    setSaveLabel(autoLabel({ q, brand, cat, sub, size, condition, location, price, shipping }));
+                    setSaveLabel(autoLabel({ q, gender, brand, cat, sub, size, condition, location, price, shipping }));
                     setShowSaveForm(true);
                   }}
-                  className="text-xs font-medium text-stone-500 hover:text-stone-900"
+                  className="text-xs font-medium text-stone-400 hover:text-stone-900"
                 >
                   💾 Lagre søk
                 </button>
@@ -407,6 +406,7 @@ function BrowseInner() {
               {userId && showSaveForm && (
                 <div className="flex items-center gap-1.5">
                   <input
+                    // eslint-disable-next-line jsx-a11y/no-autofocus
                     autoFocus
                     value={saveLabel}
                     onChange={(e) => setSaveLabel(e.target.value)}
@@ -499,10 +499,10 @@ function SkeletonGrid() {
   );
 }
 
-function Row({ children }: { children: React.ReactNode }) {
+function FilterRow({ children }: { children: React.ReactNode }) {
   return (
     <div className="-mx-4 overflow-x-auto px-4">
-      <div className="flex gap-2 pb-1">{children}</div>
+      <div className="flex gap-1.5 pb-0.5">{children}</div>
     </div>
   );
 }
@@ -522,7 +522,7 @@ function Chip({
       className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
         active
           ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-          : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+          : "border-stone-200 bg-white text-stone-500 hover:border-stone-400 hover:text-stone-700"
       }`}
     >
       {children}
@@ -531,4 +531,4 @@ function Chip({
 }
 
 const selectCls =
-  "rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 outline-none focus:border-[#5a6b32]";
+  "rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-500 outline-none focus:border-[#5a6b32]";
