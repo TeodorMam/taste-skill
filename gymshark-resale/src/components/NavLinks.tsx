@@ -56,10 +56,16 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
       <Link href={authHref(isLoggedIn, "/sell")} className={textCls("/sell")}>
         Selg
       </Link>
-      <Link href={authHref(isLoggedIn, "/profil")} className={`flex items-center gap-2 ${textCls("/profil")}`}>
-        {isLoggedIn ? "Min profil" : "Logg inn"}
-        {isLoggedIn && <Avatar profile={profile} size="sm" />}
-      </Link>
+      {isLoggedIn ? (
+        <Link href="/profil" className={`flex items-center gap-2 ${textCls("/profil")}`}>
+          Min profil
+          <Avatar profile={profile} size="sm" />
+        </Link>
+      ) : (
+        <Link href={`/login?next=${encodeURIComponent("/profil")}`} className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-black">
+          Logg inn
+        </Link>
+      )}
     </nav>
   );
 }
