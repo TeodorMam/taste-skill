@@ -6,14 +6,14 @@ import { useNavCounts } from "@/hooks/useNavCounts";
 
 export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
-  const { inbox, varsler } = useNavCounts(isLoggedIn);
+  const { inbox, varsler, orders } = useNavCounts(isLoggedIn);
 
   const items = [
     { href: "/browse", label: "Utforsk", icon: SearchIcon, badge: 0 },
-    { href: isLoggedIn ? "/varsler" : `/login?next=${encodeURIComponent("/varsler")}`, label: "Varsler", icon: BellIcon, badge: varsler },
+    { href: isLoggedIn ? "/orders" : `/login?next=${encodeURIComponent("/orders")}`, label: "Ordre", icon: PackageIcon, badge: orders },
     { href: isLoggedIn ? "/inbox" : `/login?next=${encodeURIComponent("/inbox")}`, label: "Innboks", icon: InboxIcon, badge: inbox },
     { href: isLoggedIn ? "/sell" : `/login?next=${encodeURIComponent("/sell")}`, label: "Selg", icon: PlusIcon, badge: 0 },
-    { href: isLoggedIn ? "/profil" : `/login?next=${encodeURIComponent("/profil")}`, label: "Profil", icon: UserIcon, badge: 0 },
+    { href: isLoggedIn ? "/profil" : `/login?next=${encodeURIComponent("/profil")}`, label: "Profil", icon: UserIcon, badge: varsler },
   ];
 
   return (
@@ -57,11 +57,13 @@ function SearchIcon({ active }: { active: boolean }) {
   );
 }
 
-function BellIcon({ active }: { active: boolean }) {
+function PackageIcon({ active }: { active: boolean }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      <path d="M16.5 9.4 7.55 4.24" />
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+      <path d="M3.27 6.96 12 12.01l8.73-5.05" />
+      <path d="M12 22.08V12" />
     </svg>
   );
 }
