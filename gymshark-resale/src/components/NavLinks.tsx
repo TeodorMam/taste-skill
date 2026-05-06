@@ -57,7 +57,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
         Selg
       </Link>
       <Link href={authHref(isLoggedIn, "/profil")} className={`flex items-center gap-2 ${textCls("/profil")}`}>
-        Min profil
+        {isLoggedIn ? "Min profil" : "Logg inn"}
         {isLoggedIn && <Avatar profile={profile} size="sm" />}
       </Link>
     </nav>
