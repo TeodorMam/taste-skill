@@ -23,7 +23,7 @@ import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 const PAGE_SIZE = 24;
 const PRICE_MAX = 2000;
 type Sort = "newest" | "price_asc" | "price_desc";
-type FilterKey = "gender" | "color" | "condition" | "fit" | "cat" | "size" | "location" | "shipping" | "brand" | "price";
+type FilterKey = "gender" | "color" | "condition" | "fit" | "cat" | "size" | "location" | "brand";
 
 export default function BrowsePage() {
   return (
@@ -68,7 +68,6 @@ function BrowseInner() {
   const priceMin = priceMinRaw !== null ? Number(priceMinRaw) : 0;
   const priceMax = priceMaxRaw !== null ? Number(priceMaxRaw) : PRICE_MAX;
   const sort = (params.get("sort") as Sort) ?? "newest";
-  const hideSold = params.get("sold") !== "1";
   const shipping = params.get("shipping") ?? "";
 
   useEffect(() => {
@@ -124,15 +123,21 @@ function BrowseInner() {
     router.replace("/browse", { scroll: false });
   }
 
+  function commitPrice() {
+    setMultiParam({
+      priceMin: localPriceMin === 0 ? "" : String(localPriceMin),
+      priceMax: localPriceMax >= PRICE_MAX ? "" : String(localPriceMax),
+    });
+  }
+
   const buildQuery = useCallback(
     (supabase: ReturnType<typeof createClient>, from: number) => {
       const needle = debouncedQ.trim();
       const activeParent = (cat || null) as CategoryParent | null;
 
       // eslint-disable-next-line prefer-const
-      let q = supabase.from("items").select("*", { count: "exact" });
+      let q = supabase.from("items").select("*", { count: "exact" }).eq("is_sold", false);
 
-      if (hideSold) q = q.eq("is_sold", false);
       if (gender) q = q.eq("gender", gender);
       if (color) q = q.eq("color", color);
       if (fit) q = q.eq("fit", fit);
@@ -157,7 +162,7 @@ function BrowseInner() {
 
       return q.range(from, from + PAGE_SIZE - 1);
     },
-    [debouncedQ, gender, color, fit, brand, cat, sub, size, condition, location, priceMin, priceMax, sort, hideSold, shipping],
+    [debouncedQ, gender, color, fit, brand, cat, sub, size, condition, location, priceMin, priceMax, sort, shipping],
   );
 
   useEffect(() => {
@@ -209,8 +214,6 @@ function BrowseInner() {
   }
 
   const hasMore = total !== null && items.length < total;
-  const activeParent = (cat || null) as CategoryParent | null;
-  const activeGroup = activeParent ? CATEGORY_TREE.find((g) => g.name === activeParent) : null;
   const priceActive = priceMin > 0 || priceMax < PRICE_MAX;
 
   const activeChips: { label: string; clear: () => void }[] = [];
@@ -236,29 +239,21 @@ function BrowseInner() {
     { value: "price_desc", label: "Pris høy → lav" },
   ];
 
+  // Only show value if user has actively selected something (no "Alle" noise)
   const filterRows: { key: FilterKey; label: string; value: string }[] = [
-    { key: "gender", label: "Kjønn", value: gender || "Alle" },
-    { key: "color", label: "Farge", value: color || "Alle" },
-    { key: "condition", label: "Tilstand", value: condition || "Alle" },
-    { key: "fit", label: "Passform", value: fit || "Alle" },
-    { key: "cat", label: "Kategori", value: sub ? `${cat} › ${sub}` : cat || "Alle" },
-    { key: "size", label: "Størrelse", value: size || "Alle" },
-    { key: "location", label: "Lokasjon", value: location || "Hele Norge" },
-    { key: "shipping", label: "Frakt", value: shipping === "sendes" ? "Kan sendes" : "Alle" },
-    { key: "brand", label: "Merke", value: brand || "Alle" },
-    { key: "price", label: "Pris", value: priceActive ? (priceMax >= PRICE_MAX ? `${priceMin}+ kr` : `${priceMin}–${priceMax} kr`) : "Alle" },
+    { key: "gender", label: "Kjønn", value: gender },
+    { key: "color", label: "Farge", value: color },
+    { key: "condition", label: "Tilstand", value: condition },
+    { key: "fit", label: "Passform", value: fit },
+    { key: "cat", label: "Kategori", value: sub ? `${cat} › ${sub}` : cat },
+    { key: "size", label: "Størrelse", value: size },
+    { key: "location", label: "Lokasjon", value: location },
+    { key: "brand", label: "Merke", value: brand },
   ];
 
   function handleFilterSelect(key: string, value: string) {
     if (key === "cat") { setCat(value); }
     else if (key === "sub") { setParam("sub", value); }
-    else if (key === "priceCommit") {
-      const [min, max] = value.split(",");
-      setMultiParam({
-        priceMin: min === "0" ? "" : min,
-        priceMax: max === String(PRICE_MAX) ? "" : max,
-      });
-    }
     else { setParam(key, value); }
   }
 
@@ -361,12 +356,7 @@ function BrowseInner() {
             className="flex items-center gap-2 rounded-r-full px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50"
           >
             <FilterIcon />
-            Filter
-            {activeFilterCount > 0 && (
-              <span className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#5a6b32] text-[9px] font-bold text-white">
-                {activeFilterCount}
-              </span>
-            )}
+            {activeFilterCount > 0 ? `Filter (${activeFilterCount})` : "Filter"}
           </button>
         </div>
       </div>
@@ -403,7 +393,7 @@ function BrowseInner() {
           />
           <div
             className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-white"
-            style={{ maxHeight: "88vh" }}
+            style={{ maxHeight: "92vh" }}
           >
             <div className="mx-auto my-2 h-1 w-10 shrink-0 rounded-full bg-stone-200" />
             <div className="flex shrink-0 items-center justify-between border-b border-stone-100 px-4 pb-3 pt-1">
@@ -425,32 +415,59 @@ function BrowseInner() {
             <div className="flex-1 overflow-y-auto">
               {!activeFilterPanel ? (
                 <div className="divide-y divide-stone-100 px-4">
-                  {filterRows.map((row) => {
-                    const isActive = row.value !== "Alle" && row.value !== "Hele Norge";
-                    return (
-                      <button
-                        key={row.key}
-                        onClick={() => setActiveFilterPanel(row.key)}
-                        className="flex w-full items-center justify-between py-4"
-                      >
-                        <span className="text-sm font-medium text-stone-800">{row.label}</span>
-                        <span className="flex items-center gap-2">
-                          <span className={`text-sm ${isActive ? "font-medium text-[#5a6b32]" : "text-stone-400"}`}>
-                            {row.value}
-                          </span>
-                          <ChevronIcon />
-                        </span>
-                      </button>
-                    );
-                  })}
-                  <div className="flex items-center justify-between py-4">
-                    <span className="text-sm font-medium text-stone-800">Skjul solgte</span>
+                  {/* Clickable filter rows — only show value when actively selected */}
+                  {filterRows.map((row) => (
                     <button
-                      onClick={() => setParam("sold", hideSold ? "1" : "")}
-                      className={`relative h-6 w-11 rounded-full transition-colors ${hideSold ? "bg-[#5a6b32]" : "bg-stone-200"}`}
+                      key={row.key}
+                      onClick={() => setActiveFilterPanel(row.key)}
+                      className="flex w-full items-center justify-between py-4"
                     >
-                      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${hideSold ? "translate-x-5" : "translate-x-0.5"}`} />
+                      <span className="text-sm font-medium text-stone-800">{row.label}</span>
+                      <span className="flex items-center gap-2">
+                        {row.value && (
+                          <span className="text-sm font-medium text-[#5a6b32]">{row.value}</span>
+                        )}
+                        <ChevronIcon />
+                      </span>
                     </button>
+                  ))}
+
+                  {/* Kan sendes toggle */}
+                  <div className="flex items-center justify-between py-4">
+                    <span className="text-sm font-medium text-stone-800">Kan sendes</span>
+                    <button
+                      onClick={() => setParam("shipping", shipping === "sendes" ? "" : "sendes")}
+                      className={`relative h-6 w-11 rounded-full transition-colors ${shipping === "sendes" ? "bg-[#5a6b32]" : "bg-stone-200"}`}
+                    >
+                      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${shipping === "sendes" ? "translate-x-5" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
+
+                  {/* Price slider — inline, no sub-panel */}
+                  <div className="py-5 space-y-5">
+                    <p className="text-sm font-medium text-stone-800">Pris</p>
+                    <div className="space-y-1">
+                      <input
+                        type="range" min={0} max={PRICE_MAX} step={50}
+                        value={localPriceMin}
+                        onChange={(e) => setLocalPriceMin(Math.min(Number(e.target.value), localPriceMax - 50))}
+                        onMouseUp={commitPrice}
+                        onTouchEnd={commitPrice}
+                        className="w-full accent-[#5a6b32]"
+                      />
+                      <input
+                        type="range" min={0} max={PRICE_MAX} step={50}
+                        value={localPriceMax}
+                        onChange={(e) => setLocalPriceMax(Math.max(Number(e.target.value), localPriceMin + 50))}
+                        onMouseUp={commitPrice}
+                        onTouchEnd={commitPrice}
+                        className="w-full accent-[#5a6b32]"
+                      />
+                      <div className="flex justify-between pt-1 text-xs text-stone-500">
+                        <span>Min: <span className="font-medium text-stone-700">{localPriceMin} kr</span></span>
+                        <span>Max: <span className="font-medium text-stone-700">{localPriceMax >= PRICE_MAX ? "∞" : `${localPriceMax} kr`}</span></span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -465,24 +482,19 @@ function BrowseInner() {
                   size={size}
                   condition={condition}
                   location={location}
-                  shipping={shipping}
-                  localPriceMin={localPriceMin}
-                  localPriceMax={localPriceMax}
-                  setLocalPriceMin={setLocalPriceMin}
-                  setLocalPriceMax={setLocalPriceMax}
                   availableBrands={availableBrands}
-                  activeGroup={activeGroup}
                   onSelect={handleFilterSelect}
                 />
               )}
             </div>
 
+            {/* Sticky CTA */}
             <div className="shrink-0 border-t border-stone-100 px-4 pb-8 pt-3">
               <button
                 onClick={() => { setShowFilter(false); setActiveFilterPanel(null); }}
-                className="w-full rounded-full bg-stone-900 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+                className="w-full rounded-full bg-[#5a6b32] py-4 text-base font-semibold text-white hover:bg-[#435022] active:bg-[#435022]"
               >
-                {total !== null ? `Vis ${total} resultat${total === 1 ? "" : "er"}` : "Vis resultater"}
+                {total !== null ? `Se ${total} annonser` : "Se annonser"}
               </button>
             </div>
           </div>
@@ -492,22 +504,15 @@ function BrowseInner() {
   );
 }
 
-type ActiveGroup = (typeof CATEGORY_TREE)[number] | null | undefined;
-
 function FilterSubPanel({
   filterKey,
-  gender, color, fit, brand, cat, sub, size, condition, location, shipping,
-  localPriceMin, localPriceMax, setLocalPriceMin, setLocalPriceMax,
-  availableBrands, activeGroup, onSelect,
+  gender, color, fit, brand, cat, sub, size, condition, location,
+  availableBrands, onSelect,
 }: {
   filterKey: FilterKey;
   gender: string; color: string; fit: string; brand: string; cat: string; sub: string;
-  size: string; condition: string; location: string; shipping: string;
-  localPriceMin: number; localPriceMax: number;
-  setLocalPriceMin: (v: number) => void;
-  setLocalPriceMax: (v: number) => void;
+  size: string; condition: string; location: string;
   availableBrands: string[];
-  activeGroup: ActiveGroup;
   onSelect: (key: string, value: string) => void;
 }) {
   if (filterKey === "gender") return (
@@ -569,13 +574,6 @@ function FilterSubPanel({
     </OptionList>
   );
 
-  if (filterKey === "shipping") return (
-    <OptionList>
-      <OptionRow label="Alle" active={!shipping} onClick={() => onSelect("shipping", "")} />
-      <OptionRow label="Kan sendes" active={shipping === "sendes"} onClick={() => onSelect("shipping", "sendes")} />
-    </OptionList>
-  );
-
   if (filterKey === "brand") return (
     <OptionList>
       <OptionRow label="Alle merker" active={!brand} onClick={() => onSelect("brand", "")} />
@@ -585,50 +583,6 @@ function FilterSubPanel({
       {availableBrands.map((b) => <OptionRow key={b} label={b} active={brand === b} onClick={() => onSelect("brand", b)} />)}
     </OptionList>
   );
-
-  if (filterKey === "price") {
-    const summary = localPriceMin === 0 && localPriceMax >= PRICE_MAX
-      ? "Alle priser"
-      : localPriceMax >= PRICE_MAX
-      ? `Fra ${localPriceMin} kr`
-      : `${localPriceMin} – ${localPriceMax} kr`;
-
-    return (
-      <div className="space-y-8 px-4 py-6">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-stone-500">Minstepris</span>
-            <span className="text-sm font-semibold text-stone-800">{localPriceMin} kr</span>
-          </div>
-          <input
-            type="range" min={0} max={PRICE_MAX} step={50}
-            value={localPriceMin}
-            onChange={(e) => setLocalPriceMin(Math.min(Number(e.target.value), localPriceMax - 50))}
-            onMouseUp={() => onSelect("priceCommit", `${localPriceMin},${localPriceMax}`)}
-            onTouchEnd={() => onSelect("priceCommit", `${localPriceMin},${localPriceMax}`)}
-            className="w-full accent-[#5a6b32]"
-          />
-        </div>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-stone-500">Maksimumspris</span>
-            <span className="text-sm font-semibold text-stone-800">
-              {localPriceMax >= PRICE_MAX ? `${PRICE_MAX}+ kr` : `${localPriceMax} kr`}
-            </span>
-          </div>
-          <input
-            type="range" min={0} max={PRICE_MAX} step={50}
-            value={localPriceMax}
-            onChange={(e) => setLocalPriceMax(Math.max(Number(e.target.value), localPriceMin + 50))}
-            onMouseUp={() => onSelect("priceCommit", `${localPriceMin},${localPriceMax}`)}
-            onTouchEnd={() => onSelect("priceCommit", `${localPriceMin},${localPriceMax}`)}
-            className="w-full accent-[#5a6b32]"
-          />
-        </div>
-        <p className="text-center text-sm font-medium text-stone-500">{summary}</p>
-      </div>
-    );
-  }
 
   return null;
 }
