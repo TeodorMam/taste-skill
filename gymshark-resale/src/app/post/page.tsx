@@ -163,7 +163,7 @@ export default function PostPage() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 pb-28 sm:pb-6">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Legg ut vare</h1>
         <p className="mt-1 text-sm text-stone-500">
@@ -173,7 +173,7 @@ export default function PostPage() {
 
       <FirstListingTips userId={userId} />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form id="post-form" onSubmit={handleSubmit} className="space-y-4">
         <Field label={`Bilder (opp til ${MAX_IMAGES})`}>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
             {slots.map((s, i) => (
@@ -473,15 +473,42 @@ export default function PostPage() {
           </div>
         )}
 
-        {error && (
-          <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
-        )}
+      </form>
 
+      {/* Sticky submit bar — mobile only, sits above the bottom nav */}
+      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-stone-100 bg-white/95 px-4 py-3 backdrop-blur sm:hidden">
+        {error && (
+          <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>
+        )}
         {submitting && slots.length > 0 && (
-          <div className="space-y-1.5">
-            <p className="text-xs text-stone-500">
-              Laster opp bilde {uploadIdx + 1} av {slots.length}…
-            </p>
+          <div className="mb-2 space-y-1">
+            <p className="text-xs text-stone-500">Laster opp bilde {uploadIdx + 1} av {slots.length}…</p>
+            <div className="h-1 overflow-hidden rounded-full bg-stone-200">
+              <div
+                className="h-full rounded-full bg-[#5a6b32] transition-all duration-300"
+                style={{ width: `${((uploadIdx + 1) / slots.length) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+        <button
+          type="submit"
+          form="post-form"
+          disabled={submitting}
+          className="w-full rounded-full bg-stone-900 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+        >
+          {submitting ? "Legger ut…" : "Legg ut"}
+        </button>
+      </div>
+
+      {/* Inline submit for desktop */}
+      <div className="hidden sm:block -mt-2">
+        {error && (
+          <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        )}
+        {submitting && slots.length > 0 && (
+          <div className="mb-3 space-y-1.5">
+            <p className="text-xs text-stone-500">Laster opp bilde {uploadIdx + 1} av {slots.length}…</p>
             <div className="h-1.5 overflow-hidden rounded-full bg-stone-200">
               <div
                 className="h-full rounded-full bg-stone-900 transition-all duration-300"
@@ -490,15 +517,15 @@ export default function PostPage() {
             </div>
           </div>
         )}
-
         <button
           type="submit"
+          form="post-form"
           disabled={submitting}
           className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
         >
           {submitting ? "Legger ut…" : "Legg ut"}
         </button>
-      </form>
+      </div>
     </section>
   );
 }

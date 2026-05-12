@@ -49,11 +49,6 @@ export function ItemCard({
           </div>
         )}
         <FavoriteButton itemId={item.id} currentPrice={item.price} sellerId={item.seller_id} itemTitle={item.title} />
-        {item.brand && (
-          <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#5a6b32] backdrop-blur">
-            {item.brand}
-          </div>
-        )}
         {images.length > 1 && (
           <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/65 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
             <svg
@@ -80,8 +75,13 @@ export function ItemCard({
         )}
       </div>
       <div className="space-y-1 p-3">
+        {item.brand && (
+          <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-wider text-stone-400">
+            {item.brand}
+          </p>
+        )}
         <div className="flex items-start justify-between gap-2">
-          <p className="line-clamp-1 text-sm font-medium">{item.title}</p>
+          <p className="line-clamp-1 text-sm font-medium leading-snug">{item.title}</p>
           <p className="shrink-0 text-sm font-semibold">{formatPrice(item.price)}</p>
         </div>
         <div className="flex items-center justify-between gap-1">

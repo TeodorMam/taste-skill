@@ -10,6 +10,7 @@ export function StripeConnectPanel() {
   const [status, setStatus] = useState<Status>("loading");
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const toast = useToast();
   const searchParams = useSearchParams();
 
@@ -119,13 +120,31 @@ export function StripeConnectPanel() {
             >
               {connecting ? "Sender til Stripe…" : "Fortsett verifisering →"}
             </button>
-            <button
-              onClick={handleDisconnect}
-              disabled={disconnecting}
-              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500 disabled:opacity-50"
-            >
-              {disconnecting ? "Kobler fra…" : "Koble fra"}
-            </button>
+            {!confirmDisconnect ? (
+              <button
+                onClick={() => setConfirmDisconnect(true)}
+                className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500"
+              >
+                Koble fra
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-stone-600">Er du sikker?</span>
+                <button
+                  onClick={() => { void handleDisconnect(); setConfirmDisconnect(false); }}
+                  disabled={disconnecting}
+                  className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                >
+                  {disconnecting ? "Kobler fra…" : "Ja, koble fra"}
+                </button>
+                <button
+                  onClick={() => setConfirmDisconnect(false)}
+                  className="text-xs text-stone-400 hover:text-stone-700"
+                >
+                  Avbryt
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -143,13 +162,31 @@ export function StripeConnectPanel() {
             >
               Åpne Stripe-dashboard ↗
             </a>
-            <button
-              onClick={handleDisconnect}
-              disabled={disconnecting}
-              className="text-xs text-stone-400 underline underline-offset-2 hover:text-stone-600 disabled:opacity-50"
-            >
-              {disconnecting ? "Kobler fra…" : "Koble fra"}
-            </button>
+            {!confirmDisconnect ? (
+              <button
+                onClick={() => setConfirmDisconnect(true)}
+                className="text-xs text-stone-400 underline underline-offset-2 hover:text-stone-600"
+              >
+                Koble fra
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-stone-600">Er du sikker?</span>
+                <button
+                  onClick={() => { void handleDisconnect(); setConfirmDisconnect(false); }}
+                  disabled={disconnecting}
+                  className="text-xs font-medium text-red-500 hover:text-red-700 disabled:opacity-50"
+                >
+                  {disconnecting ? "Kobler fra…" : "Ja, koble fra"}
+                </button>
+                <button
+                  onClick={() => setConfirmDisconnect(false)}
+                  className="text-xs text-stone-400 hover:text-stone-700"
+                >
+                  Avbryt
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
