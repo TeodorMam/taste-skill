@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
   // Fetch item (source of truth for price and shipping)
-  const { data: item } = await admin.from("items").select("id, title, seller_id, price, is_sold, shipping, package_size").eq("id", item_id).maybeSingle();
+  const { data: item } = await admin.from("items").select("id, title, image_url, image_urls, seller_id, price, is_sold, shipping, package_size").eq("id", item_id).maybeSingle();
   if (!item) return NextResponse.json({ error: "Annonsen finnes ikke" }, { status: 404 });
   if (item.is_sold) return NextResponse.json({ error: "Denne varen er allerede solgt" }, { status: 400 });
   if (item.seller_id === user.id) return NextResponse.json({ error: "Du kan ikke kjøpe din egen vare" }, { status: 400 });
@@ -114,6 +114,8 @@ export async function POST(req: NextRequest) {
     delivery_method,
     shipping_cost_nok: shippingCostNok,
     status: "pending",
+    item_title: item.title,
+    item_image: (item.image_urls as string[] | null)?.[0] ?? (item.image_url as string | null) ?? null,
     buyer_name: buyerProfile?.full_name ?? null,
     buyer_address: buyerProfile?.address ?? null,
     buyer_postal_code: buyerProfile?.postal_code ?? null,

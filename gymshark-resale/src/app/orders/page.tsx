@@ -33,6 +33,8 @@ type Order = {
   buyer_city: string | null;
   buyer_phone: string | null;
   item: { id: number; title: string; image_urls: string[] | null } | null;
+  item_title: string | null;
+  item_image: string | null;
 };
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
@@ -87,7 +89,7 @@ function OrderCard({ order, role, onAction }: {
   const [showDispute, setShowDispute] = useState(false);
   const [disputeReason, setDisputeReason] = useState("");
 
-  const imgSrc = order.item?.image_urls?.[0] ?? null;
+  const imgSrc = order.item?.image_urls?.[0] ?? order.item_image ?? null;
 
   async function act(action: string, extra?: Record<string, string>) {
     setBusy(action);
@@ -113,6 +115,8 @@ function OrderCard({ order, role, onAction }: {
           <p className="truncate font-medium text-stone-900">
             {order.item ? (
               <Link href={`/item/${order.item.id}`} className="hover:underline">{order.item.title}</Link>
+            ) : order.item_title ? (
+              <span>{order.item_title}</span>
             ) : (
               <span className="text-stone-400">Annonse slettet</span>
             )}
