@@ -259,7 +259,7 @@ function BrowseInner() {
 
   return (
     <>
-      <section className="space-y-3 pb-36">
+      <section className="space-y-3 pb-36 sm:pb-6">
         <h1 className="text-3xl font-semibold tracking-tight">Utforsk</h1>
 
         <input
@@ -340,8 +340,8 @@ function BrowseInner() {
         )}
       </section>
 
-      {/* Floating bottom bar */}
-      <div className="fixed bottom-[72px] left-0 right-0 z-30 flex justify-center px-4 pointer-events-none sm:bottom-6">
+      {/* Floating bottom bar — mobile only (desktop has full screen space) */}
+      <div className="fixed bottom-[72px] left-0 right-0 z-30 flex justify-center px-4 pointer-events-none sm:hidden">
         <div className="pointer-events-auto flex items-center rounded-full border border-stone-100 bg-white shadow-[0_4px_24px_rgba(0,0,0,0.12)]">
           <button
             onClick={() => setShowSort(true)}

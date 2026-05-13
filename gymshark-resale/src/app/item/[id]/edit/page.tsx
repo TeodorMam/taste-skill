@@ -154,7 +154,7 @@ export default function EditItemPage() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 pb-28 sm:pb-6">
       <div>
         <Link
           href={`/item/${params.id}`}
@@ -168,7 +168,7 @@ export default function EditItemPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form id="edit-form" onSubmit={handleSubmit} className="space-y-4">
         <Field label="Tittel">
           <input
             type="text"
@@ -394,10 +394,10 @@ export default function EditItemPage() {
         )}
 
         {error && (
-          <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+          <p className="hidden rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:block">{error}</p>
         )}
 
-        <div className="flex gap-2">
+        <div className="hidden gap-2 sm:flex">
           <Link
             href={`/item/${params.id}`}
             className="flex-1 rounded-full border border-stone-300 bg-white px-5 py-3 text-center text-sm font-medium text-stone-700 hover:border-stone-500"
@@ -406,6 +406,7 @@ export default function EditItemPage() {
           </Link>
           <button
             type="submit"
+            form="edit-form"
             disabled={saving}
             className="flex-1 rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
           >
@@ -413,6 +414,29 @@ export default function EditItemPage() {
           </button>
         </div>
       </form>
+
+      {/* Sticky submit bar — mobile only */}
+      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-stone-100 bg-white/95 px-4 py-3 backdrop-blur sm:hidden">
+        {error && (
+          <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>
+        )}
+        <div className="flex gap-2">
+          <Link
+            href={`/item/${params.id}`}
+            className="flex-1 rounded-full border border-stone-300 bg-white py-3 text-center text-sm font-medium text-stone-700"
+          >
+            Avbryt
+          </Link>
+          <button
+            type="submit"
+            form="edit-form"
+            disabled={saving}
+            className="flex-1 rounded-full bg-stone-900 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+          >
+            {saving ? "Lagrer…" : "Lagre endringer"}
+          </button>
+        </div>
+      </div>
     </section>
   );
 }
