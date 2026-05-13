@@ -396,24 +396,21 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                   </div>
                 )}
 
-                {!canCheckout && (
-                  <p className="text-center text-xs text-stone-400">Velg leveringsmetode for å fortsette</p>
-                )}
-
-                {canCheckout && (
-                  <div className="space-y-1">
-                    <button
-                      onClick={() => handleCheckout()}
-                      disabled={buyingNow}
-                      className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
-                    >
-                      {buyingNow ? "Sender til betaling…" : `Kjøp nå — ${formatPrice(totalPrice)}`}
-                    </button>
-                    <p className="text-center text-[11px] text-stone-400">
-                      {shippingCost > 0 ? `${formatPrice(item.price)} vare + ${formatPrice(shippingCost)} frakt · ` : ""}Sikker betaling via Stripe · <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">Kjøperbeskyttelse</Link>
-                    </p>
-                  </div>
-                )}
+                <div className="space-y-1">
+                  <button
+                    onClick={() => { if (canCheckout) handleCheckout(); }}
+                    disabled={!canCheckout || buyingNow}
+                    className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {buyingNow ? "Sender til betaling…" : canCheckout ? `Kjøp nå — ${formatPrice(totalPrice)}` : "Kjøp nå"}
+                  </button>
+                  <p className="text-center text-[11px] text-stone-400">
+                    {!canCheckout
+                      ? "Velg leveringsmetode for å fortsette"
+                      : <>{shippingCost > 0 ? `${formatPrice(item.price)} vare + ${formatPrice(shippingCost)} frakt · ` : ""}Sikker betaling via Stripe · <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">Kjøperbeskyttelse</Link></>
+                    }
+                  </p>
+                </div>
               </div>
             );
           })()}
