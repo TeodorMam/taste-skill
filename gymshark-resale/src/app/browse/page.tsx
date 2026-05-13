@@ -270,6 +270,31 @@ function BrowseInner() {
           className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
         />
 
+        {/* Desktop filter bar — hidden on mobile where the floating pill handles this */}
+        <div className="hidden sm:flex items-center gap-2.5">
+          <select
+            value={sort}
+            onChange={(e) => setParam("sort", e.target.value === "newest" ? "" : e.target.value)}
+            className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-600 outline-none focus:border-[#5a6b32]"
+          >
+            <option value="newest">Nyeste først</option>
+            <option value="price_asc">Pris lav → høy</option>
+            <option value="price_desc">Pris høy → lav</option>
+          </select>
+          <button
+            onClick={() => { setActiveFilterPanel(null); setShowFilter(true); }}
+            className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-400 hover:text-stone-900"
+          >
+            <FilterIcon />
+            {activeFilterCount > 0 ? `Filter (${activeFilterCount})` : "Filter"}
+          </button>
+          {activeChips.length > 0 && (
+            <button onClick={clearAll} className="text-sm font-medium text-stone-400 hover:text-stone-700">
+              Nullstill
+            </button>
+          )}
+        </div>
+
         {activeChips.length > 0 && (
           <div className="-mx-4 overflow-x-auto px-4">
             <div className="flex gap-1.5 pb-0.5">
