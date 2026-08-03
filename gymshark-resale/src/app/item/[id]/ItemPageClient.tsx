@@ -456,21 +456,51 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                   </div>
                   {sellerChargesEnabled && (() => {
                     const pkg = getPackageOption(item.package_size);
+                    const canShip = item.shipping !== "Kun henting" && !!pkg;
+                    const canMeet = item.shipping !== "Kan sendes";
+                    const showToggle = canShip && canMeet;
                     const effectiveDm = item.shipping === "Kun henting" ? "meetup"
                       : item.shipping === "Kan sendes" ? "shipping"
                       : deliveryMethod;
                     const shippingCost = effectiveDm === "shipping" && pkg ? pkg.price : 0;
+                    const canCheckout = item.shipping !== "Begge" || deliveryMethod !== null;
                     return (
-                      <button
-                        onClick={() => handleCheckout(myOffer.id)}
-                        disabled={payingOffer}
-                        className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
-                      >
-                        {payingOffer ? "Sender til betaling…" : `Betal nå — ${formatPrice(myOffer.amount + shippingCost)}`}
-                      </button>
+                      <>
+                        {showToggle && (
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setDeliveryMethod("shipping")}
+                              className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "shipping" ? "border-[#5a6b32] bg-white ring-1 ring-[#5a6b32]" : "border-emerald-200 bg-white/60 hover:border-stone-400"}`}
+                            >
+                              <span className="text-xl">📦</span>
+                              <span className="text-sm font-medium">Frakt {pkg ? `(+${pkg.price} kr)` : ""}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeliveryMethod("meetup")}
+                              className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "meetup" ? "border-[#5a6b32] bg-white ring-1 ring-[#5a6b32]" : "border-emerald-200 bg-white/60 hover:border-stone-400"}`}
+                            >
+                              <span className="text-xl">🤝</span>
+                              <span className="text-sm font-medium">Møt selger</span>
+                            </button>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => { if (canCheckout) handleCheckout(myOffer.id); }}
+                          disabled={!canCheckout || payingOffer}
+                          className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          {payingOffer ? "Sender til betaling…" : canCheckout ? `Betal nå — ${formatPrice(myOffer.amount + shippingCost)}` : "Betal nå"}
+                        </button>
+                        <p className="text-center text-[11px] text-stone-400">
+                          {!canCheckout
+                            ? "Velg leveringsmetode for å fortsette"
+                            : "Sikker betaling via Stripe · 7% plattformavgift inkludert"}
+                        </p>
+                      </>
                     );
                   })()}
-                  <p className="text-center text-[11px] text-stone-400">Sikker betaling via Stripe · 7% plattformavgift inkludert</p>
                 </div>
               ) : (
                 <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">

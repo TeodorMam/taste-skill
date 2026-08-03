@@ -41,8 +41,10 @@ export async function POST(req: NextRequest) {
     amountNok = offer.amount;
   }
 
-  // Idempotency: reject if a non-cancelled order already exists for this item/offer
-  // to prevent double-payment from double-clicks or duplicate requests
+  // Idempotency: if a non-cancelled order already exists for this item/offer,
+  // resume its checkout session if still open; otherwise cancel the orphaned
+  // row (previous attempt errored before storing a valid session) and let a
+  // fresh order be created below.
   {
     const dupQuery = admin
       .from("orders")
@@ -55,11 +57,21 @@ export async function POST(req: NextRequest) {
     ).maybeSingle();
 
     if (dup) {
-      if (dup.stripe_checkout_session_id) {
-        const existing = await stripe.checkout.sessions.retrieve(dup.stripe_checkout_session_id);
-        if (existing.url) return NextResponse.json({ url: existing.url });
+      if (dup.status !== "pending") {
+        return NextResponse.json({ error: "Denne varen er allerede betalt" }, { status: 409 });
       }
-      return NextResponse.json({ error: "En betaling er allerede i gang for denne varen" }, { status: 409 });
+      if (dup.stripe_checkout_session_id) {
+        try {
+          const existing = await stripe.checkout.sessions.retrieve(dup.stripe_checkout_session_id);
+          if (existing.status === "open" && existing.url) {
+            return NextResponse.json({ url: existing.url });
+          }
+        } catch (e) {
+          console.warn("[stripe/checkout] could not retrieve existing session:", e);
+        }
+      }
+      // Session missing/expired/errored — cancel the stale row and proceed
+      await admin.from("orders").update({ status: "cancelled" }).eq("id", dup.id);
     }
   }
 
