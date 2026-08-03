@@ -300,7 +300,40 @@ export default function ChatPage() {
       body,
       message_type: "text",
     });
+    void notifyOfferCancel(offerId, isSeller ? "seller" : "buyer", true);
     toast("Bud avbrutt");
+  }
+
+  async function withdrawPendingOffer(offerId: string) {
+    if (!meId || isSeller) return;
+    if (!window.confirm("Trekke tilbake budet?")) return;
+    await supabase.from("offers").delete().eq("id", offerId);
+    setOffersMap((prev) => {
+      const next = { ...prev };
+      delete next[offerId];
+      return next;
+    });
+    await supabase.from("messages").insert({
+      item_id: itemId,
+      buyer_id: buyerId,
+      sender_id: meId,
+      body: "🚫 Kjøper trakk tilbake budet",
+      message_type: "text",
+    });
+    void notifyOfferCancel(offerId, "buyer", false);
+    toast("Bud trukket tilbake");
+  }
+
+  async function notifyOfferCancel(offerId: string, cancelledBy: "buyer" | "seller", wasAccepted: boolean) {
+    try {
+      await fetch("/api/offer-cancel-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offer_id: offerId, cancelled_by: cancelledBy, was_accepted: wasAccepted }),
+      });
+    } catch (e) {
+      console.warn("[notifyOfferCancel]", e);
+    }
   }
 
   // ─── Derived values ────────────────────────────────────────────────────────
@@ -412,6 +445,7 @@ export default function ChatPage() {
                     respondOffer(meta!.offer_id, meta?.amount ?? 0, status)
                   }
                   onCancel={meta?.offer_id ? () => cancelAcceptedOffer(meta.offer_id) : undefined}
+                  onWithdraw={meta?.offer_id ? () => withdrawPendingOffer(meta.offer_id) : undefined}
                 />
                 <span className="mt-0.5 px-1 text-[10px] text-stone-400">{fmtTime(m.created_at)}</span>
               </div>
@@ -527,12 +561,14 @@ function BidCard({
   isSeller,
   onRespond,
   onCancel,
+  onWithdraw,
 }: {
   amount: number;
   status: "pending" | "accepted" | "declined";
   isSeller: boolean;
   onRespond: (status: "accepted" | "declined") => void;
   onCancel?: () => void;
+  onWithdraw?: () => void;
 }) {
 
   return (
@@ -560,7 +596,17 @@ function BidCard({
           </div>
         )}
         {status === "pending" && !isSeller && (
-          <p className="text-xs text-stone-500">Venter på svar fra selger…</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-stone-500">Venter på svar…</p>
+            {onWithdraw && (
+              <button
+                onClick={onWithdraw}
+                className="text-[11px] text-stone-400 underline underline-offset-2 hover:text-red-600"
+              >
+                Trekk tilbake
+              </button>
+            )}
+          </div>
         )}
         {status === "accepted" && (
           <div className="flex items-center justify-between gap-2">

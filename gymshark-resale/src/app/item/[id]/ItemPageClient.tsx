@@ -250,21 +250,31 @@ export default function ItemPageClient() {
   }
 
   async function withdrawOffer() {
-    if (!myOffer) return;
-    await supabase.from("offers").delete().eq("id", myOffer.id);
+    if (!myOffer || !item || !userId) return;
+    const offerId = myOffer.id;
+    await supabase.from("offers").delete().eq("id", offerId);
+    await supabase.from("messages").insert({
+      item_id: String(item.id),
+      buyer_id: myOffer.buyer_id,
+      sender_id: userId,
+      body: "🚫 Kjøper trakk tilbake budet",
+      message_type: "text",
+    });
+    void notifyOfferCancel(offerId, "buyer", false);
     setMyOffer(null);
   }
 
   async function cancelAcceptedOffer() {
     if (!myOffer || !item || !userId) return;
     if (!window.confirm("Avbryte det godkjente budet? Selger må godta et nytt bud hvis du ombestemmer deg.")) return;
+    const offerId = myOffer.id;
     // Cancel any pending checkout that referenced this offer
     await supabase
       .from("orders")
       .update({ status: "cancelled" })
-      .eq("offer_id", myOffer.id)
+      .eq("offer_id", offerId)
       .eq("status", "pending");
-    await supabase.from("offers").update({ status: "declined" }).eq("id", myOffer.id);
+    await supabase.from("offers").update({ status: "declined" }).eq("id", offerId);
     await supabase.from("messages").insert({
       item_id: String(item.id),
       buyer_id: myOffer.buyer_id,
@@ -272,8 +282,21 @@ export default function ItemPageClient() {
       body: "🚫 Kjøper avbrøt det godkjente budet",
       message_type: "text",
     });
+    void notifyOfferCancel(offerId, "buyer", true);
     setMyOffer({ ...myOffer, status: "declined" });
     toast("Bud avbrutt");
+  }
+
+  async function notifyOfferCancel(offerId: string, cancelledBy: "buyer" | "seller", wasAccepted: boolean) {
+    try {
+      await fetch("/api/offer-cancel-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offer_id: offerId, cancelled_by: cancelledBy, was_accepted: wasAccepted }),
+      });
+    } catch (e) {
+      console.warn("[notifyOfferCancel]", e);
+    }
   }
 
 
