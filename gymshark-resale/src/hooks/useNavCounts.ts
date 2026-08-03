@@ -22,28 +22,19 @@ export function useNavCounts(isLoggedIn: boolean): { inbox: number; varsler: num
         : new Date(Date.now() - 30 * 86400000).toISOString();
 
       // --- INBOX COUNT ---
-      let inboxCount = 0;
+      // Unread notifications (offers + favorites) from notifications table
+      const { count: notifCount } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .is("read_at", null);
 
-      const { data: myItems } = await supabase.from("items").select("id").eq("seller_id", user.id);
-      const myItemIds = (myItems ?? []).map((i: { id: string }) => i.id);
-
-      if (myItemIds.length > 0) {
-        const { count: offerCount } = await supabase
-          .from("offers").select("id", { count: "exact", head: true })
-          .in("item_id", myItemIds).neq("buyer_id", user.id).gt("created_at", since);
-        inboxCount += offerCount ?? 0;
-
-        const { count: favCount } = await supabase
-          .from("favorites").select("user_id", { count: "exact", head: true })
-          .in("item_id", myItemIds).neq("user_id", user.id).gt("created_at", since);
-        inboxCount += favCount ?? 0;
-      }
-
+      // Unread messages sent by others
       const { count: msgCount } = await supabase
         .from("messages").select("id", { count: "exact", head: true })
         .neq("sender_id", user.id).gt("created_at", since);
-      inboxCount += msgCount ?? 0;
 
+      let inboxCount = (notifCount ?? 0) + (msgCount ?? 0);
       if (path === "/inbox") inboxCount = 0;
 
       // --- VARSLER COUNT ---

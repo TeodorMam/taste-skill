@@ -12,6 +12,16 @@ import {
   profileDisplayName,
 } from "@/lib/supabase";
 
+type Notification = {
+  id: string;
+  type: "offer" | "favorite";
+  item_id: string | null;
+  from_user_id: string | null;
+  metadata: { amount?: number; item_title?: string };
+  read_at: string | null;
+  created_at: string;
+};
+
 function fmtAmount(n: number): string {
   return `${new Intl.NumberFormat("nb-NO").format(n)} kr`;
 }
@@ -64,6 +74,8 @@ export default function InboxPage() {
   const [profilesMap, setProfilesMap] = useState<Record<string, Profile>>({});
   const [itemsMap, setItemsMap] = useState<Record<string, Item>>({});
   const [lastVisit, setLastVisit] = useState<number>(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifProfiles, setNotifProfiles] = useState<Record<string, Profile>>({});
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
@@ -148,6 +160,31 @@ export default function InboxPage() {
         for (const p of (pData ?? []) as Profile[]) pMap[p.user_id] = p;
         setProfilesMap(pMap);
       }
+
+      // Fetch notifications (offers + favorites from others on my items)
+      const { data: notifData } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      const notifs = (notifData ?? []) as Notification[];
+      setNotifications(notifs);
+
+      // Fetch profiles for notification senders
+      const notifUserIds = [...new Set(notifs.map((n) => n.from_user_id).filter((x): x is string => !!x))];
+      if (notifUserIds.length > 0) {
+        const { data: npData } = await supabase.from("profiles").select("*").in("user_id", notifUserIds);
+        const npMap: Record<string, Profile> = {};
+        for (const p of (npData ?? []) as Profile[]) npMap[p.user_id] = p;
+        setNotifProfiles(npMap);
+      }
+
+      // Mark all unread notifications as read
+      const unreadIds = notifs.filter((n) => !n.read_at).map((n) => n.id);
+      if (unreadIds.length > 0) {
+        await supabase.from("notifications").update({ read_at: new Date().toISOString() }).in("id", unreadIds);
+      }
     })();
   }, [userId, supabase]);
 
@@ -172,6 +209,52 @@ export default function InboxPage() {
   return (
     <section className="space-y-4">
       <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
+
+      {notifications.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Varsler</p>
+          <ul className="divide-y divide-stone-100 overflow-hidden rounded-2xl border border-stone-200 bg-white">
+            {notifications.map((n) => {
+              const profile = n.from_user_id ? (notifProfiles[n.from_user_id] ?? null) : null;
+              const name = profileDisplayName(profile, n.from_user_id);
+              const isUnread = !n.read_at && new Date(n.created_at).getTime() > lastVisit;
+              const itemTitle = n.metadata?.item_title ?? "varen";
+              const href = n.item_id ? `/item/${n.item_id}` : "/inbox";
+
+              return (
+                <li key={n.id}>
+                  <Link
+                    href={href}
+                    className="flex items-center gap-3 px-4 py-3 transition hover:bg-stone-50"
+                  >
+                    <div className="relative shrink-0">
+                      <UserAvatar profile={profile} name={name} />
+                      {isUnread && (
+                        <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-red-500" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={`truncate text-sm ${isUnread ? "font-bold text-stone-900" : "font-medium text-stone-800"}`}>
+                        {n.type === "offer"
+                          ? `${name} la inn et bud på ${fmtAmount(n.metadata?.amount ?? 0)}`
+                          : `${name} la til «${itemTitle}» som favoritt`}
+                      </p>
+                      <p className={`truncate text-xs ${isUnread ? "font-medium text-stone-600" : "text-stone-400"}`}>
+                        {itemTitle} · {fmtTime(n.created_at)}
+                      </p>
+                    </div>
+                    {n.type === "offer"
+                      ? <span className="shrink-0 text-lg">💸</span>
+                      : <span className="shrink-0 text-lg">❤️</span>}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Samtaler</p>
 
       {threads.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
