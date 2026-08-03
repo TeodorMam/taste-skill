@@ -42,27 +42,31 @@ export async function POST(req: NextRequest) {
   }
 
   // Idempotency: if a non-cancelled order already exists for this item/offer,
-  // resume its checkout session if still open; otherwise cancel the orphaned
-  // row (previous attempt errored before storing a valid session) and let a
-  // fresh order be created below.
+  // resume its checkout session if still open; otherwise cancel any orphaned
+  // rows (previous attempts errored before storing a valid session) and let a
+  // fresh order be created below. We iterate every match rather than using
+  // maybeSingle() so repeat attempts don't blow up on multiple stale rows.
   {
     const dupQuery = admin
       .from("orders")
       .select("id, stripe_checkout_session_id, status")
       .eq("item_id", Number(item_id))
       .neq("status", "cancelled");
-    const { data: dup } = await (offer_id
+    const { data: dups } = await (offer_id
       ? dupQuery.eq("offer_id", offer_id)
       : dupQuery.eq("buyer_id", user.id)
-    ).maybeSingle();
+    );
 
-    if (dup) {
-      if (dup.status !== "pending") {
-        return NextResponse.json({ error: "Denne varen er allerede betalt" }, { status: 409 });
-      }
-      if (dup.stripe_checkout_session_id) {
+    const rows = dups ?? [];
+    const alreadyPaid = rows.find((r) => r.status !== "pending");
+    if (alreadyPaid) {
+      return NextResponse.json({ error: "Denne varen er allerede betalt" }, { status: 409 });
+    }
+
+    for (const row of rows) {
+      if (row.stripe_checkout_session_id) {
         try {
-          const existing = await stripe.checkout.sessions.retrieve(dup.stripe_checkout_session_id);
+          const existing = await stripe.checkout.sessions.retrieve(row.stripe_checkout_session_id);
           if (existing.status === "open" && existing.url) {
             return NextResponse.json({ url: existing.url });
           }
@@ -70,8 +74,13 @@ export async function POST(req: NextRequest) {
           console.warn("[stripe/checkout] could not retrieve existing session:", e);
         }
       }
-      // Session missing/expired/errored — cancel the stale row and proceed
-      await admin.from("orders").update({ status: "cancelled" }).eq("id", dup.id);
+    }
+
+    if (rows.length > 0) {
+      await admin
+        .from("orders")
+        .update({ status: "cancelled" })
+        .in("id", rows.map((r) => r.id));
     }
   }
 
