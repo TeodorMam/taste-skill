@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       sender_id: existing.buyer_id,
       body: "",
       message_type: "payment",
-      metadata: { amount_nok: existing.amount_nok, order_id: orderId },
+      metadata: { amount_nok: existing.amount_nok, order_id: orderId, delivery_method: existing.delivery_method },
     });
 
     // Send confirmation emails

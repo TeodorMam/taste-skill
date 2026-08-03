@@ -38,6 +38,16 @@ const EVENT_CONFIGS: Partial<Record<MessageType, { icon: string; title: string; 
   payout:       { icon: "💰", title: "Utbetaling sendt", sub: "Pengene er overført til selger" },
 };
 
+function eventCardConfig(type: MessageType, metadata: Record<string, unknown> | null) {
+  const base = EVENT_CONFIGS[type];
+  if (!base) return null;
+  const isMeetup = metadata?.delivery_method === "meetup";
+  if (type === "payment" && isMeetup) {
+    return { ...base, sub: "🔒 Pengene holdes trygt til dere har møttes" };
+  }
+  return base;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ChatPage() {
@@ -345,7 +355,7 @@ export default function ChatPage() {
           if (type in EVENT_CONFIGS) {
             return (
               <div key={m.id} className="flex flex-col items-center py-3">
-                <EventCard type={type as MessageType} />
+                <EventCard type={type as MessageType} metadata={m.metadata} />
                 <span className="mt-1 text-[10px] text-stone-400">{fmtTime(m.created_at)}</span>
               </div>
             );
@@ -531,8 +541,8 @@ function BidCard({
   );
 }
 
-function EventCard({ type }: { type: MessageType }) {
-  const cfg = EVENT_CONFIGS[type];
+function EventCard({ type, metadata }: { type: MessageType; metadata: Record<string, unknown> | null }) {
+  const cfg = eventCardConfig(type, metadata);
   if (!cfg) return null;
   return (
     <div className="mx-auto max-w-xs rounded-2xl border border-stone-200 bg-stone-50 px-5 py-3 text-center">
