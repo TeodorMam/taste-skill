@@ -255,6 +255,27 @@ export default function ItemPageClient() {
     setMyOffer(null);
   }
 
+  async function cancelAcceptedOffer() {
+    if (!myOffer || !item || !userId) return;
+    if (!window.confirm("Avbryte det godkjente budet? Selger må godta et nytt bud hvis du ombestemmer deg.")) return;
+    // Cancel any pending checkout that referenced this offer
+    await supabase
+      .from("orders")
+      .update({ status: "cancelled" })
+      .eq("offer_id", myOffer.id)
+      .eq("status", "pending");
+    await supabase.from("offers").update({ status: "declined" }).eq("id", myOffer.id);
+    await supabase.from("messages").insert({
+      item_id: String(item.id),
+      buyer_id: myOffer.buyer_id,
+      sender_id: userId,
+      body: "🚫 Kjøper avbrøt det godkjente budet",
+      message_type: "text",
+    });
+    setMyOffer({ ...myOffer, status: "declined" });
+    toast("Bud avbrutt");
+  }
+
 
 if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>;
   if (!item) return <p className="text-sm text-stone-500">Laster…</p>;
@@ -501,10 +522,16 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                       </>
                     );
                   })()}
+                  <button
+                    onClick={cancelAcceptedOffer}
+                    className="mx-auto block text-[11px] text-stone-400 underline underline-offset-2 hover:text-red-600"
+                  >
+                    Avbryt bud
+                  </button>
                 </div>
               ) : (
                 <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
-                  <p className="text-sm text-stone-600">Budet på {formatPrice(myOffer.amount)} ble avslått.</p>
+                  <p className="text-sm text-stone-600">Budet på {formatPrice(myOffer.amount)} er ikke lenger aktivt.</p>
                   <button onClick={() => { setMyOffer(null); setShowBidModal(true); }} className="mt-1 text-xs font-medium text-[#5a6b32] underline underline-offset-2">Gi nytt bud</button>
                 </div>
               )}

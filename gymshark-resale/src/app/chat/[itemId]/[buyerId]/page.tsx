@@ -274,6 +274,35 @@ export default function ChatPage() {
     }
   }
 
+  async function cancelAcceptedOffer(offerId: string) {
+    if (!meId) return;
+    const confirmMsg = isSeller
+      ? "Avbryte det godkjente budet? Kjøperen kan ikke lenger fullføre betalingen."
+      : "Avbryte det godkjente budet? Selger må godta et nytt bud hvis du ombestemmer deg.";
+    if (!window.confirm(confirmMsg)) return;
+    await supabase
+      .from("orders")
+      .update({ status: "cancelled" })
+      .eq("offer_id", offerId)
+      .eq("status", "pending");
+    const { data } = await supabase
+      .from("offers")
+      .update({ status: "declined" })
+      .eq("id", offerId)
+      .select("*")
+      .single();
+    if (data) setOffersMap((prev) => ({ ...prev, [offerId]: data as Offer }));
+    const body = isSeller ? "🚫 Selger avbrøt det godkjente budet" : "🚫 Kjøper avbrøt det godkjente budet";
+    await supabase.from("messages").insert({
+      item_id: itemId,
+      buyer_id: buyerId,
+      sender_id: meId,
+      body,
+      message_type: "text",
+    });
+    toast("Bud avbrutt");
+  }
+
   // ─── Derived values ────────────────────────────────────────────────────────
 
   const lastSentIdx = messages.reduce((acc, m, i) => (m.sender_id === meId ? i : acc), -1);
@@ -382,6 +411,7 @@ export default function ChatPage() {
                   onRespond={(status) =>
                     respondOffer(meta!.offer_id, meta?.amount ?? 0, status)
                   }
+                  onCancel={meta?.offer_id ? () => cancelAcceptedOffer(meta.offer_id) : undefined}
                 />
                 <span className="mt-0.5 px-1 text-[10px] text-stone-400">{fmtTime(m.created_at)}</span>
               </div>
@@ -496,11 +526,13 @@ function BidCard({
   status,
   isSeller,
   onRespond,
+  onCancel,
 }: {
   amount: number;
   status: "pending" | "accepted" | "declined";
   isSeller: boolean;
   onRespond: (status: "accepted" | "declined") => void;
+  onCancel?: () => void;
 }) {
 
   return (
@@ -531,10 +563,20 @@ function BidCard({
           <p className="text-xs text-stone-500">Venter på svar fra selger…</p>
         )}
         {status === "accepted" && (
-          <p className="text-xs font-semibold text-[#5a6b32]">✓ Godtatt</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-[#5a6b32]">✓ Godtatt</p>
+            {onCancel && (
+              <button
+                onClick={onCancel}
+                className="text-[11px] text-stone-400 underline underline-offset-2 hover:text-red-600"
+              >
+                Avbryt bud
+              </button>
+            )}
+          </div>
         )}
         {status === "declined" && (
-          <p className="text-xs text-stone-400">Avslått</p>
+          <p className="text-xs text-stone-400">Avbrutt</p>
         )}
       </div>
     </div>
