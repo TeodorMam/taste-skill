@@ -14,29 +14,31 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aktivbruk.com";
 const REVIEW_HOURS = 48;
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret") ?? "";
-  if (CRON_SECRET && secret !== CRON_SECRET) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+  try {
+    const secret = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret") ?? "";
+    if (CRON_SECRET && secret !== CRON_SECRET) {
+      // Always 200 so cron-job.org doesn't auto-disable us; misconfig shows up in body
+      return NextResponse.json({ ok: false, error: "unauthorized" });
+    }
 
-  const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+    const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
-  // Fetch all shipped orders that have a trackable carrier
-  const { data: orders } = await admin
-    .from("orders")
-    .select("id, carrier, tracking_info, buyer_id, seller_id, item_id")
-    .eq("status", "shipped")
-    .not("tracking_info", "is", null)
-    .not("carrier", "is", null)
-    .neq("carrier", "other");
+    // Fetch all shipped orders that have a trackable carrier
+    const { data: orders } = await admin
+      .from("orders")
+      .select("id, carrier, tracking_info, buyer_id, seller_id, item_id")
+      .eq("status", "shipped")
+      .not("tracking_info", "is", null)
+      .not("carrier", "is", null)
+      .neq("carrier", "other");
 
-  if (!orders || orders.length === 0) {
-    return NextResponse.json({ checked: 0 });
-  }
+    if (!orders || orders.length === 0) {
+      return NextResponse.json({ ok: true, checked: 0 });
+    }
 
-  const results: { id: string; delivered: boolean; error?: string }[] = [];
+    const results: { id: string; delivered: boolean; error?: string }[] = [];
 
-  for (const order of orders) {
+    for (const order of orders) {
     try {
       const delivered = await isPackageDelivered(
         order.carrier as Carrier,
@@ -98,9 +100,14 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({
-    checked: results.length,
-    delivered: results.filter((r) => r.delivered).length,
-    results,
-  });
+    return NextResponse.json({
+      ok: true,
+      checked: results.length,
+      delivered: results.filter((r) => r.delivered).length,
+      results,
+    });
+  } catch (err) {
+    console.error("[cron/tracking] top-level error:", err);
+    return NextResponse.json({ ok: false, error: String(err) });
+  }
 }

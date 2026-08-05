@@ -15,9 +15,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aktivbruk.com";
 const SHIPPING_DEADLINE_DAYS = 7;
 
 export async function GET(req: NextRequest) {
+  try {
   const secret = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret") ?? "";
   if (CRON_SECRET && secret !== CRON_SECRET) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    // Always 200 so cron-job.org doesn't auto-disable us; misconfig shows up in body
+    return NextResponse.json({ ok: false, error: "unauthorized" });
   }
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
@@ -32,7 +34,7 @@ export async function GET(req: NextRequest) {
     .is("shipped_at", null)
     .lt("paid_at", cutoff);
 
-  if (!stale || stale.length === 0) return NextResponse.json({ cancelled: 0 });
+  if (!stale || stale.length === 0) return NextResponse.json({ ok: true, cancelled: 0 });
 
   const results: { id: string; cancelled: boolean; error?: string }[] = [];
 
@@ -80,7 +82,12 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({
+    ok: true,
     cancelled: results.filter((r) => r.cancelled).length,
     results,
   });
+  } catch (err) {
+    console.error("[cron/cancel-stale] top-level error:", err);
+    return NextResponse.json({ ok: false, error: String(err) });
+  }
 }

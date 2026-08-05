@@ -13,9 +13,11 @@ const FROM_EMAIL = process.env.RESEND_FROM ?? "Aktivbruk <kontakt@aktivbruk.com>
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aktivbruk.com";
 
 export async function GET(req: NextRequest) {
+  try {
   const secret = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret") ?? "";
   if (CRON_SECRET && secret !== CRON_SECRET) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    // Always 200 so cron-job.org doesn't auto-disable us; misconfig shows up in body
+    return NextResponse.json({ ok: false, error: "unauthorized" });
   }
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
@@ -28,7 +30,7 @@ export async function GET(req: NextRequest) {
     .lt("review_deadline", new Date().toISOString());
 
   if (!orders || orders.length === 0) {
-    return NextResponse.json({ processed: 0 });
+    return NextResponse.json({ ok: true, processed: 0 });
   }
 
   const results: { id: string; ok: boolean; error?: string }[] = [];
@@ -90,5 +92,9 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ processed: results.length, results });
+  return NextResponse.json({ ok: true, processed: results.length, results });
+  } catch (err) {
+    console.error("[cron/payout] top-level error:", err);
+    return NextResponse.json({ ok: false, error: String(err) });
+  }
 }
