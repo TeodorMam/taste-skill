@@ -4,6 +4,8 @@ export type TrackingCheck = {
   delivered: boolean;
   debug?: {
     ok: boolean;
+    httpStatus?: number;
+    bodySample?: string;
     events: Array<{ status?: string; description?: string }>;
   };
 };
@@ -24,9 +26,17 @@ export async function checkPackage(carrier: Carrier, trackingNumber: string): Pr
 async function checkBring(trackingNumber: string): Promise<TrackingCheck> {
   const res = await fetch(
     `https://api.bring.com/tracking/api/v2/tracking.json?q=${encodeURIComponent(trackingNumber)}&lang=no`,
-    { headers: { Accept: "application/json" } },
+    {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "aktivbruk-tracking/1.0 (kontakt@aktivbruk.com)",
+      },
+    },
   );
-  if (!res.ok) return { delivered: false, debug: { ok: false, events: [] } };
+  if (!res.ok) {
+    const bodySample = await res.text().catch(() => "").then((t) => t.slice(0, 400));
+    return { delivered: false, debug: { ok: false, httpStatus: res.status, bodySample, events: [] } };
+  }
   const data = await res.json() as BringResponse;
   const packages = data?.consignmentSet?.[0]?.packageSet ?? [];
   // Posten uses several codes for successful delivery depending on channel
