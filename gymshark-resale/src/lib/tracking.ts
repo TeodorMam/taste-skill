@@ -24,14 +24,20 @@ export async function checkPackage(carrier: Carrier, trackingNumber: string): Pr
 }
 
 async function checkBring(trackingNumber: string): Promise<TrackingCheck> {
+  const uid = process.env.BRING_API_UID;
+  const key = process.env.BRING_API_KEY;
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "User-Agent": "aktivbruk-tracking/1.0 (kontakt@aktivbruk.com)",
+  };
+  if (uid && key) {
+    headers["X-MyBring-API-Uid"] = uid;
+    headers["X-MyBring-API-Key"] = key;
+    headers["X-Bring-Client-URL"] = "https://aktivbruk.com";
+  }
   const res = await fetch(
     `https://api.bring.com/tracking/api/v2/tracking.json?q=${encodeURIComponent(trackingNumber)}&lang=no`,
-    {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": "aktivbruk-tracking/1.0 (kontakt@aktivbruk.com)",
-      },
-    },
+    { headers },
   );
   if (!res.ok) {
     const bodySample = await res.text().catch(() => "").then((t) => t.slice(0, 400));
