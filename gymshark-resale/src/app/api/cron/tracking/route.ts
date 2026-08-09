@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { isPackageDelivered, type Carrier } from "@/lib/tracking";
+import { checkPackage, type Carrier } from "@/lib/tracking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,17 +36,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: true, checked: 0 });
     }
 
-    const results: { id: string; delivered: boolean; error?: string }[] = [];
+    const results: { id: string; delivered: boolean; error?: string; debug?: unknown }[] = [];
 
     for (const order of orders) {
     try {
-      const delivered = await isPackageDelivered(
+      const check = await checkPackage(
         order.carrier as Carrier,
         order.tracking_info as string,
       );
 
-      if (!delivered) {
-        results.push({ id: order.id, delivered: false });
+      if (!check.delivered) {
+        results.push({ id: order.id, delivered: false, debug: check.debug });
         continue;
       }
 
