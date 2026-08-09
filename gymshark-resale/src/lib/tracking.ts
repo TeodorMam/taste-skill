@@ -17,14 +17,35 @@ async function checkBring(trackingNumber: string): Promise<boolean> {
   if (!res.ok) return false;
   const data = await res.json() as BringResponse;
   const packages = data?.consignmentSet?.[0]?.packageSet ?? [];
-  // eventSet is reverse-chronological, first entry is latest status
-  return packages.some((pkg) => pkg.eventSet?.[0]?.status === "DELIVERED");
+  // Posten uses several codes for successful delivery depending on channel
+  // (mailbox, pickup point, home delivery, etc). We scan every event and
+  // match against a broad list, and also fall back to the localized
+  // description text so new codes don't silently break the auto-payout.
+  const deliveredCodes = new Set([
+    "DELIVERED",
+    "DELIVERED_HOMEDELIVERY_PARCEL",
+    "DELIVERED_SENDER",
+    "DELIVERED_POST_OFFICE",
+    "DELIVERED_PICKUPPOINT",
+    "DELIVERED_MAILBOX",
+    "DELIVERY_ORDERED",
+    "HANDED_IN",
+    "COLLECTED",
+    "PICKED_UP",
+  ]);
+  return packages.some((pkg) =>
+    (pkg.eventSet ?? []).some((ev) => {
+      if (ev.status && deliveredCodes.has(ev.status)) return true;
+      const desc = (ev.description ?? "").toLowerCase();
+      return desc.includes("utlevert") || desc.includes("levert") || desc.includes("hentet");
+    })
+  );
 }
 
 type BringResponse = {
   consignmentSet?: Array<{
     packageSet?: Array<{
-      eventSet?: Array<{ status: string }>;
+      eventSet?: Array<{ status?: string; description?: string }>;
     }>;
   }>;
 };
