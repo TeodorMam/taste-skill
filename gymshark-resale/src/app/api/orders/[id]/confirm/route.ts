@@ -95,6 +95,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[orders/confirm POST]", err);
-    return NextResponse.json({ error: "Noe gikk galt, prøv igjen" }, { status: 500 });
+    const detail = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: `Kunne ikke bekrefte: ${detail}` }, { status: 500 });
   }
 }

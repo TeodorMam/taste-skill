@@ -95,8 +95,9 @@ function OrderCard({ order, role, onAction }: {
     setBusy(action);
     try {
       await onAction(order.id, action, extra);
-    } catch {
-      toast("Noe gikk galt, prøv igjen");
+    } catch (err) {
+      const msg = err instanceof Error && err.message ? err.message : "Noe gikk galt, prøv igjen";
+      toast(msg);
     } finally {
       setBusy(null);
     }
