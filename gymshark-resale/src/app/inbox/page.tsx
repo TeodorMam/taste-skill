@@ -73,6 +73,18 @@ export default function InboxPage() {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
   }, [supabase]);
 
+  const [refreshTick, setRefreshTick] = useState(0);
+
+  useEffect(() => {
+    function onFocus() { setRefreshTick((t) => t + 1); }
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, []);
+
   useEffect(() => {
     if (!userId) return;
 
@@ -172,11 +184,18 @@ export default function InboxPage() {
         setProfilesMap(pMap);
       }
     })();
-  }, [userId, supabase]);
+  }, [userId, supabase, refreshTick]);
 
-  function openThread(item: Item, buyerId: string, key: string) {
+  async function openThread(item: Item, buyerId: string, key: string) {
+    if (!userId) return;
     // Optimistically clear the unread badge so returning to inbox shows read state instantly
     setThreads((prev) => prev.map((t) => (t.key === key ? { ...t, unread: 0 } : t)));
+    // Persist the read state BEFORE navigating so the next inbox re-fetch sees it.
+    // Chat page also upserts on mount but that race lost sometimes.
+    await supabase.from("chat_reads").upsert(
+      { user_id: userId, item_id: String(item.id), buyer_id: buyerId, last_read_at: new Date().toISOString() },
+      { onConflict: "user_id,item_id,buyer_id" },
+    );
     router.push(`/chat/${item.id}/${buyerId}`);
   }
 
