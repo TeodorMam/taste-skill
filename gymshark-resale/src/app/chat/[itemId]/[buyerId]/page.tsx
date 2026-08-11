@@ -376,10 +376,21 @@ export default function ChatPage() {
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
         </button>
-        <div className="flex min-w-0 flex-1 items-center gap-2.5">
-          <OtherAvatar profile={otherProfile} name={otherName} />
-          <p className="truncate text-sm font-semibold text-stone-900">{otherName}</p>
-        </div>
+        {otherId ? (
+          <Link
+            href={`/seller/${otherId}`}
+            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg -mx-1 px-1 py-1 transition hover:bg-stone-100"
+            aria-label={`Se profil til ${otherName}`}
+          >
+            <OtherAvatar profile={otherProfile} name={otherName} />
+            <p className="truncate text-sm font-semibold text-stone-900">{otherName}</p>
+          </Link>
+        ) : (
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
+            <OtherAvatar profile={otherProfile} name={otherName} />
+            <p className="truncate text-sm font-semibold text-stone-900">{otherName}</p>
+          </div>
+        )}
         {item && (
           <Link href={`/item/${itemId}`} className="shrink-0" aria-label="Gå til annonse">
             <div className="h-10 w-10 overflow-hidden rounded-xl bg-stone-100">
