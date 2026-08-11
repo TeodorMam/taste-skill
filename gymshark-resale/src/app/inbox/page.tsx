@@ -12,27 +12,22 @@ import {
   profileDisplayName,
 } from "@/lib/supabase";
 
-type Notification = {
-  id: string;
-  type: "offer" | "favorite";
-  item_id: string | null;
-  from_user_id: string | null;
-  metadata: { amount?: number; item_title?: string };
-  read_at: string | null;
-  created_at: string;
-};
-
-function fmtAmount(n: number): string {
-  return `${new Intl.NumberFormat("nb-NO").format(n)} kr`;
-}
+type Role = "buyer" | "seller";
 
 type Thread = {
   key: string;          // `${itemId}:${buyerId}`
   item: Item;
   otherId: string;
+  role: Role;           // this user's role in the thread
   lastMessage: Message;
   isUnread: boolean;
 };
+
+type Tab = "alle" | "kjop" | "salg";
+
+function fmtAmount(n: number): string {
+  return `${new Intl.NumberFormat("nb-NO").format(n)} kr`;
+}
 
 function fmtTime(iso: string): string {
   const d = new Date(iso);
@@ -72,10 +67,7 @@ export default function InboxPage() {
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
   const [threads, setThreads] = useState<Thread[]>([]);
   const [profilesMap, setProfilesMap] = useState<Record<string, Profile>>({});
-  const [itemsMap, setItemsMap] = useState<Record<string, Item>>({});
-  const [lastVisit, setLastVisit] = useState<number>(0);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [notifProfiles, setNotifProfiles] = useState<Record<string, Profile>>({});
+  const [tab, setTab] = useState<Tab>("alle");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
@@ -84,7 +76,7 @@ export default function InboxPage() {
   useEffect(() => {
     if (!userId) return;
     const stored = localStorage.getItem("lastInboxVisit");
-    setLastVisit(stored ? Number(stored) : 0);
+    const lastVisit = stored ? Number(stored) : 0;
     localStorage.setItem("lastInboxVisit", Date.now().toString());
 
     (async () => {
@@ -92,7 +84,7 @@ export default function InboxPage() {
       const { data: myItemsData } = await supabase
         .from("items").select("*").eq("seller_id", userId);
       const myItems = (myItemsData ?? []) as Item[];
-      const myItemIds = myItems.map((i) => i.id);
+      const myItemIds = new Set(myItems.map((i) => String(i.id)));
 
       const iMap: Record<string, Item> = {};
       for (const it of myItems) iMap[String(it.id)] = it;
@@ -121,7 +113,6 @@ export default function InboxPage() {
           .from("items").select("*").in("id", missingIds);
         for (const it of (extra ?? []) as Item[]) iMap[String(it.id)] = it;
       }
-      setItemsMap(iMap);
 
       // Build thread list — only threads this user is part of
       const rawThreads: Thread[] = [];
@@ -131,7 +122,7 @@ export default function InboxPage() {
         const item = iMap[String(m.item_id)];
         if (!item) continue;
 
-        const isSeller = myItemIds.some((id) => String(id) === String(m.item_id));
+        const isSeller = myItemIds.has(String(m.item_id));
         const isBuyer = m.buyer_id === userId;
         if (!isSeller && !isBuyer) continue; // unrelated thread
 
@@ -140,7 +131,14 @@ export default function InboxPage() {
           m.sender_id !== userId &&
           new Date(m.created_at).getTime() > lastVisit;
 
-        rawThreads.push({ key, item, otherId, lastMessage: m, isUnread });
+        rawThreads.push({
+          key,
+          item,
+          otherId,
+          role: isSeller ? "seller" : "buyer",
+          lastMessage: m,
+          isUnread,
+        });
         if (otherId) otherIds.add(otherId);
       }
 
@@ -159,31 +157,6 @@ export default function InboxPage() {
         const pMap: Record<string, Profile> = {};
         for (const p of (pData ?? []) as Profile[]) pMap[p.user_id] = p;
         setProfilesMap(pMap);
-      }
-
-      // Fetch notifications (offers + favorites from others on my items)
-      const { data: notifData } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      const notifs = (notifData ?? []) as Notification[];
-      setNotifications(notifs);
-
-      // Fetch profiles for notification senders
-      const notifUserIds = [...new Set(notifs.map((n) => n.from_user_id).filter((x): x is string => !!x))];
-      if (notifUserIds.length > 0) {
-        const { data: npData } = await supabase.from("profiles").select("*").in("user_id", notifUserIds);
-        const npMap: Record<string, Profile> = {};
-        for (const p of (npData ?? []) as Profile[]) npMap[p.user_id] = p;
-        setNotifProfiles(npMap);
-      }
-
-      // Mark all unread notifications as read
-      const unreadIds = notifs.filter((n) => !n.read_at).map((n) => n.id);
-      if (unreadIds.length > 0) {
-        await supabase.from("notifications").update({ read_at: new Date().toISOString() }).in("id", unreadIds);
       }
     })();
   }, [userId, supabase]);
@@ -206,63 +179,45 @@ export default function InboxPage() {
     );
   }
 
+  const filtered = threads.filter((t) => {
+    if (tab === "alle") return true;
+    if (tab === "kjop") return t.role === "buyer";
+    return t.role === "seller";
+  });
+
+  const counts = {
+    alle: threads.length,
+    kjop: threads.filter((t) => t.role === "buyer").length,
+    salg: threads.filter((t) => t.role === "seller").length,
+  };
+
   return (
     <section className="space-y-4">
       <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
 
-      {notifications.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Varsler</p>
-          <ul className="divide-y divide-stone-100 overflow-hidden rounded-2xl border border-stone-200 bg-white">
-            {notifications.map((n) => {
-              const profile = n.from_user_id ? (notifProfiles[n.from_user_id] ?? null) : null;
-              const name = profileDisplayName(profile, n.from_user_id);
-              const isUnread = !n.read_at && new Date(n.created_at).getTime() > lastVisit;
-              const itemTitle = n.metadata?.item_title ?? "varen";
-              const href = n.item_id ? `/item/${n.item_id}` : "/inbox";
+      <div className="flex gap-1 rounded-full bg-stone-100 p-1">
+        <TabButton active={tab === "alle"} onClick={() => setTab("alle")}>
+          Alle {counts.alle > 0 && <span className="opacity-60">({counts.alle})</span>}
+        </TabButton>
+        <TabButton active={tab === "kjop"} onClick={() => setTab("kjop")}>
+          Kjøp {counts.kjop > 0 && <span className="opacity-60">({counts.kjop})</span>}
+        </TabButton>
+        <TabButton active={tab === "salg"} onClick={() => setTab("salg")}>
+          Salg {counts.salg > 0 && <span className="opacity-60">({counts.salg})</span>}
+        </TabButton>
+      </div>
 
-              return (
-                <li key={n.id}>
-                  <Link
-                    href={href}
-                    className="flex items-center gap-3 px-4 py-3 transition hover:bg-stone-50"
-                  >
-                    <div className="relative shrink-0">
-                      <UserAvatar profile={profile} name={name} />
-                      {isUnread && (
-                        <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-red-500" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className={`truncate text-sm ${isUnread ? "font-bold text-stone-900" : "font-medium text-stone-800"}`}>
-                        {n.type === "offer"
-                          ? `${name} la inn et bud på ${fmtAmount(n.metadata?.amount ?? 0)}`
-                          : `${name} la til «${itemTitle}» som favoritt`}
-                      </p>
-                      <p className={`truncate text-xs ${isUnread ? "font-medium text-stone-600" : "text-stone-400"}`}>
-                        {itemTitle} · {fmtTime(n.created_at)}
-                      </p>
-                    </div>
-                    {n.type === "offer"
-                      ? <span className="shrink-0 text-lg">💸</span>
-                      : <span className="shrink-0 text-lg">❤️</span>}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-
-      <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Samtaler</p>
-
-      {threads.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
-          Ingen samtaler ennå. Når du sender eller mottar en melding, dukker den opp her.
+          {tab === "alle"
+            ? "Ingen samtaler ennå. Når du sender eller mottar en melding, dukker den opp her."
+            : tab === "kjop"
+              ? "Ingen kjøpssamtaler ennå."
+              : "Ingen salgssamtaler ennå."}
         </div>
       ) : (
         <ul className="divide-y divide-stone-100 overflow-hidden rounded-2xl border border-stone-200 bg-white">
-          {threads.map(({ key, item, otherId, lastMessage, isUnread }) => {
+          {filtered.map(({ key, item, otherId, lastMessage, isUnread }) => {
             const profile = profilesMap[otherId] ?? null;
             const name = profileDisplayName(profile, otherId);
             const cover = itemImages(item)[0];
@@ -327,6 +282,30 @@ export default function InboxPage() {
         </ul>
       )}
     </section>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition ${
+        active
+          ? "bg-white text-stone-900 shadow-sm"
+          : "text-stone-500 hover:text-stone-800"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
