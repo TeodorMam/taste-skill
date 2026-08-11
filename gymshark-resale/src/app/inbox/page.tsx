@@ -20,7 +20,7 @@ type Thread = {
   otherId: string;
   role: Role;           // this user's role in the thread
   lastMessage: Message;
-  isUnread: boolean;
+  unread: number;
 };
 
 type Tab = "alle" | "kjop" | "salg";
@@ -75,9 +75,6 @@ export default function InboxPage() {
 
   useEffect(() => {
     if (!userId) return;
-    const stored = localStorage.getItem("lastInboxVisit");
-    const lastVisit = stored ? Number(stored) : 0;
-    localStorage.setItem("lastInboxVisit", Date.now().toString());
 
     (async () => {
       // Fetch seller's items to know which items user owns
@@ -89,7 +86,7 @@ export default function InboxPage() {
       const iMap: Record<string, Item> = {};
       for (const it of myItems) iMap[String(it.id)] = it;
 
-      // Fetch all messages (both directions)
+      // Fetch all messages (both directions), ordered newest first
       const { data: msgData } = await supabase
         .from("messages")
         .select("*")
@@ -97,16 +94,36 @@ export default function InboxPage() {
 
       const messages = (msgData ?? []) as Message[];
 
-      // Keep only the latest message per thread key
-      const byThread = new Map<string, Message>();
+      // Fetch this user's per-thread last-read timestamps
+      const { data: readsData } = await supabase
+        .from("chat_reads")
+        .select("item_id, buyer_id, last_read_at")
+        .eq("user_id", userId);
+      const readsMap = new Map<string, string>();
+      for (const r of (readsData ?? []) as { item_id: string; buyer_id: string; last_read_at: string }[]) {
+        readsMap.set(`${r.item_id}:${r.buyer_id}`, r.last_read_at);
+      }
+
+      // Group messages by thread: latest message + count of unread
+      type Agg = { latest: Message; unread: number };
+      const byThread = new Map<string, Agg>();
       for (const m of messages) {
         const key = `${m.item_id}:${m.buyer_id}`;
-        if (!byThread.has(key)) byThread.set(key, m);
+        const lastRead = readsMap.get(key);
+        const isUnreadMsg =
+          m.sender_id !== userId &&
+          (!lastRead || new Date(m.created_at).getTime() > new Date(lastRead).getTime());
+        const existing = byThread.get(key);
+        if (!existing) {
+          byThread.set(key, { latest: m, unread: isUnreadMsg ? 1 : 0 });
+        } else if (isUnreadMsg) {
+          existing.unread += 1;
+        }
       }
 
       // Fetch any missing items (items the user bought from others)
       const missingIds = Array.from(
-        new Set([...byThread.values()].map((m) => String(m.item_id)))
+        new Set([...byThread.values()].map((a) => String(a.latest.item_id)))
       ).filter((id) => !iMap[id]);
       if (missingIds.length > 0) {
         const { data: extra } = await supabase
@@ -118,18 +135,16 @@ export default function InboxPage() {
       const rawThreads: Thread[] = [];
       const otherIds = new Set<string>();
 
-      for (const [key, m] of byThread) {
+      for (const [key, agg] of byThread) {
+        const m = agg.latest;
         const item = iMap[String(m.item_id)];
         if (!item) continue;
 
         const isSeller = myItemIds.has(String(m.item_id));
         const isBuyer = m.buyer_id === userId;
-        if (!isSeller && !isBuyer) continue; // unrelated thread
+        if (!isSeller && !isBuyer) continue;
 
         const otherId = isSeller ? m.buyer_id : item.seller_id ?? m.buyer_id;
-        const isUnread =
-          m.sender_id !== userId &&
-          new Date(m.created_at).getTime() > lastVisit;
 
         rawThreads.push({
           key,
@@ -137,12 +152,11 @@ export default function InboxPage() {
           otherId,
           role: isSeller ? "seller" : "buyer",
           lastMessage: m,
-          isUnread,
+          unread: agg.unread,
         });
         if (otherId) otherIds.add(otherId);
       }
 
-      // Sort by most recent message
       rawThreads.sort(
         (a, b) =>
           new Date(b.lastMessage.created_at).getTime() -
@@ -150,7 +164,6 @@ export default function InboxPage() {
       );
       setThreads(rawThreads);
 
-      // Fetch profiles for all other people
       if (otherIds.size > 0) {
         const { data: pData } = await supabase
           .from("profiles").select("*").in("user_id", [...otherIds]);
@@ -160,6 +173,12 @@ export default function InboxPage() {
       }
     })();
   }, [userId, supabase]);
+
+  function openThread(item: Item, buyerId: string, key: string) {
+    // Optimistically clear the unread badge so returning to inbox shows read state instantly
+    setThreads((prev) => prev.map((t) => (t.key === key ? { ...t, unread: 0 } : t)));
+    router.push(`/chat/${item.id}/${buyerId}`);
+  }
 
   if (userId === undefined)
     return <p className="py-6 text-sm text-stone-500">Laster…</p>;
@@ -217,24 +236,22 @@ export default function InboxPage() {
         </div>
       ) : (
         <ul className="divide-y divide-stone-100 overflow-hidden rounded-2xl border border-stone-200 bg-white">
-          {filtered.map(({ key, item, otherId, lastMessage, isUnread }) => {
+          {filtered.map(({ key, item, otherId, lastMessage, unread }) => {
             const profile = profilesMap[otherId] ?? null;
             const name = profileDisplayName(profile, otherId);
             const cover = itemImages(item)[0];
             const preview = msgPreview(lastMessage, userId);
+            const isUnread = unread > 0;
 
             return (
               <li
                 key={key}
-                onClick={() => router.push(`/chat/${item.id}/${lastMessage.buyer_id}`)}
+                onClick={() => openThread(item, lastMessage.buyer_id, key)}
                 className="flex cursor-pointer items-center gap-3 px-4 py-3 transition hover:bg-stone-50 active:bg-stone-100"
               >
                 {/* User avatar */}
-                <div className="relative shrink-0">
+                <div className="shrink-0">
                   <UserAvatar profile={profile} name={name} />
-                  {isUnread && (
-                    <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-[#5a6b32]" />
-                  )}
                 </div>
 
                 {/* Text area */}
@@ -242,40 +259,67 @@ export default function InboxPage() {
                   <div className="flex items-baseline justify-between gap-2">
                     <span
                       className={`truncate text-sm ${
-                        isUnread ? "font-bold text-stone-900" : "font-semibold text-stone-800"
+                        isUnread ? "font-bold text-stone-900" : "font-medium text-stone-700"
                       }`}
                     >
                       {name}
                     </span>
-                    <span className="shrink-0 text-[11px] text-stone-400">
+                    <span
+                      className={`shrink-0 text-[11px] ${
+                        isUnread ? "font-semibold text-[#5a6b32]" : "text-stone-400"
+                      }`}
+                    >
                       {fmtTime(lastMessage.created_at)}
                     </span>
                   </div>
                   <p
                     className={`truncate text-xs ${
-                      isUnread ? "font-medium text-stone-700" : "text-stone-500"
+                      isUnread ? "font-semibold text-stone-800" : "text-stone-500"
                     }`}
                   >
                     {preview}
                   </p>
                 </div>
 
-                {/* Item thumbnail */}
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-stone-100">
-                  {cover ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cover} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="h-full w-full bg-stone-200" />
-                  )}
-                  {item.is_sold && (
-                    <div className="absolute inset-0 flex items-end justify-center pb-0.5">
-                      <span className="rounded bg-stone-900/75 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-white">
-                        Solgt
-                      </span>
+                {/* Unread badge OR item thumbnail */}
+                {isUnread ? (
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#5a6b32] px-1.5 text-[11px] font-semibold leading-none text-white">
+                      {unread > 9 ? "9+" : unread}
+                    </span>
+                    <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-stone-100">
+                      {cover ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={cover} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="h-full w-full bg-stone-200" />
+                      )}
+                      {item.is_sold && (
+                        <div className="absolute inset-0 flex items-end justify-center pb-0.5">
+                          <span className="rounded bg-stone-900/75 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-white">
+                            Solgt
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                    {cover ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={cover} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="h-full w-full bg-stone-200" />
+                    )}
+                    {item.is_sold && (
+                      <div className="absolute inset-0 flex items-end justify-center pb-0.5">
+                        <span className="rounded bg-stone-900/75 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-white">
+                          Solgt
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </li>
             );
           })}
