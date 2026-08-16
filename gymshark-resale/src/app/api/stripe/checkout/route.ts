@@ -3,7 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { createClient as createSupabaseServerClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import Stripe from "stripe";
-import { stripe, calcFee } from "@/lib/stripe";
+import { stripe } from "@/lib/stripe";
+import { calcBuyerFee } from "@/lib/fees";
 import { getPackageOption } from "@/lib/shipping";
 
 export const runtime = "nodejs";
@@ -122,11 +123,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Selgeren har ikke aktivert betaling enda" }, { status: 400 });
   }
 
-  // Fee is calculated on the total (item + shipping) because Stripe's own fee
-  // also lands on the total. Charging 7% of item price alone was leaving
-  // negative or near-zero margin on small orders — the Stripe cut on
-  // (item + shipping) exceeded the 7% we took on item.
-  const platformFeeNok = calcFee(amountNok + shippingCostNok);
+  // Buyer-side "Kjøperbeskyttelse" fee shown as a separate line at checkout.
+  // Seller receives 100% of item price + shipping — this fee is on top for
+  // the buyer, not deducted from the seller's payout.
+  const platformFeeNok = calcBuyerFee(amountNok);
 
   // Create order record before Stripe call
   const { data: order, error: orderErr } = await admin.from("orders").insert({
@@ -181,6 +181,16 @@ export async function POST(req: NextRequest) {
       quantity: 1,
     });
   }
+
+  // Buyer-protection fee line
+  lineItems.push({
+    price_data: {
+      currency: "nok",
+      unit_amount: platformFeeNok * 100,
+      product_data: { name: "Kjøperbeskyttelse (Aktivbruk)" },
+    },
+    quantity: 1,
+  });
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",

@@ -6,7 +6,7 @@ export async function payoutOrder(
   admin: SupabaseClient,
   orderId: string,
   amountNok: number,
-  platformFeeNok: number,
+  _platformFeeNok: number,
   sellerUserId: string,
   extraUpdates: Record<string, unknown> = {},
 ) {
@@ -26,8 +26,11 @@ export async function payoutOrder(
     .eq("id", orderId)
     .maybeSingle();
 
-  // Seller receives item payout + shipping reimbursement
-  const desiredOre = (amountNok - platformFeeNok + (orderRow?.shipping_cost_nok ?? 0)) * 100;
+  // Buyer-fee model: seller receives 100% of item price + shipping reimbursement.
+  // The platform fee was paid by the buyer as a separate "Kjøperbeskyttelse"
+  // line item, so it is NOT deducted from the seller's transfer.
+  void _platformFeeNok;
+  const desiredOre = (amountNok + (orderRow?.shipping_cost_nok ?? 0)) * 100;
   let transferAmountOre = desiredOre;
   let sourceTransaction: string | undefined;
 

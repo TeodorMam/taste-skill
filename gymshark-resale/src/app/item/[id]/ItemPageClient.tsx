@@ -12,6 +12,7 @@ import {
   profileDisplayName,
 } from "@/lib/supabase";
 import { getPackageOption } from "@/lib/shipping";
+import { calcBuyerFee } from "@/lib/fees";
 import { ReportButton } from "@/components/ReportButton";
 import { Avatar } from "@/components/Avatar";
 import { createClient } from "@/utils/supabase/client";
@@ -396,7 +397,8 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
               : item.shipping === "Kan sendes" ? "shipping"
               : deliveryMethod;
             const shippingCost = effectiveDm === "shipping" && pkg ? pkg.price : 0;
-            const totalPrice = item.price + shippingCost;
+            const buyerFee = calcBuyerFee(item.price);
+            const totalPrice = item.price + shippingCost + buyerFee;
             const canCheckout = item.shipping !== "Begge" || deliveryMethod !== null;
 
             return (
@@ -451,7 +453,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                   <p className="text-center text-[11px] text-stone-400">
                     {!canCheckout
                       ? "Velg leveringsmetode for å fortsette"
-                      : <>{shippingCost > 0 ? `${formatPrice(item.price)} vare + ${formatPrice(shippingCost)} frakt · ` : ""}Sikker betaling via Stripe · <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">Kjøperbeskyttelse</Link></>
+                      : <>{formatPrice(item.price)} vare{shippingCost > 0 ? ` + ${formatPrice(shippingCost)} frakt` : ""} + {formatPrice(buyerFee)} <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">kjøperbeskyttelse</Link></>
                     }
                   </p>
                 </div>
@@ -507,6 +509,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                       : item.shipping === "Kan sendes" ? "shipping"
                       : deliveryMethod;
                     const shippingCost = effectiveDm === "shipping" && pkg ? pkg.price : 0;
+                    const buyerFee = calcBuyerFee(myOffer.amount);
                     const canCheckout = item.shipping !== "Begge" || deliveryMethod !== null;
                     return (
                       <>
@@ -535,12 +538,12 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                           disabled={!canCheckout || payingOffer}
                           className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                          {payingOffer ? "Sender til betaling…" : canCheckout ? `Betal nå — ${formatPrice(myOffer.amount + shippingCost)}` : "Betal nå"}
+                          {payingOffer ? "Sender til betaling…" : canCheckout ? `Betal nå — ${formatPrice(myOffer.amount + shippingCost + buyerFee)}` : "Betal nå"}
                         </button>
                         <p className="text-center text-[11px] text-stone-400">
                           {!canCheckout
                             ? "Velg leveringsmetode for å fortsette"
-                            : "Sikker betaling via Stripe · 7% plattformavgift inkludert"}
+                            : <>{formatPrice(myOffer.amount)} bud{shippingCost > 0 ? ` + ${formatPrice(shippingCost)} frakt` : ""} + {formatPrice(buyerFee)} <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">kjøperbeskyttelse</Link></>}
                         </p>
                       </>
                     );

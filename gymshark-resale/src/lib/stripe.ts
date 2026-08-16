@@ -5,8 +5,6 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   typescript: true,
 });
 
-export const PLATFORM_FEE_PERCENT = 7;
-
-export function calcFee(amountNok: number): number {
-  return Math.round(amountNok * PLATFORM_FEE_PERCENT / 100);
-}
+// Platform fee constants moved to src/lib/fees.ts (client-safe).
+// The seller-side deduction model was replaced by a buyer-side
+// "Kjøperbeskyttelse" line item — see calcBuyerFee in that file.

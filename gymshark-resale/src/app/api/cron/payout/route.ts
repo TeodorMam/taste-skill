@@ -49,7 +49,8 @@ export async function GET(req: NextRequest) {
       const sellerEmail = sellerRes.data.user?.email;
       const itemTitle = (itemRes as { data: { title: string } | null }).data?.title ?? "varen";
       const shippingCost = order.shipping_cost_nok ?? 0;
-      const sellerReceives = order.amount_nok - order.platform_fee_nok + shippingCost;
+      // Seller receives full item price + shipping (buyer-fee model — no deduction).
+      const sellerReceives = order.amount_nok + shippingCost;
       const fmt = (n: number) => new Intl.NumberFormat("nb-NO").format(n) + " kr";
 
       await Promise.all([
