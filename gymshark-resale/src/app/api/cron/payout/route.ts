@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
   // Find delivered orders past their review window with no payout yet
   const { data: orders } = await admin.from("orders")
-    .select("id, amount_nok, platform_fee_nok, seller_id, buyer_id, item_id")
+    .select("id, amount_nok, platform_fee_nok, shipping_cost_nok, seller_id, buyer_id, item_id")
     .eq("status", "delivered")
     .is("payout_transfer_id", null)
     .lt("review_deadline", new Date().toISOString());
@@ -48,7 +48,8 @@ export async function GET(req: NextRequest) {
       const buyerEmail = buyerRes.data.user?.email;
       const sellerEmail = sellerRes.data.user?.email;
       const itemTitle = (itemRes as { data: { title: string } | null }).data?.title ?? "varen";
-      const sellerReceives = order.amount_nok - order.platform_fee_nok;
+      const shippingCost = order.shipping_cost_nok ?? 0;
+      const sellerReceives = order.amount_nok - order.platform_fee_nok + shippingCost;
       const fmt = (n: number) => new Intl.NumberFormat("nb-NO").format(n) + " kr";
 
       await Promise.all([

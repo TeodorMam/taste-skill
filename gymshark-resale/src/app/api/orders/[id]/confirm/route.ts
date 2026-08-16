@@ -23,7 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
     const { data: order } = await admin.from("orders")
-      .select("id, status, buyer_id, seller_id, amount_nok, platform_fee_nok, item_id, payout_transfer_id")
+      .select("id, status, buyer_id, seller_id, amount_nok, platform_fee_nok, shipping_cost_nok, item_id, payout_transfer_id")
       .eq("id", orderId).maybeSingle();
 
     if (!order) return NextResponse.json({ error: "Ordre ikke funnet" }, { status: 404 });
@@ -54,7 +54,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const buyerEmail = buyerRes.data.user?.email;
     const sellerEmail = sellerRes.data.user?.email;
     const itemTitle = (itemRes as { data: { title: string } | null }).data?.title ?? "varen";
-    const sellerReceives = order.amount_nok - order.platform_fee_nok;
+    const shippingCost = order.shipping_cost_nok ?? 0;
+    const totalPaid = order.amount_nok + shippingCost;
+    // Seller keeps: item price - fee + shipping reimbursement (fee is 7% of total)
+    const sellerReceives = order.amount_nok - order.platform_fee_nok + shippingCost;
     const fmt = (n: number) => new Intl.NumberFormat("nb-NO").format(n) + " kr";
 
     await Promise.all([
@@ -82,7 +85,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             <div style="background:#f0fdf4;padding:16px;border-radius:12px;margin-bottom:16px">
               <p style="margin:0 0 4px;font-size:13px;color:#166534">Du mottar</p>
               <p style="margin:0;font-size:22px;font-weight:700;color:#16a34a">${fmt(sellerReceives)}</p>
-              <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Salgspris ${fmt(order.amount_nok)} − 7% plattformavgift (${fmt(order.platform_fee_nok)})</p>
+              <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Kjøper betalte ${fmt(totalPaid)}${shippingCost > 0 ? ` (${fmt(order.amount_nok)} vare + ${fmt(shippingCost)} frakt)` : ""} − 7% plattformavgift (${fmt(order.platform_fee_nok)})</p>
             </div>
             <p style="font-size:14px;color:#57534e">Betalingen er overført til din Stripe-konto og vil utbetales etter Stripes normale utbetalingsplan.</p>
             <a href="https://dashboard.stripe.com/express" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Åpne Stripe-dashboard</a>

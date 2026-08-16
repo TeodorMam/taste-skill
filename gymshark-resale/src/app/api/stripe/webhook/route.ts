@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    const { data: existing, error: orderFetchErr } = await admin.from("orders").select("status, buyer_id, seller_id, amount_nok, platform_fee_nok, delivery_method").eq("id", orderId).maybeSingle();
+    const { data: existing, error: orderFetchErr } = await admin.from("orders").select("status, buyer_id, seller_id, amount_nok, platform_fee_nok, delivery_method, shipping_cost_nok").eq("id", orderId).maybeSingle();
     console.log("[webhook] order fetch:", existing?.status, "fetchErr:", orderFetchErr?.message);
     if (!existing || existing.status === "paid") return NextResponse.json({ received: true });
 
@@ -77,7 +77,10 @@ export async function POST(req: NextRequest) {
     const buyerEmail = buyerRes.data.user?.email;
     const sellerEmail = sellerRes.data.user?.email;
     const itemTitle = itemRes.data?.title ?? "varen";
-    const sellerReceives = existing.amount_nok - existing.platform_fee_nok;
+    const shippingCost = existing.shipping_cost_nok ?? 0;
+    const totalPaid = existing.amount_nok + shippingCost;
+    // Seller keeps: item price - fee + shipping reimbursement (fee is 7% of total)
+    const sellerReceives = existing.amount_nok - existing.platform_fee_nok + shippingCost;
     const link = `${SITE_URL}/item/${itemId}`;
 
     const fmt = (n: number) => new Intl.NumberFormat("nb-NO").format(n) + " kr";
@@ -117,9 +120,9 @@ export async function POST(req: NextRequest) {
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1c1917;max-width:560px">
           <h2 style="margin:0 0 8px;font-size:18px">Du har solgt «${escapeHtml(itemTitle)}»!</h2>
           <div style="background:#f5f5f4;padding:16px;border-radius:12px;margin-bottom:16px">
-            <p style="margin:0 0 4px;font-size:13px;color:#78716c">Salgsbeløp</p>
-            <p style="margin:0;font-size:22px;font-weight:700;color:#1c1917">${fmt(existing.amount_nok)}</p>
-            <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Du mottar ${fmt(sellerReceives)} etter 7% plattformavgift (${fmt(existing.platform_fee_nok)})</p>
+            <p style="margin:0 0 4px;font-size:13px;color:#78716c">Du mottar</p>
+            <p style="margin:0;font-size:22px;font-weight:700;color:#1c1917">${fmt(sellerReceives)}</p>
+            <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Kjøper betalte ${fmt(totalPaid)}${shippingCost > 0 ? ` (${fmt(existing.amount_nok)} vare + ${fmt(shippingCost)} frakt)` : ""} − 7% plattformavgift (${fmt(existing.platform_fee_nok)})</p>
           </div>
           <p style="margin:0 0 12px;font-size:14px">${sellerInstruction}</p>
           <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>

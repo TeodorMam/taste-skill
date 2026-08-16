@@ -122,7 +122,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Selgeren har ikke aktivert betaling enda" }, { status: 400 });
   }
 
-  const platformFeeNok = calcFee(amountNok);
+  // Fee is calculated on the total (item + shipping) because Stripe's own fee
+  // also lands on the total. Charging 7% of item price alone was leaving
+  // negative or near-zero margin on small orders — the Stripe cut on
+  // (item + shipping) exceeded the 7% we took on item.
+  const platformFeeNok = calcFee(amountNok + shippingCostNok);
 
   // Create order record before Stripe call
   const { data: order, error: orderErr } = await admin.from("orders").insert({
