@@ -192,12 +192,18 @@ export async function POST(req: NextRequest) {
     quantity: 1,
   });
 
+  // Destination charge: funds route directly to the seller's Connect account
+  // at payment time (minus our application fee, which stays on the platform).
+  // The seller's Connect account is configured for manual payouts, so the
+  // money sits in escrow on their Stripe balance until we release it via
+  // stripe.payouts.create() when the buyer confirms delivery.
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
     line_items: lineItems,
     payment_intent_data: {
-      // No transfer_data: funds held on platform until buyer confirms delivery
+      application_fee_amount: platformFeeNok * 100,
+      transfer_data: { destination: sellerAccountId },
       metadata: {
         order_id: order.id,
         item_id: String(item.id),

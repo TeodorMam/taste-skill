@@ -2,6 +2,22 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { stripe } from "./stripe";
 
+// Releases the seller's escrowed funds to their bank.
+//
+// Two payment-flow generations coexist:
+//
+// 1) Legacy "separate charges + transfers": funds sat on the platform
+//    balance after checkout. Release = stripe.transfers.create() to the
+//    seller's Connect account.
+//
+// 2) Current "destination charge + manual Connect payout": funds already
+//    live on the seller's Connect balance from the moment of payment.
+//    Release = stripe.payouts.create() on the connected account, moving
+//    it from their Stripe balance to their bank.
+//
+// We detect which one by inspecting the PaymentIntent's transfer_data.
+// Orders created before the escrow refactor have no transfer_data and
+// use path (1); everything after uses path (2).
 export async function payoutOrder(
   admin: SupabaseClient,
   orderId: string,
@@ -17,70 +33,93 @@ export async function payoutOrder(
     .maybeSingle();
 
   if (!profile?.stripe_account_id) throw new Error("no_stripe_account");
+  const sellerAccountId = profile.stripe_account_id;
 
-  // Fetch the charge so we can use source_transaction and know the actual net
-  // amount Stripe deposited (charge amount minus Stripe's own processing fees).
   const { data: orderRow } = await admin
     .from("orders")
     .select("stripe_payment_intent_id, shipping_cost_nok")
     .eq("id", orderId)
     .maybeSingle();
 
-  // Buyer-fee model: seller receives 100% of item price + shipping reimbursement.
-  // The platform fee was paid by the buyer as a separate "Kjøperbeskyttelse"
-  // line item, so it is NOT deducted from the seller's transfer.
   void _platformFeeNok;
-  const desiredOre = (amountNok + (orderRow?.shipping_cost_nok ?? 0)) * 100;
-  let transferAmountOre = desiredOre;
+  const shippingCost = orderRow?.shipping_cost_nok ?? 0;
+  // Seller keeps 100% of item + shipping. Platform fee was already routed
+  // via application_fee_amount at charge time (new flow) or is subtracted
+  // by transfer amount (legacy flow, handled in the branch below).
+  const sellerAmountOre = (amountNok + shippingCost) * 100;
+
+  // Detect payment flow generation
+  let usesDestinationCharge = false;
+  let paymentIntentId: string | undefined;
   let sourceTransaction: string | undefined;
+  let stripeNetOre: number | undefined;
 
   if (orderRow?.stripe_payment_intent_id) {
+    paymentIntentId = orderRow.stripe_payment_intent_id;
     try {
-      const pi = await stripe.paymentIntents.retrieve(
-        orderRow.stripe_payment_intent_id,
-        { expand: ["latest_charge.balance_transaction"] },
-      );
+      const pi = await stripe.paymentIntents.retrieve(paymentIntentId, {
+        expand: ["latest_charge.balance_transaction"],
+      });
+      usesDestinationCharge = !!pi.transfer_data?.destination;
       const charge = pi.latest_charge as Stripe.Charge | null;
       if (charge?.id) {
         sourceTransaction = charge.id;
         const bt = charge.balance_transaction as Stripe.BalanceTransaction | null;
-        if (bt?.net) {
-          // Never transfer more than what Stripe actually deposited after its fees.
-          // For normal-sized orders the desired amount is always lower; this only
-          // kicks in for tiny test payments where the fixed Stripe fee dominates.
-          transferAmountOre = Math.min(desiredOre, bt.net);
-        }
+        if (bt?.net) stripeNetOre = bt.net;
       }
     } catch (e) {
-      // Non-fatal — proceed without source_transaction
       console.warn("[payout] could not retrieve payment intent:", e);
     }
   }
 
-  const transferParams: Stripe.TransferCreateParams = {
-    amount: transferAmountOre,
-    currency: "nok",
-    destination: profile.stripe_account_id,
-    metadata: { order_id: orderId },
-  };
-  if (sourceTransaction) {
-    transferParams.source_transaction = sourceTransaction;
-  }
+  let releaseRef: string;
+  let payoutAmountOre: number;
 
-  const transfer = await stripe.transfers.create(
-    transferParams,
-    { idempotencyKey: `payout-${orderId}` },
-  );
+  if (usesDestinationCharge) {
+    // NEW FLOW: funds are already on the seller's Connect balance. Trigger
+    // a payout on that account to release them to the seller's bank.
+    const payout = await stripe.payouts.create(
+      {
+        amount: sellerAmountOre,
+        currency: "nok",
+        metadata: { order_id: orderId },
+      },
+      { stripeAccount: sellerAccountId, idempotencyKey: `payout-${orderId}` },
+    );
+    releaseRef = payout.id;
+    payoutAmountOre = sellerAmountOre;
+  } else {
+    // LEGACY FLOW: funds are on the platform balance. Transfer to the
+    // seller's Connect account. Cap by Stripe's actual net so we never
+    // try to transfer more than what deposited after Stripe fees.
+    let transferAmountOre = sellerAmountOre;
+    if (stripeNetOre !== undefined) {
+      transferAmountOre = Math.min(sellerAmountOre, stripeNetOre);
+    }
+    const transferParams: Stripe.TransferCreateParams = {
+      amount: transferAmountOre,
+      currency: "nok",
+      destination: sellerAccountId,
+      metadata: { order_id: orderId },
+    };
+    if (sourceTransaction) transferParams.source_transaction = sourceTransaction;
+    const transfer = await stripe.transfers.create(
+      transferParams,
+      { idempotencyKey: `payout-${orderId}` },
+    );
+    releaseRef = transfer.id;
+    payoutAmountOre = transferAmountOre;
+  }
 
   await admin
     .from("orders")
     .update({
       status: "paid_out",
-      payout_transfer_id: transfer.id,
-      payout_amount_nok: Math.round(transferAmountOre / 100),
+      payout_transfer_id: releaseRef,
+      payout_amount_nok: Math.round(payoutAmountOre / 100),
       ...extraUpdates,
     })
     .eq("id", orderId);
 
-  return transfer;
+  return { id: releaseRef, amount: payoutAmountOre, mode: usesDestinationCharge ? "connect_payout" : "transfer" };
 }

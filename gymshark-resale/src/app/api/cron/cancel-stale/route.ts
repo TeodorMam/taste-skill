@@ -41,7 +41,14 @@ export async function GET(req: NextRequest) {
   for (const order of stale) {
     try {
       if (order.stripe_payment_intent_id) {
-        await stripe.refunds.create({ payment_intent: order.stripe_payment_intent_id });
+        // For destination-charge orders (new escrow model), reverse the
+        // transfer to pull the seller's share back and refund the application
+        // fee. For legacy orders these flags are simply ignored by Stripe.
+        await stripe.refunds.create({
+          payment_intent: order.stripe_payment_intent_id,
+          reverse_transfer: true,
+          refund_application_fee: true,
+        });
       }
 
       await admin.from("orders").update({ status: "refunded" }).eq("id", order.id);

@@ -34,6 +34,13 @@ export async function POST(req: Request) {
         capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
         business_type: "individual",
         metadata: { supabase_user_id: user.id },
+        // Manual payouts keep escrow honest: buyer's money lands on the
+        // seller's Connect balance at payment time (via destination charge)
+        // but doesn't hit their bank until we call stripe.payouts.create
+        // when the buyer confirms delivery.
+        settings: {
+          payouts: { schedule: { interval: "manual" } },
+        },
       });
       accountId = account.id;
       await admin.from("profiles").update({ stripe_account_id: accountId }).eq("user_id", user.id);
@@ -76,8 +83,24 @@ export async function GET() {
           stripe_charges_enabled: true,
           stripe_onboarding_complete: account.details_submitted,
         }).eq("user_id", user.id);
-        return NextResponse.json({ charges_enabled: true, account_id: profile.stripe_account_id });
+        // Fall through — will run the payout-schedule check below
       }
+    }
+
+    // Ensure existing Connect accounts use manual payouts so the escrow
+    // model actually holds. New accounts get this on creation; accounts
+    // created before the escrow refactor still have the default schedule
+    // and are silently migrated here on their next visit.
+    try {
+      const account = await stripe.accounts.retrieve(profile.stripe_account_id);
+      const currentInterval = account.settings?.payouts?.schedule?.interval;
+      if (currentInterval && currentInterval !== "manual") {
+        await stripe.accounts.update(profile.stripe_account_id, {
+          settings: { payouts: { schedule: { interval: "manual" } } },
+        });
+      }
+    } catch (e) {
+      console.warn("[stripe/connect GET] payout schedule check failed:", e);
     }
 
     return NextResponse.json({
