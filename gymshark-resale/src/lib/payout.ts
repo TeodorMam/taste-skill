@@ -50,12 +50,11 @@ export async function payoutOrder(
 
   // Detect payment flow generation
   let usesDestinationCharge = false;
-  let paymentIntentId: string | undefined;
   let sourceTransaction: string | undefined;
   let stripeNetOre: number | undefined;
 
-  if (orderRow?.stripe_payment_intent_id) {
-    paymentIntentId = orderRow.stripe_payment_intent_id;
+  const paymentIntentId: string | null = orderRow?.stripe_payment_intent_id ?? null;
+  if (paymentIntentId) {
     try {
       const pi = await stripe.paymentIntents.retrieve(paymentIntentId, {
         expand: ["latest_charge.balance_transaction"],
