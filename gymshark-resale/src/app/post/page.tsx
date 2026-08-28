@@ -490,7 +490,7 @@ export default function PostPage() {
                   }`}
                 >
                   <p className="text-sm font-medium">{pkg.label}</p>
-                  <p className="mt-0.5 text-[11px] text-stone-500">Maks {pkg.maxWeight} · {pkg.dimensions}</p>
+                  <p className="mt-0.5 text-[11px] text-stone-500">{pkg.weightLabel} · {pkg.dimensions}</p>
                 </button>
               ))}
             </div>

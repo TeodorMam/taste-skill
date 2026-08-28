@@ -23,10 +23,13 @@ export type Item = {
   updated_at: string;
 };
 
+// Order matters: the first entry is the default on the post form.
+// "Begge" is default because it gives buyers the most flexibility and
+// sellers the widest possible pool of interested buyers.
 export const SHIPPING_OPTIONS = [
-  { value: "Kan sendes", label: "📦 Kan sendes", hint: "Kjøper betaler frakt" },
-  { value: "Kun henting", label: "🤝 Kun henting", hint: "Møtes lokalt" },
   { value: "Begge", label: "📦🤝 Begge", hint: "Fleksibel" },
+  { value: "Kun henting", label: "🤝 Kun henting", hint: "Møtes lokalt" },
+  { value: "Kan sendes", label: "📦 Kan sendes", hint: "Kjøper betaler frakt" },
 ] as const;
 
 export type MessageType =
