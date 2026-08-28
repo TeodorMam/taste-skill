@@ -55,8 +55,32 @@ export default function PostPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
-  }, []);
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace("/login?next=/post");
+        return;
+      }
+      // Hard gate: sellers must have completed Stripe onboarding before
+      // they're allowed to list. Otherwise their listing goes live but
+      // "Kjøp nå" never shows because the buyer flow needs a real
+      // connected account to route funds to.
+      try {
+        const res = await fetch("/api/stripe/connect");
+        const json = await res.json() as { charges_enabled?: boolean };
+        if (!json.charges_enabled) {
+          router.replace("/sell");
+          return;
+        }
+      } catch {
+        // If the check fails, fall back to /sell so we don't accidentally
+        // let a broken listing slip through.
+        router.replace("/sell");
+        return;
+      }
+      setUserId(user.id);
+    })();
+  }, [router]);
 
   useEffect(() => {
     return () => {

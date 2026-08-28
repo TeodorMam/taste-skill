@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { formatPrice } from "@/lib/supabase";
+import { getPackageOption } from "@/lib/shipping";
 import { useToast } from "@/components/ToastProvider";
 
 type OrderStatus =
@@ -32,7 +33,7 @@ type Order = {
   buyer_postal_code: string | null;
   buyer_city: string | null;
   buyer_phone: string | null;
-  item: { id: number; title: string; image_urls: string[] | null } | null;
+  item: { id: number; title: string; image_urls: string[] | null; package_size: string | null } | null;
   item_title: string | null;
   item_image: string | null;
 };
@@ -149,18 +150,29 @@ function OrderCard({ order, role, onAction }: {
       )}
 
       {/* Seller actions */}
-      {role === "seller" && order.status === "paid" && order.delivery_method !== "meetup" && (
+      {role === "seller" && order.status === "paid" && order.delivery_method !== "meetup" && (() => {
+        const pkg = getPackageOption(order.item?.package_size);
+        return (
         <div className="border-t border-stone-100 p-4 space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-stone-800">Send pakken</p>
             <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">Send innen 7 dager</span>
           </div>
 
+          {pkg && (
+            <div className="rounded-xl border border-[#5a6b32]/30 bg-[#5a6b32]/5 p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5a6b32]">Kjøp denne pakken</p>
+              <p className="mt-0.5 text-sm font-semibold text-stone-900">Posten {pkg.label} — {pkg.price} kr</p>
+              <p className="text-[11px] text-stone-500">Inntil {pkg.maxWeight} · {pkg.dimensions}</p>
+              <p className="mt-1.5 text-[11px] text-stone-500">Ikke velg noen annen størrelse — kjøper har betalt for akkurat denne.</p>
+            </div>
+          )}
+
           <div className="flex gap-4">
             <div className="flex-1 space-y-3">
               <ol className="space-y-1.5 text-xs text-stone-600">
                 <li className="flex gap-2"><span className="font-semibold text-stone-800">1.</span><span>Gå til posten.no og velg «Send i Norge»</span></li>
-                <li className="flex gap-2"><span className="font-semibold text-stone-800">2.</span><span>Velg pakkestørrelse ved å trykke «Kjøp sendekode»</span></li>
+                <li className="flex gap-2"><span className="font-semibold text-stone-800">2.</span><span>{pkg ? <>Trykk «Kjøp sendekode» og velg <strong>{pkg.label} ({pkg.price} kr)</strong></> : <>Velg pakkestørrelse ved å trykke «Kjøp sendekode»</>}</span></li>
                 <li className="flex gap-2"><span className="font-semibold text-stone-800">3.</span><span>Fyll inn avsender- og mottakerinformasjon, og innleveringsmåte</span></li>
                 <li className="flex gap-2"><span className="font-semibold text-stone-800">4.</span><span>Betal frakt og send inn</span></li>
               </ol>
@@ -209,7 +221,8 @@ function OrderCard({ order, role, onAction }: {
             </button>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {role === "seller" && order.status === "paid" && order.delivery_method === "meetup" && (
         <div className="border-t border-stone-100 p-4 space-y-3">
@@ -364,7 +377,7 @@ export default function OrdersPage() {
     if (!userId) return;
     supabase
       .from("orders")
-      .select("*, item:item_id(id, title, image_urls)")
+      .select("*, item:item_id(id, title, image_urls, package_size)")
       .neq("status", "pending")
       .neq("status", "cancelled")
       .order("created_at", { ascending: false })
@@ -383,7 +396,7 @@ export default function OrdersPage() {
     // Re-fetch orders to update status
     const { data } = await supabase
       .from("orders")
-      .select("*, item:item_id(id, title, image_urls)")
+      .select("*, item:item_id(id, title, image_urls, package_size)")
       .neq("status", "pending")
       .neq("status", "cancelled")
       .order("created_at", { ascending: false });

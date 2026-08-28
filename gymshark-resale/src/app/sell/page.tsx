@@ -24,20 +24,25 @@ export default function SellPage() {
         return;
       }
 
-      if (fromStripe) {
-        setStep("success");
-        return;
-      }
-
+      // Always re-verify with Stripe — even on ?stripe=return. Users can
+      // bail on onboarding partway and Stripe will still redirect them
+      // back here, which used to falsely flash the "success" screen and
+      // let them list a broken (unbuyable) item.
       const res = await fetch("/api/stripe/connect");
       const json = await res.json() as { charges_enabled: boolean; account_id: string | null };
 
       if (json.charges_enabled) {
-        router.replace("/post");
+        if (fromStripe) {
+          setStep("success");
+        } else {
+          router.replace("/post");
+        }
         return;
       }
 
-      setStep("intro");
+      // Not yet enabled — show either the intro (never started) or the
+      // connect step (in-progress / needs to finish) so they can retry.
+      setStep(json.account_id ? "connect" : "intro");
     }
 
     void init();
