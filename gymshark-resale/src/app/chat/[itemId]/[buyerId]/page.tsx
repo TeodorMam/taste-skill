@@ -16,6 +16,7 @@ import {
 } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 import { BidModal } from "@/components/BidModal";
+import { convertHeicToJpeg } from "@/lib/heic";
 
 function fmtTime(iso: string): string {
   const d = new Date(iso);
@@ -204,10 +205,13 @@ export default function ChatPage() {
     setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
   }
 
-  async function sendImage(file: File) {
+  async function sendImage(rawFile: File) {
     if (!meId) return;
     setUploading(true);
     setError(null);
+    // Convert HEIC (iPhone default) to JPEG so the image renders on every
+    // device — desktop browsers can't display HEIC natively.
+    const file = await convertHeicToJpeg(rawFile);
     const ext = file.name.split(".").pop() || "jpg";
     const path = `chat/${itemId}-${buyerId}-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage.from("item-images").upload(path, file, { cacheControl: "3600", upsert: true });

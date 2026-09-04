@@ -18,6 +18,7 @@ import {
   type CategoryParent,
 } from "@/lib/supabase";
 import { POSTEN_PACKAGES } from "@/lib/shipping";
+import { convertHeicFiles } from "@/lib/heic";
 import { createClient } from "@/utils/supabase/client";
 import { FirstListingTips } from "@/components/FirstListingTips";
 
@@ -91,9 +92,14 @@ export default function PostPage() {
 
   const remaining = useMemo(() => MAX_IMAGES - slots.length, [slots.length]);
 
-  function addFiles(picked: FileList | null) {
+  async function addFiles(picked: FileList | null) {
     if (!picked || picked.length === 0) return;
-    const toAdd = Array.from(picked).slice(0, remaining).map(makeSlot);
+    // Convert any iPhone HEIC files to JPEG in the browser before slotting
+    // them, so previews render everywhere and the eventual upload is a
+    // format every browser can display.
+    const raw = Array.from(picked).slice(0, remaining);
+    const converted = await convertHeicFiles(raw);
+    const toAdd = converted.map(makeSlot);
     setSlots((prev) => [...prev, ...toAdd]);
   }
 
