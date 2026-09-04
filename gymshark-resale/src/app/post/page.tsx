@@ -2,19 +2,23 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   BUCKET,
   BRANDS,
   SIZES,
   CONDITIONS,
   AREAS,
+  GENDERS,
+  COLORS,
+  FITS,
   MAX_IMAGES,
   SHIPPING_OPTIONS,
   CATEGORY_TREE,
   CATEGORY_PARENTS,
   type CategoryParent,
 } from "@/lib/supabase";
+import { POSTEN_PACKAGES } from "@/lib/shipping";
+import { convertHeicFiles } from "@/lib/heic";
 import { createClient } from "@/utils/supabase/client";
 import { FirstListingTips } from "@/components/FirstListingTips";
 
@@ -34,6 +38,9 @@ export default function PostPage() {
   const [brand, setBrand] = useState("");
   const [categoryParent, setCategoryParent] = useState<CategoryParent | "">("");
   const [category, setCategory] = useState("");
+  const [gender, setGender] = useState("");
+  const [color, setColor] = useState("");
+  const [fit, setFit] = useState("");
   const [size, setSize] = useState("M");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState<(typeof CONDITIONS)[number]>("God");
@@ -41,6 +48,7 @@ export default function PostPage() {
   const [description, setDescription] = useState("");
   const [slots, setSlots] = useState<Slot[]>([]);
   const [shipping, setShipping] = useState<string>(SHIPPING_OPTIONS[0].value);
+  const [packageSize, setPackageSize] = useState<string>("small");
   const [submitting, setSubmitting] = useState(false);
   const [uploadIdx, setUploadIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -48,8 +56,32 @@ export default function PostPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
-  }, []);
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace("/login?next=/post");
+        return;
+      }
+      // Hard gate: sellers must have completed Stripe onboarding before
+      // they're allowed to list. Otherwise their listing goes live but
+      // "Kjøp nå" never shows because the buyer flow needs a real
+      // connected account to route funds to.
+      try {
+        const res = await fetch("/api/stripe/connect");
+        const json = await res.json() as { charges_enabled?: boolean };
+        if (!json.charges_enabled) {
+          router.replace("/sell");
+          return;
+        }
+      } catch {
+        // If the check fails, fall back to /sell so we don't accidentally
+        // let a broken listing slip through.
+        router.replace("/sell");
+        return;
+      }
+      setUserId(user.id);
+    })();
+  }, [router]);
 
   useEffect(() => {
     return () => {
@@ -60,9 +92,14 @@ export default function PostPage() {
 
   const remaining = useMemo(() => MAX_IMAGES - slots.length, [slots.length]);
 
-  function addFiles(picked: FileList | null) {
+  async function addFiles(picked: FileList | null) {
     if (!picked || picked.length === 0) return;
-    const toAdd = Array.from(picked).slice(0, remaining).map(makeSlot);
+    // Convert any iPhone HEIC files to JPEG in the browser before slotting
+    // them, so previews render everywhere and the eventual upload is a
+    // format every browser can display.
+    const raw = Array.from(picked).slice(0, remaining);
+    const converted = await convertHeicFiles(raw);
+    const toAdd = converted.map(makeSlot);
     setSlots((prev) => [...prev, ...toAdd]);
   }
 
@@ -131,6 +168,10 @@ export default function PostPage() {
           image_url,
           image_urls,
           shipping,
+          package_size: shipping !== "Kun henting" ? packageSize : null,
+          gender: gender || null,
+          color: color || null,
+          fit: fit || null,
         })
         .select("id")
         .single();
@@ -147,24 +188,12 @@ export default function PostPage() {
     return <p className="py-6 text-sm text-stone-500">Laster…</p>;
   }
   if (userId === null) {
-    return (
-      <section className="space-y-4 py-10">
-        <h1 className="text-3xl font-semibold tracking-tight">Logg inn for å selge</h1>
-        <p className="text-sm text-stone-600">
-          Du trenger en kort innlogging så kjøpere kan sende deg melding.
-        </p>
-        <Link
-          href="/login?next=/post"
-          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
-        >
-          Logg inn
-        </Link>
-      </section>
-    );
+    router.replace("/login?next=/post");
+    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 pb-28 sm:pb-6">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Legg ut vare</h1>
         <p className="mt-1 text-sm text-stone-500">
@@ -174,7 +203,7 @@ export default function PostPage() {
 
       <FirstListingTips userId={userId} />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form id="post-form" onSubmit={handleSubmit} className="space-y-4">
         <Field label={`Bilder (opp til ${MAX_IMAGES})`}>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
             {slots.map((s, i) => (
@@ -316,6 +345,66 @@ export default function PostPage() {
           )}
         </div>
 
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Kjønn</span>
+          <div className="flex flex-wrap gap-2">
+            {GENDERS.map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setGender(gender === g ? "" : g)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  gender === g
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Farge (valgfritt)</span>
+          <div className="flex flex-wrap gap-2">
+            {COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(color === c ? "" : c)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  color === c
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Passform (valgfritt)</span>
+          <div className="flex flex-wrap gap-2">
+            {FITS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFit(fit === f ? "" : f)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  fit === f
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <Field label="Størrelse">
             <select value={size} onChange={(e) => setSize(e.target.value)} className={input}>
@@ -355,10 +444,17 @@ export default function PostPage() {
         <Field label="Beskrivelse (valgfritt)">
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              const el = e.target;
+              const scrollY = window.scrollY;
+              el.style.height = "auto";
+              el.style.height = `${el.scrollHeight}px`;
+              window.scrollTo(0, scrollY);
+            }}
             placeholder="Fortell om varen — størrelse, bruk, tilstand, grunnen til salg…"
-            rows={3}
-            className={`${input} resize-none`}
+            rows={6}
+            className={`${input} resize-none overflow-hidden`}
           />
         </Field>
 
@@ -383,15 +479,66 @@ export default function PostPage() {
           </div>
         </div>
 
-        {error && (
-          <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        {shipping !== "Kun henting" && (
+          <div className="space-y-1.5">
+            <span className="block text-sm font-medium text-stone-800">Pakkestørrelse (Posten)</span>
+            <p className="text-xs text-stone-500">Velg den størrelsen som passer varen din. Kjøper betaler frakten.</p>
+            <div className="space-y-2">
+              {POSTEN_PACKAGES.map((pkg) => (
+                <button
+                  key={pkg.id}
+                  type="button"
+                  onClick={() => setPackageSize(pkg.id)}
+                  className={`w-full rounded-xl border p-3 text-left transition ${
+                    packageSize === pkg.id
+                      ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]"
+                      : "border-stone-200 bg-white hover:border-stone-400"
+                  }`}
+                >
+                  <p className="text-sm font-medium">{pkg.label}</p>
+                  <p className="mt-0.5 text-[11px] text-stone-500">{pkg.weightLabel} · {pkg.dimensions}</p>
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
+      </form>
+
+      {/* Sticky submit bar — mobile only, sits above the bottom nav */}
+      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-stone-100 bg-white/95 px-4 py-3 backdrop-blur sm:hidden">
+        {error && (
+          <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>
+        )}
         {submitting && slots.length > 0 && (
-          <div className="space-y-1.5">
-            <p className="text-xs text-stone-500">
-              Laster opp bilde {uploadIdx + 1} av {slots.length}…
-            </p>
+          <div className="mb-2 space-y-1">
+            <p className="text-xs text-stone-500">Laster opp bilde {uploadIdx + 1} av {slots.length}…</p>
+            <div className="h-1 overflow-hidden rounded-full bg-stone-200">
+              <div
+                className="h-full rounded-full bg-[#5a6b32] transition-all duration-300"
+                style={{ width: `${((uploadIdx + 1) / slots.length) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+        <button
+          type="submit"
+          form="post-form"
+          disabled={submitting}
+          className="w-full rounded-full bg-stone-900 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+        >
+          {submitting ? "Legger ut…" : "Legg ut"}
+        </button>
+      </div>
+
+      {/* Inline submit for desktop */}
+      <div className="hidden sm:block -mt-2">
+        {error && (
+          <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        )}
+        {submitting && slots.length > 0 && (
+          <div className="mb-3 space-y-1.5">
+            <p className="text-xs text-stone-500">Laster opp bilde {uploadIdx + 1} av {slots.length}…</p>
             <div className="h-1.5 overflow-hidden rounded-full bg-stone-200">
               <div
                 className="h-full rounded-full bg-stone-900 transition-all duration-300"
@@ -400,15 +547,15 @@ export default function PostPage() {
             </div>
           </div>
         )}
-
         <button
           type="submit"
+          form="post-form"
           disabled={submitting}
           className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
         >
           {submitting ? "Legger ut…" : "Legg ut"}
         </button>
-      </form>
+      </div>
     </section>
   );
 }

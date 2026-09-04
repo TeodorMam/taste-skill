@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { formatPrice } from "@/lib/supabase";
+import { getPackageOption } from "@/lib/shipping";
 import { useToast } from "@/components/ToastProvider";
 
 type OrderStatus =
@@ -15,6 +16,8 @@ type Order = {
   status: OrderStatus;
   amount_nok: number;
   platform_fee_nok: number;
+  shipping_cost_nok: number;
+  delivery_method: "shipping" | "meetup" | null;
   created_at: string;
   shipped_at: string | null;
   delivered_at: string | null;
@@ -25,7 +28,14 @@ type Order = {
   tracking_info: string | null;
   buyer_id: string;
   seller_id: string;
-  item: { id: number; title: string; image_urls: string[] | null } | null;
+  buyer_name: string | null;
+  buyer_address: string | null;
+  buyer_postal_code: string | null;
+  buyer_city: string | null;
+  buyer_phone: string | null;
+  item: { id: number; title: string; image_urls: string[] | null; package_size: string | null } | null;
+  item_title: string | null;
+  item_image: string | null;
 };
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
@@ -77,18 +87,18 @@ function OrderCard({ order, role, onAction }: {
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
   const [trackingInput, setTrackingInput] = useState("");
-  const [showShipForm, setShowShipForm] = useState(false);
   const [showDispute, setShowDispute] = useState(false);
   const [disputeReason, setDisputeReason] = useState("");
 
-  const imgSrc = order.item?.image_urls?.[0] ?? null;
+  const imgSrc = order.item?.image_urls?.[0] ?? order.item_image ?? null;
 
   async function act(action: string, extra?: Record<string, string>) {
     setBusy(action);
     try {
       await onAction(order.id, action, extra);
-    } catch {
-      toast("Noe gikk galt, prøv igjen");
+    } catch (err) {
+      const msg = err instanceof Error && err.message ? err.message : "Noe gikk galt, prøv igjen";
+      toast(msg);
     } finally {
       setBusy(null);
     }
@@ -107,11 +117,16 @@ function OrderCard({ order, role, onAction }: {
           <p className="truncate font-medium text-stone-900">
             {order.item ? (
               <Link href={`/item/${order.item.id}`} className="hover:underline">{order.item.title}</Link>
+            ) : order.item_title ? (
+              <span>{order.item_title}</span>
             ) : (
               <span className="text-stone-400">Annonse slettet</span>
             )}
           </p>
-          <p className="text-sm text-stone-700">{formatPrice(order.amount_nok)}</p>
+          <p className="text-sm text-stone-700">
+            {formatPrice(order.amount_nok + (order.shipping_cost_nok ?? 0))}
+            {order.shipping_cost_nok > 0 && <span className="ml-1 text-xs text-stone-400">inkl. frakt</span>}
+          </p>
           <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLOR[order.status]}`}>
             {STATUS_LABEL[order.status]}
           </span>
@@ -120,44 +135,105 @@ function OrderCard({ order, role, onAction }: {
 
       {order.tracking_info && (
         <div className="border-t border-stone-100 px-4 py-2">
-          <p className="text-xs text-stone-500">Sporing: <span className="font-medium text-stone-700">{order.tracking_info}</span></p>
+          <p className="text-xs text-stone-500">
+            Sporing:{" "}
+            <a
+              href={`https://sporing.posten.no/sporing/${order.tracking_info}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+            >
+              {order.tracking_info} ↗
+            </a>
+          </p>
         </div>
       )}
 
       {/* Seller actions */}
-      {role === "seller" && order.status === "paid" && (
-        <div className="border-t border-stone-100 p-4 space-y-3">
-          <p className="text-xs text-stone-600">Send varen via Posten og legg inn sporingsnummeret — kjøper varsles automatisk når pakken er levert.</p>
-          {showShipForm ? (
-            <div className="space-y-2">
-              <input
-                type="text"
-                value={trackingInput}
-                onChange={(e) => setTrackingInput(e.target.value)}
-                placeholder="Sporingsnummer (Posten / Bring)"
-                className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={() => act("ship", { tracking_info: trackingInput })}
-                  disabled={!!busy || !trackingInput.trim()}
-                  className="flex-1 rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
-                >
-                  {busy === "ship" ? "Lagrer…" : "Marker som sendt"}
-                </button>
-                <button onClick={() => setShowShipForm(false)} className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500">
-                  Avbryt
-                </button>
+      {role === "seller" && order.status === "paid" && order.delivery_method !== "meetup" && (() => {
+        const pkg = getPackageOption(order.item?.package_size);
+        return (
+        <div className="border-t border-stone-100 p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-stone-800">Send pakken</p>
+            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">Send innen 7 dager</span>
+          </div>
+
+          {pkg && (
+            <div className="rounded-xl border border-[#5a6b32]/30 bg-[#5a6b32]/5 p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5a6b32]">Kjøp denne pakken</p>
+              <p className="mt-0.5 text-sm font-semibold text-stone-900">Posten {pkg.label} — {pkg.price} kr</p>
+              <p className="text-[11px] text-stone-500">Inntil {pkg.maxWeight} · {pkg.dimensions}</p>
+              <p className="mt-1.5 text-[11px] text-stone-500">Ikke velg noen annen størrelse — kjøper har betalt for akkurat denne.</p>
+            </div>
+          )}
+
+          <div className="flex gap-4">
+            <div className="flex-1 space-y-3">
+              <ol className="space-y-1.5 text-xs text-stone-600">
+                <li className="flex gap-2"><span className="font-semibold text-stone-800">1.</span><span>Gå til posten.no og velg «Send i Norge»</span></li>
+                <li className="flex gap-2"><span className="font-semibold text-stone-800">2.</span><span>{pkg ? <>Trykk «Kjøp sendekode» og velg <strong>{pkg.label} ({pkg.price} kr)</strong></> : <>Velg pakkestørrelse ved å trykke «Kjøp sendekode»</>}</span></li>
+                <li className="flex gap-2"><span className="font-semibold text-stone-800">3.</span><span>Fyll inn avsender- og mottakerinformasjon, og innleveringsmåte</span></li>
+                <li className="flex gap-2"><span className="font-semibold text-stone-800">4.</span><span>Betal frakt og send inn</span></li>
+              </ol>
+              <div className="space-y-0.5 text-xs text-stone-500">
+                <p>Frakten er allerede betalt av kjøper — du får dette tilbake i utbetalingen.</p>
+                <p>Levering tar vanligvis 2–5 virkedager.</p>
               </div>
             </div>
-          ) : (
+
+            {order.buyer_name && (
+              <div className="w-40 shrink-0 rounded-xl border border-stone-200 bg-stone-50 p-3">
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400">Mottaker</p>
+                <p className="text-xs font-medium text-stone-900">{order.buyer_name}</p>
+                <p className="text-xs text-stone-700">{order.buyer_address}</p>
+                <p className="text-xs text-stone-700">{order.buyer_postal_code} {order.buyer_city}</p>
+                {order.buyer_phone && <p className="text-xs text-stone-700">{order.buyer_phone}</p>}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = [order.buyer_name, order.buyer_address, `${order.buyer_postal_code} ${order.buyer_city}`, order.buyer_phone].filter(Boolean).join("\n");
+                    void navigator.clipboard.writeText(text);
+                    toast("Kopiert!");
+                  }}
+                  className="mt-2 text-[10px] font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+                >
+                  Kopier alt
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2 pt-1">
+            <input
+              type="text"
+              value={trackingInput}
+              onChange={(e) => setTrackingInput(e.target.value)}
+              placeholder="Sporingsnummer (påkrevd)"
+              className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
+            />
             <button
-              onClick={() => setShowShipForm(true)}
-              className="w-full rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022]"
+              onClick={() => act("ship", { tracking_info: trackingInput })}
+              disabled={!!busy || !trackingInput.trim()}
+              className="w-full rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
             >
-              Marker som sendt →
+              {busy === "ship" ? "Lagrer…" : "Marker som sendt →"}
             </button>
-          )}
+          </div>
+        </div>
+        );
+      })()}
+
+      {role === "seller" && order.status === "paid" && order.delivery_method === "meetup" && (
+        <div className="border-t border-stone-100 p-4 space-y-3">
+          <p className="text-xs text-stone-600">Avtal tid og sted med kjøper i chatten, og bekreft overlevering når dere møtes.</p>
+          <button
+            onClick={() => act("handover")}
+            disabled={!!busy}
+            className="w-full rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+          >
+            {busy === "handover" ? "Lagrer…" : "Bekreft overlevering →"}
+          </button>
         </div>
       )}
 
@@ -200,20 +276,17 @@ function OrderCard({ order, role, onAction }: {
       {/* Buyer actions */}
       {role === "buyer" && order.status === "paid" && (
         <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-stone-500">Betalt og bekreftet — venter på at selger sender varen.</p>
+          <p className="text-xs text-stone-500">
+            {order.delivery_method === "meetup"
+              ? "Betalt — avtal tid og sted med selger i chatten."
+              : "Betalt og bekreftet — venter på at selger sender varen."}
+          </p>
         </div>
       )}
 
       {role === "buyer" && order.status === "shipped" && (
-        <div className="border-t border-stone-100 p-4 space-y-2">
-          <p className="text-xs text-stone-600">Har du mottatt pakken?</p>
-          <button
-            onClick={() => act("deliver")}
-            disabled={!!busy}
-            className="w-full rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-50"
-          >
-            {busy === "deliver" ? "Lagrer…" : "Jeg har mottatt varen →"}
-          </button>
+        <div className="border-t border-stone-100 px-4 py-3">
+          <p className="text-xs text-stone-500">Varen er sendt — vi følger pakken og varsler deg når den er levert.</p>
         </div>
       )}
 
@@ -304,7 +377,7 @@ export default function OrdersPage() {
     if (!userId) return;
     supabase
       .from("orders")
-      .select("*, item:item_id(id, title, image_urls)")
+      .select("*, item:item_id(id, title, image_urls, package_size)")
       .neq("status", "pending")
       .neq("status", "cancelled")
       .order("created_at", { ascending: false })
@@ -323,7 +396,7 @@ export default function OrdersPage() {
     // Re-fetch orders to update status
     const { data } = await supabase
       .from("orders")
-      .select("*, item:item_id(id, title, image_urls)")
+      .select("*, item:item_id(id, title, image_urls, package_size)")
       .neq("status", "pending")
       .neq("status", "cancelled")
       .order("created_at", { ascending: false });
@@ -331,6 +404,7 @@ export default function OrdersPage() {
 
     const messages: Record<string, string> = {
       ship: "Merket som sendt",
+      handover: "Overlevering bekreftet — kjøper har 48 timer på å bekrefte",
       deliver: "Merket som levert — kjøper har 48 timer på å bekrefte",
       confirm: "Mottak bekreftet — betaling frigjøres til selger",
       dispute: "Problem meldt — betaling satt på vent",

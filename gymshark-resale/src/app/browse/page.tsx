@@ -9,8 +9,9 @@ import {
   SIZES,
   CONDITIONS,
   AREAS,
-  PRICE_BUCKETS,
-  type PriceBucketKey,
+  GENDERS,
+  COLORS,
+  FITS,
   CATEGORY_TREE,
   CATEGORY_PARENTS,
   type CategoryParent,
@@ -20,7 +21,9 @@ import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 
 const PAGE_SIZE = 24;
+const PRICE_MAX = 2000;
 type Sort = "newest" | "price_asc" | "price_desc";
+type FilterKey = "gender" | "color" | "condition" | "fit" | "cat" | "size" | "location" | "brand";
 
 export default function BrowsePage() {
   return (
@@ -44,87 +47,38 @@ function BrowseInner() {
   const [error, setError] = useState<string | null>(null);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [debouncedQ, setDebouncedQ] = useState(params.get("q") ?? "");
-  const [userId, setUserId] = useState<string | null | undefined>(undefined);
-  const [showSaveForm, setShowSaveForm] = useState(false);
-  const [saveLabel, setSaveLabel] = useState("");
-  const [savingSearch, setSavingSearch] = useState(false);
-  const [savedOk, setSavedOk] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  const [showSort, setShowSort] = useState(false);
+  const [activeFilterPanel, setActiveFilterPanel] = useState<FilterKey | null>(null);
+  const [localPriceMin, setLocalPriceMin] = useState(0);
+  const [localPriceMax, setLocalPriceMax] = useState(PRICE_MAX);
 
   const q = params.get("q") ?? "";
   const brand = params.get("brand") ?? "";
+  const gender = params.get("gender") ?? "";
+  const color = params.get("color") ?? "";
+  const fit = params.get("fit") ?? "";
   const cat = params.get("cat") ?? "";
   const sub = params.get("sub") ?? "";
   const size = params.get("size") ?? "";
   const condition = params.get("condition") ?? "";
   const location = params.get("location") ?? "";
-  const price = (params.get("price") ?? "") as PriceBucketKey | "";
+  const priceMinRaw = params.get("priceMin");
+  const priceMaxRaw = params.get("priceMax");
+  const priceMin = priceMinRaw !== null ? Number(priceMinRaw) : 0;
+  const priceMax = priceMaxRaw !== null ? Number(priceMaxRaw) : PRICE_MAX;
   const sort = (params.get("sort") as Sort) ?? "newest";
-  const hideSold = params.get("sold") !== "1";
   const shipping = params.get("shipping") ?? "";
+
+  useEffect(() => {
+    setLocalPriceMin(priceMin);
+    setLocalPriceMax(priceMax);
+  }, [priceMin, priceMax]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQ(q), 400);
     return () => clearTimeout(timer);
   }, [q]);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
-  }, []);
-
-  function autoLabel(f: Record<string, string>): string {
-    const parts: string[] = [];
-    if (f.brand) parts.push(f.brand);
-    if (f.sub) parts.push(f.sub);
-    else if (f.cat) parts.push(f.cat);
-    if (f.size) parts.push(`str. ${f.size}`);
-    if (f.price) {
-      const b = PRICE_BUCKETS.find((b) => b.key === f.price);
-      if (b) parts.push(b.label);
-    }
-    if (f.q) parts.push(`"${f.q}"`);
-    return parts.join(" · ") || "Mitt søk";
-  }
-
-  async function doSaveSearch() {
-    if (!userId || !saveLabel.trim()) return;
-    setSavingSearch(true);
-    const supabase = createClient();
-    const filters: Record<string, string> = {};
-    if (q) filters.q = q;
-    if (brand) filters.brand = brand;
-    if (cat) filters.cat = cat;
-    if (sub) filters.sub = sub;
-    if (size) filters.size = size;
-    if (condition) filters.condition = condition;
-    if (location) filters.location = location;
-    if (price) filters.price = price;
-    if (shipping) filters.shipping = shipping;
-    await supabase.from("saved_searches").insert({ user_id: userId, label: saveLabel.trim(), filters });
-    setSavingSearch(false);
-    setShowSaveForm(false);
-    setSavedOk(true);
-    setTimeout(() => setSavedOk(false), 2500);
-  }
-
-  function setParam(key: string, value: string) {
-    const next = new URLSearchParams(params.toString());
-    if (value) next.set(key, value);
-    else next.delete(key);
-    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
-  }
-
-  function setCat(value: string) {
-    const next = new URLSearchParams(params.toString());
-    if (value) next.set("cat", value);
-    else next.delete("cat");
-    next.delete("sub");
-    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
-  }
-
-  function clearAll() {
-    router.replace("/browse", { scroll: false });
-  }
 
   useEffect(() => {
     const supabase = createClient();
@@ -139,16 +93,54 @@ function BrowseInner() {
       });
   }, []);
 
+  function setParam(key: string, value: string) {
+    const next = new URLSearchParams(params.toString());
+    if (value) next.set(key, value);
+    else next.delete(key);
+    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+  }
+
+  function setMultiParam(updates: Record<string, string>) {
+    const next = new URLSearchParams(params.toString());
+    for (const [key, value] of Object.entries(updates)) {
+      if (value) next.set(key, value);
+      else next.delete(key);
+    }
+    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+  }
+
+  function setCat(value: string) {
+    const next = new URLSearchParams(params.toString());
+    if (value) next.set("cat", value);
+    else next.delete("cat");
+    next.delete("sub");
+    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+  }
+
+  function clearAll() {
+    setLocalPriceMin(0);
+    setLocalPriceMax(PRICE_MAX);
+    router.replace("/browse", { scroll: false });
+  }
+
+  function commitPrice() {
+    setMultiParam({
+      priceMin: localPriceMin === 0 ? "" : String(localPriceMin),
+      priceMax: localPriceMax >= PRICE_MAX ? "" : String(localPriceMax),
+    });
+  }
+
   const buildQuery = useCallback(
     (supabase: ReturnType<typeof createClient>, from: number) => {
       const needle = debouncedQ.trim();
-      const bucket = PRICE_BUCKETS.find((b) => b.key === price);
       const activeParent = (cat || null) as CategoryParent | null;
 
       // eslint-disable-next-line prefer-const
-      let q = supabase.from("items").select("*", { count: "exact" });
+      let q = supabase.from("items").select("*", { count: "exact" }).eq("is_sold", false);
 
-      if (hideSold) q = q.eq("is_sold", false);
+      if (gender) q = q.eq("gender", gender);
+      if (color) q = q.eq("color", color);
+      if (fit) q = q.eq("fit", fit);
       if (brand) q = q.eq("brand", brand);
       if (sub) {
         q = q.eq("category", sub);
@@ -160,7 +152,8 @@ function BrowseInner() {
       if (condition) q = q.eq("condition", condition);
       if (location) q = q.eq("location", location);
       if (shipping === "sendes") q = q.neq("shipping", "Kun henting");
-      if (bucket) q = q.gte("price", bucket.min).lt("price", bucket.max);
+      if (priceMin > 0) q = q.gte("price", priceMin);
+      if (priceMax < PRICE_MAX) q = q.lte("price", priceMax);
       if (needle) q = q.or(`title.ilike.%${needle}%,brand.ilike.%${needle}%`);
 
       if (sort === "price_asc") q = q.order("price", { ascending: true });
@@ -169,7 +162,7 @@ function BrowseInner() {
 
       return q.range(from, from + PAGE_SIZE - 1);
     },
-    [debouncedQ, brand, cat, sub, size, condition, location, price, sort, hideSold, shipping],
+    [debouncedQ, gender, color, fit, brand, cat, sub, size, condition, location, priceMin, priceMax, sort, shipping],
   );
 
   useEffect(() => {
@@ -180,11 +173,7 @@ function BrowseInner() {
 
     buildQuery(supabase, 0).then(({ data, error, count }) => {
       if (cancelled) return;
-      if (error) {
-        setError(error.message);
-        setInitialLoading(false);
-        return;
-      }
+      if (error) { setError(error.message); setInitialLoading(false); return; }
       const rows = (data ?? []) as Item[];
       setItems(rows);
       setTotal(count ?? null);
@@ -192,82 +181,87 @@ function BrowseInner() {
       setInitialLoading(false);
       isFirstLoad.current = false;
 
-      const ids = Array.from(
-        new Set(rows.map((r) => r.seller_id).filter((x): x is string => !!x)),
-      );
+      const ids = Array.from(new Set(rows.map((r) => r.seller_id).filter((x): x is string => !!x)));
       if (ids.length === 0) return;
-      supabase
-        .from("profiles")
-        .select("*")
-        .in("user_id", ids)
-        .then(({ data: pData }) => {
-          if (cancelled) return;
-          const map: Record<string, Profile> = {};
-          for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
-          setSellers(map);
-        });
+      supabase.from("profiles_public").select("*").in("user_id", ids).then(({ data: pData }) => {
+        if (cancelled) return;
+        const map: Record<string, Profile> = {};
+        for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
+        setSellers(map);
+      });
     });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [buildQuery]);
 
   async function loadMore() {
     const supabase = createClient();
     setLoadingMore(true);
     const { data, error } = await buildQuery(supabase, offset);
-    if (error) {
-      setError(error.message);
-      setLoadingMore(false);
-      return;
-    }
+    if (error) { setError(error.message); setLoadingMore(false); return; }
     const rows = (data ?? []) as Item[];
     setItems((prev) => [...prev, ...rows]);
     setOffset((prev) => prev + PAGE_SIZE);
     setLoadingMore(false);
 
     const existingIds = new Set(Object.keys(sellers));
-    const newIds = Array.from(
-      new Set(
-        rows
-          .map((r) => r.seller_id)
-          .filter((x): x is string => !!x && !existingIds.has(x)),
-      ),
-    );
+    const newIds = Array.from(new Set(rows.map((r) => r.seller_id).filter((x): x is string => !!x && !existingIds.has(x))));
     if (newIds.length === 0) return;
-    const { data: pData } = await supabase
-      .from("profiles")
-      .select("*")
-      .in("user_id", newIds);
+    const { data: pData } = await supabase.from("profiles_public").select("*").in("user_id", newIds);
     const map: Record<string, Profile> = {};
     for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
     setSellers((prev) => ({ ...prev, ...map }));
   }
 
   const hasMore = total !== null && items.length < total;
-  const activeParent = (cat || null) as CategoryParent | null;
-  const activeGroup = activeParent
-    ? CATEGORY_TREE.find((g) => g.name === activeParent)
-    : null;
-  const hasActiveFilter =
-    !!(q || brand || cat || sub || size || condition || location || price || shipping) ||
-    sort !== "newest" ||
-    !hideSold;
+  const priceActive = priceMin > 0 || priceMax < PRICE_MAX;
+
+  const activeChips: { label: string; clear: () => void }[] = [];
+  if (gender) activeChips.push({ label: gender, clear: () => setParam("gender", "") });
+  if (color) activeChips.push({ label: color, clear: () => setParam("color", "") });
+  if (fit) activeChips.push({ label: fit, clear: () => setParam("fit", "") });
+  if (brand) activeChips.push({ label: brand, clear: () => setParam("brand", "") });
+  if (cat) activeChips.push({ label: sub ? `${cat} › ${sub}` : cat, clear: () => setCat("") });
+  if (size) activeChips.push({ label: `Str. ${size}`, clear: () => setParam("size", "") });
+  if (condition) activeChips.push({ label: condition, clear: () => setParam("condition", "") });
+  if (location) activeChips.push({ label: location, clear: () => setParam("location", "") });
+  if (shipping) activeChips.push({ label: "Kan sendes", clear: () => setParam("shipping", "") });
+  if (priceActive) {
+    const lbl = priceMax >= PRICE_MAX ? `${priceMin}+ kr` : `${priceMin}–${priceMax} kr`;
+    activeChips.push({ label: lbl, clear: () => setMultiParam({ priceMin: "", priceMax: "" }) });
+  }
+
+  const activeFilterCount = activeChips.length;
+
+  const SORT_OPTIONS: { value: Sort; label: string }[] = [
+    { value: "newest", label: "Nyeste først" },
+    { value: "price_asc", label: "Pris lav → høy" },
+    { value: "price_desc", label: "Pris høy → lav" },
+  ];
+
+  // Only show value if user has actively selected something (no "Alle" noise)
+  const filterRows: { key: FilterKey; label: string; value: string }[] = [
+    { key: "gender", label: "Kjønn", value: gender },
+    { key: "color", label: "Farge", value: color },
+    { key: "condition", label: "Tilstand", value: condition },
+    { key: "fit", label: "Passform", value: fit },
+    { key: "cat", label: "Kategori", value: sub ? `${cat} › ${sub}` : cat },
+    { key: "size", label: "Størrelse", value: size },
+    { key: "location", label: "Lokasjon", value: location },
+    { key: "brand", label: "Merke", value: brand },
+  ];
+
+  function handleFilterSelect(key: string, value: string) {
+    if (key === "cat") { setCat(value); }
+    else if (key === "sub") { setParam("sub", value); }
+    else { setParam(key, value); }
+  }
 
   return (
-    <section className="space-y-5">
-      <div className="flex items-end justify-between">
+    <>
+      <section className="space-y-3 pb-36 sm:pb-6">
         <h1 className="text-3xl font-semibold tracking-tight">Utforsk</h1>
-        <p className="flex items-center gap-1.5 text-xs text-stone-500">
-          {initialLoading && !isFirstLoad.current && (
-            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
-          )}
-          {total !== null ? `${total} vare${total === 1 ? "" : "r"}` : ""}
-        </p>
-      </div>
 
-      <div className="space-y-3">
         <input
           type="search"
           value={q}
@@ -276,259 +270,410 @@ function BrowseInner() {
           className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
         />
 
-        {availableBrands.length > 0 && (
-          <Row>
-            <Chip active={brand === ""} onClick={() => setParam("brand", "")}>
-              Alle merker
-            </Chip>
-            {availableBrands.map((b) => (
-              <Chip key={b} active={brand === b} onClick={() => setParam("brand", b)}>
-                {b}
-              </Chip>
-            ))}
-          </Row>
-        )}
-
-        <Row>
-          <Chip active={cat === ""} onClick={() => setCat("")}>
-            Alle kategorier
-          </Chip>
-          {CATEGORY_PARENTS.map((c) => (
-            <Chip key={c} active={cat === c} onClick={() => setCat(c)}>
-              {c}
-            </Chip>
-          ))}
-        </Row>
-
-        {activeGroup && (
-          <Row>
-            <Chip active={sub === ""} onClick={() => setParam("sub", "")}>
-              Alle i {activeGroup.name.toLowerCase()}
-            </Chip>
-            {activeGroup.children.map((c) => (
-              <Chip key={c} active={sub === c} onClick={() => setParam("sub", c)}>
-                {c}
-              </Chip>
-            ))}
-          </Row>
-        )}
-
-        <Row>
-          <Chip active={size === ""} onClick={() => setParam("size", "")}>
-            Alle str.
-          </Chip>
-          {SIZES.map((s) => (
-            <Chip key={s} active={size === s} onClick={() => setParam("size", s)}>
-              {s}
-            </Chip>
-          ))}
-        </Row>
-
-        <Row>
-          <Chip active={price === ""} onClick={() => setParam("price", "")}>
-            Alle priser
-          </Chip>
-          {PRICE_BUCKETS.map((b) => (
-            <Chip key={b.key} active={price === b.key} onClick={() => setParam("price", b.key)}>
-              {b.label}
-            </Chip>
-          ))}
-        </Row>
-
-        <Row>
-          <Chip active={shipping === ""} onClick={() => setParam("shipping", "")}>
-            Alle
-          </Chip>
-          <Chip
-            active={shipping === "sendes"}
-            onClick={() => setParam("shipping", "sendes")}
-          >
-            📦 Kan sendes
-          </Chip>
-        </Row>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={condition}
-            onChange={(e) => setParam("condition", e.target.value)}
-            className={selectCls}
-          >
-            <option value="">Alle tilstander</option>
-            {CONDITIONS.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-          <select
-            value={location}
-            onChange={(e) => setParam("location", e.target.value)}
-            className={selectCls}
-          >
-            <option value="">Hele Norge</option>
-            {AREAS.map((a) => (
-              <option key={a}>{a}</option>
-            ))}
-          </select>
+        {/* Desktop filter bar — hidden on mobile where the floating pill handles this */}
+        <div className="hidden sm:flex items-center gap-2.5">
           <select
             value={sort}
-            onChange={(e) =>
-              setParam("sort", e.target.value === "newest" ? "" : e.target.value)
-            }
-            className={selectCls}
+            onChange={(e) => setParam("sort", e.target.value === "newest" ? "" : e.target.value)}
+            className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-600 outline-none focus:border-[#5a6b32]"
           >
             <option value="newest">Nyeste først</option>
             <option value="price_asc">Pris lav → høy</option>
             <option value="price_desc">Pris høy → lav</option>
           </select>
-          <label className="inline-flex cursor-pointer select-none items-center gap-2 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700">
-            <input
-              type="checkbox"
-              checked={hideSold}
-              onChange={(e) => setParam("sold", e.target.checked ? "" : "1")}
-              className="h-3.5 w-3.5 accent-[#5a6b32]"
-            />
-            Skjul solgte
-          </label>
-          {hasActiveFilter && (
-            <div className="ml-auto flex items-center gap-3">
-              {savedOk && (
-                <span className="text-xs font-medium text-emerald-600">✓ Søk lagret</span>
-              )}
-              {userId && !savedOk && !showSaveForm && (
-                <button
-                  onClick={() => {
-                    setSaveLabel(autoLabel({ q, brand, cat, sub, size, condition, location, price, shipping }));
-                    setShowSaveForm(true);
-                  }}
-                  className="text-xs font-medium text-stone-500 hover:text-stone-900"
-                >
-                  💾 Lagre søk
-                </button>
-              )}
-              {userId && showSaveForm && (
-                <div className="flex items-center gap-1.5">
-                  <input
-                    autoFocus
-                    value={saveLabel}
-                    onChange={(e) => setSaveLabel(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") doSaveSearch();
-                      if (e.key === "Escape") setShowSaveForm(false);
-                    }}
-                    maxLength={60}
-                    placeholder="Navn på søket"
-                    className="w-36 rounded-full border border-stone-300 bg-white px-3 py-1 text-xs outline-none focus:border-[#5a6b32]"
-                  />
-                  <button
-                    onClick={doSaveSearch}
-                    disabled={savingSearch || !saveLabel.trim()}
-                    className="rounded-full bg-[#5a6b32] px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
-                  >
-                    {savingSearch ? "…" : "Lagre"}
-                  </button>
-                  <button onClick={() => setShowSaveForm(false)} className="text-xs text-stone-400 hover:text-stone-700">✕</button>
-                </div>
-              )}
-              <button
-                onClick={clearAll}
-                className="text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
-              >
-                Nullstill
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {error && (
-        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
-      )}
-
-      {initialLoading && isFirstLoad.current && <SkeletonGrid />}
-
-      {!initialLoading && items.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
-          <p className="font-medium text-stone-700">Ingen treff</p>
-          <p className="mt-1">Prøv å nullstille filtrene eller søke bredere.</p>
-          {hasActiveFilter && (
-            <button
-              onClick={clearAll}
-              className="mt-4 rounded-full bg-stone-900 px-4 py-2 text-xs font-medium text-stone-50 hover:bg-black"
-            >
-              Nullstill filtre
+          <button
+            onClick={() => { setActiveFilterPanel(null); setShowFilter(true); }}
+            className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-400 hover:text-stone-900"
+          >
+            <FilterIcon />
+            {activeFilterCount > 0 ? `Filter (${activeFilterCount})` : "Filter"}
+          </button>
+          {activeChips.length > 0 && (
+            <button onClick={clearAll} className="text-sm font-medium text-stone-400 hover:text-stone-700">
+              Nullstill
             </button>
           )}
         </div>
-      )}
 
-      {items.length > 0 && (
-        <>
-          <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 transition-opacity duration-200 ${initialLoading && !isFirstLoad.current ? "opacity-40 pointer-events-none" : ""}`}>
-            {items.map((item) => (
-              <ItemCard
-                key={item.id}
-                item={item}
-                seller={item.seller_id ? sellers[item.seller_id] : null}
-              />
-            ))}
-          </div>
-
-          {hasMore && (
-            <div className="flex justify-center pt-2">
+        {activeChips.length > 0 && (
+          <div className="-mx-4 overflow-x-auto px-4">
+            <div className="flex gap-1.5 pb-0.5">
+              {activeChips.map((chip) => (
+                <button
+                  key={chip.label}
+                  onClick={chip.clear}
+                  className="flex shrink-0 items-center gap-1 rounded-full border border-[#5a6b32] bg-[#5a6b32] px-3 py-1.5 text-xs font-medium text-white"
+                >
+                  {chip.label}
+                  <span className="ml-0.5 opacity-75">✕</span>
+                </button>
+              ))}
               <button
-                onClick={loadMore}
-                disabled={loadingMore}
-                className="rounded-full border border-stone-300 bg-white px-6 py-2.5 text-sm font-medium text-stone-700 transition hover:border-stone-500 disabled:opacity-50"
+                onClick={clearAll}
+                className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-500 hover:border-stone-400"
               >
-                {loadingMore ? "Laster…" : "Last inn flere"}
+                Nullstill alle
               </button>
             </div>
-          )}
+          </div>
+        )}
+
+        {total !== null && (
+          <p className="text-xs text-stone-400">
+            {initialLoading && !isFirstLoad.current && (
+              <span className="mr-1.5 inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
+            )}
+            {total} vare{total === 1 ? "" : "r"}
+          </p>
+        )}
+
+        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+
+        {initialLoading && isFirstLoad.current && <SkeletonGrid />}
+
+        {!initialLoading && items.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
+            <p className="font-medium text-stone-700">Ingen treff</p>
+            <p className="mt-1">Prøv å nullstille filtrene eller søke bredere.</p>
+            {activeChips.length > 0 && (
+              <button onClick={clearAll} className="mt-4 rounded-full bg-stone-900 px-4 py-2 text-xs font-medium text-stone-50 hover:bg-black">
+                Nullstill filtre
+              </button>
+            )}
+          </div>
+        )}
+
+        {items.length > 0 && (
+          <>
+            <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 transition-opacity duration-200 ${initialLoading && !isFirstLoad.current ? "opacity-40 pointer-events-none" : ""}`}>
+              {items.map((item) => (
+                <ItemCard key={item.id} item={item} seller={item.seller_id ? sellers[item.seller_id] : null} />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="rounded-full border border-stone-300 bg-white px-6 py-2.5 text-sm font-medium text-stone-700 transition hover:border-stone-500 disabled:opacity-50"
+                >
+                  {loadingMore ? "Laster…" : "Last inn flere"}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* Floating bottom bar — mobile only (desktop has full screen space) */}
+      <div className="fixed bottom-[72px] left-0 right-0 z-30 flex justify-center px-4 pointer-events-none sm:hidden">
+        <div className="pointer-events-auto flex items-center rounded-full border border-stone-100 bg-white shadow-[0_4px_24px_rgba(0,0,0,0.12)]">
+          <button
+            onClick={() => setShowSort(true)}
+            className="flex items-center gap-2 rounded-l-full px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50"
+          >
+            <SortIcon />
+            Sorter
+          </button>
+          <div className="h-6 w-px bg-stone-200" />
+          <button
+            onClick={() => { setActiveFilterPanel(null); setShowFilter(true); }}
+            className="flex items-center gap-2 rounded-r-full px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50"
+          >
+            <FilterIcon />
+            {activeFilterCount > 0 ? `Filter (${activeFilterCount})` : "Filter"}
+          </button>
+        </div>
+      </div>
+
+      {/* Sort sheet */}
+      {showSort && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setShowSort(false)} />
+          <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-white">
+            <div className="mx-auto my-2 h-1 w-10 rounded-full bg-stone-200" />
+            <div className="px-4 pb-10 pt-1">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-400">Sorter etter</p>
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setParam("sort", opt.value === "newest" ? "" : opt.value); setShowSort(false); }}
+                  className={`flex w-full items-center justify-between border-b border-stone-100 py-4 text-sm ${sort === opt.value ? "font-semibold text-[#5a6b32]" : "font-medium text-stone-700"}`}
+                >
+                  {opt.label}
+                  {sort === opt.value && <CheckIcon />}
+                </button>
+              ))}
+            </div>
+          </div>
         </>
       )}
-    </section>
+
+      {/* Filter sheet */}
+      {showFilter && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/30"
+            onClick={() => { setShowFilter(false); setActiveFilterPanel(null); }}
+          />
+          <div
+            className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-white"
+            style={{ maxHeight: "92vh" }}
+          >
+            <div className="mx-auto my-2 h-1 w-10 shrink-0 rounded-full bg-stone-200" />
+            <div className="flex shrink-0 items-center justify-between border-b border-stone-100 px-4 pb-3 pt-1">
+              {activeFilterPanel ? (
+                <button
+                  onClick={() => setActiveFilterPanel(null)}
+                  className="flex items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-black"
+                >
+                  <BackIcon /> Tilbake
+                </button>
+              ) : (
+                <p className="text-sm font-semibold text-stone-800">Filter</p>
+              )}
+              <button onClick={clearAll} className="text-xs font-medium text-stone-500 hover:text-black">
+                Nullstill
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {!activeFilterPanel ? (
+                <div className="divide-y divide-stone-100 px-4">
+                  {/* Clickable filter rows — only show value when actively selected */}
+                  {filterRows.map((row) => (
+                    <button
+                      key={row.key}
+                      onClick={() => setActiveFilterPanel(row.key)}
+                      className="flex w-full items-center justify-between py-4"
+                    >
+                      <span className="text-sm font-medium text-stone-800">{row.label}</span>
+                      <span className="flex items-center gap-2">
+                        {row.value && (
+                          <span className="text-sm font-medium text-[#5a6b32]">{row.value}</span>
+                        )}
+                        <ChevronIcon />
+                      </span>
+                    </button>
+                  ))}
+
+                  {/* Kan sendes toggle */}
+                  <div className="flex items-center justify-between py-4">
+                    <span className="text-sm font-medium text-stone-800">Kan sendes</span>
+                    <button
+                      onClick={() => setParam("shipping", shipping === "sendes" ? "" : "sendes")}
+                      className={`relative h-6 w-11 rounded-full transition-colors ${shipping === "sendes" ? "bg-[#5a6b32]" : "bg-stone-200"}`}
+                    >
+                      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${shipping === "sendes" ? "translate-x-5" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
+
+                  {/* Price slider — inline, no sub-panel */}
+                  <div className="py-5 space-y-5">
+                    <p className="text-sm font-medium text-stone-800">Pris</p>
+                    <div className="space-y-1">
+                      <input
+                        type="range" min={0} max={PRICE_MAX} step={50}
+                        value={localPriceMin}
+                        onChange={(e) => setLocalPriceMin(Math.min(Number(e.target.value), localPriceMax - 50))}
+                        onMouseUp={commitPrice}
+                        onTouchEnd={commitPrice}
+                        className="w-full accent-[#5a6b32]"
+                      />
+                      <input
+                        type="range" min={0} max={PRICE_MAX} step={50}
+                        value={localPriceMax}
+                        onChange={(e) => setLocalPriceMax(Math.max(Number(e.target.value), localPriceMin + 50))}
+                        onMouseUp={commitPrice}
+                        onTouchEnd={commitPrice}
+                        className="w-full accent-[#5a6b32]"
+                      />
+                      <div className="flex justify-between pt-1 text-xs text-stone-500">
+                        <span>Min: <span className="font-medium text-stone-700">{localPriceMin} kr</span></span>
+                        <span>Max: <span className="font-medium text-stone-700">{localPriceMax >= PRICE_MAX ? "∞" : `${localPriceMax} kr`}</span></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <FilterSubPanel
+                  filterKey={activeFilterPanel}
+                  gender={gender}
+                  color={color}
+                  fit={fit}
+                  brand={brand}
+                  cat={cat}
+                  sub={sub}
+                  size={size}
+                  condition={condition}
+                  location={location}
+                  availableBrands={availableBrands}
+                  onSelect={handleFilterSelect}
+                />
+              )}
+            </div>
+
+            {/* Sticky CTA */}
+            <div className="shrink-0 border-t border-stone-100 px-4 pb-8 pt-3">
+              <button
+                onClick={() => { setShowFilter(false); setActiveFilterPanel(null); }}
+                className="w-full rounded-full bg-[#5a6b32] py-4 text-base font-semibold text-white hover:bg-[#435022] active:bg-[#435022]"
+              >
+                {total !== null ? `Se ${total} annonser` : "Se annonser"}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+function FilterSubPanel({
+  filterKey,
+  gender, color, fit, brand, cat, sub, size, condition, location,
+  availableBrands, onSelect,
+}: {
+  filterKey: FilterKey;
+  gender: string; color: string; fit: string; brand: string; cat: string; sub: string;
+  size: string; condition: string; location: string;
+  availableBrands: string[];
+  onSelect: (key: string, value: string) => void;
+}) {
+  if (filterKey === "gender") return (
+    <OptionList>
+      <OptionRow label="Alle" active={!gender} onClick={() => onSelect("gender", "")} />
+      {GENDERS.map((g) => <OptionRow key={g} label={g} active={gender === g} onClick={() => onSelect("gender", g)} />)}
+    </OptionList>
+  );
+
+  if (filterKey === "color") return (
+    <OptionList>
+      <OptionRow label="Alle farger" active={!color} onClick={() => onSelect("color", "")} />
+      {COLORS.map((c) => <OptionRow key={c} label={c} active={color === c} onClick={() => onSelect("color", c)} />)}
+    </OptionList>
+  );
+
+  if (filterKey === "condition") return (
+    <OptionList>
+      <OptionRow label="Alle tilstander" active={!condition} onClick={() => onSelect("condition", "")} />
+      {CONDITIONS.map((c) => <OptionRow key={c} label={c} active={condition === c} onClick={() => onSelect("condition", c)} />)}
+    </OptionList>
+  );
+
+  if (filterKey === "fit") return (
+    <OptionList>
+      <OptionRow label="Alle passformer" active={!fit} onClick={() => onSelect("fit", "")} />
+      {FITS.map((f) => <OptionRow key={f} label={f} active={fit === f} onClick={() => onSelect("fit", f)} />)}
+    </OptionList>
+  );
+
+  if (filterKey === "cat") return (
+    <OptionList>
+      <OptionRow label="Alle kategorier" active={!cat} onClick={() => onSelect("cat", "")} />
+      {CATEGORY_PARENTS.map((parent) => {
+        const group = CATEGORY_TREE.find((g) => g.name === parent);
+        return (
+          <div key={parent}>
+            <OptionRow label={parent} active={cat === parent && !sub} onClick={() => onSelect("cat", parent)} />
+            {cat === parent && group?.children.map((child) => (
+              <OptionRow key={child} label={child} active={sub === child} indented onClick={() => onSelect("sub", child)} />
+            ))}
+          </div>
+        );
+      })}
+    </OptionList>
+  );
+
+  if (filterKey === "size") return (
+    <OptionList>
+      <OptionRow label="Alle størrelser" active={!size} onClick={() => onSelect("size", "")} />
+      {SIZES.map((s) => <OptionRow key={s} label={s} active={size === s} onClick={() => onSelect("size", s)} />)}
+    </OptionList>
+  );
+
+  if (filterKey === "location") return (
+    <OptionList>
+      <OptionRow label="Hele Norge" active={!location} onClick={() => onSelect("location", "")} />
+      {AREAS.map((a) => <OptionRow key={a} label={a} active={location === a} onClick={() => onSelect("location", a)} />)}
+    </OptionList>
+  );
+
+  if (filterKey === "brand") return (
+    <OptionList>
+      <OptionRow label="Alle merker" active={!brand} onClick={() => onSelect("brand", "")} />
+      {availableBrands.length === 0 && (
+        <p className="py-6 text-sm text-stone-400">Ingen merker tilgjengelig ennå.</p>
+      )}
+      {availableBrands.map((b) => <OptionRow key={b} label={b} active={brand === b} onClick={() => onSelect("brand", b)} />)}
+    </OptionList>
+  );
+
+  return null;
+}
+
+function OptionList({ children }: { children: React.ReactNode }) {
+  return <div className="divide-y divide-stone-100 px-4">{children}</div>;
+}
+
+function OptionRow({ label, active, onClick, indented = false }: {
+  label: string; active: boolean; onClick: () => void; indented?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex w-full items-center justify-between py-3.5 text-sm ${indented ? "pl-5" : ""} ${active ? "font-semibold text-[#5a6b32]" : "font-medium text-stone-700"}`}
+    >
+      {label}
+      {active && <CheckIcon />}
+    </button>
   );
 }
 
 function SkeletonGrid() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <ItemCardSkeleton key={i} />
-      ))}
+      {Array.from({ length: 6 }).map((_, i) => <ItemCardSkeleton key={i} />)}
     </div>
   );
 }
 
-function Row({ children }: { children: React.ReactNode }) {
+function SortIcon() {
   return (
-    <div className="-mx-4 overflow-x-auto px-4">
-      <div className="flex gap-2 pb-1">{children}</div>
-    </div>
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M6 12h12M10 17h4" />
+    </svg>
   );
 }
 
-function Chip({
-  children,
-  active,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-}) {
+function FilterIcon() {
   return (
-    <button
-      onClick={onClick}
-      className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-        active
-          ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-          : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
-      }`}
-    >
-      {children}
-    </button>
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+    </svg>
   );
 }
 
-const selectCls =
-  "rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 outline-none focus:border-[#5a6b32]";
+function CheckIcon() {
+  return (
+    <svg className="h-4 w-4 text-[#5a6b32]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg className="h-4 w-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+function BackIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+  );
+}

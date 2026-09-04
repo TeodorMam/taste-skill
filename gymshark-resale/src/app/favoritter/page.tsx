@@ -41,7 +41,7 @@ export default function FavorittePage() {
         );
         if (ids.length === 0) return;
         supabase
-          .from("profiles")
+          .from("profiles_public")
           .select("*")
           .in("user_id", ids)
           .then(({ data: pData }) => {

@@ -9,12 +9,16 @@ import {
   SIZES,
   CONDITIONS,
   AREAS,
+  GENDERS,
+  COLORS,
+  FITS,
   SHIPPING_OPTIONS,
   CATEGORY_TREE,
   CATEGORY_PARENTS,
   type CategoryParent,
   parentOfCategory,
 } from "@/lib/supabase";
+import { POSTEN_PACKAGES } from "@/lib/shipping";
 import { createClient } from "@/utils/supabase/client";
 
 export default function EditItemPage() {
@@ -36,6 +40,10 @@ export default function EditItemPage() {
   const [location, setLocation] = useState<string>(AREAS[0]);
   const [description, setDescription] = useState("");
   const [shipping, setShipping] = useState<string>(SHIPPING_OPTIONS[0].value);
+  const [packageSize, setPackageSize] = useState<string>("small");
+  const [gender, setGender] = useState("");
+  const [color, setColor] = useState("");
+  const [fit, setFit] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +76,10 @@ export default function EditItemPage() {
         setLocation(it.location);
         setDescription(it.description ?? "");
         setShipping(it.shipping ?? SHIPPING_OPTIONS[0].value);
+        setPackageSize(it.package_size ?? "small");
+        setGender(it.gender ?? "");
+        setColor(it.color ?? "");
+        setFit(it.fit ?? "");
       });
   }, [params.id, supabase]);
 
@@ -95,6 +107,10 @@ export default function EditItemPage() {
         location,
         description: description.trim() || null,
         shipping,
+        package_size: shipping !== "Kun henting" ? packageSize : null,
+        gender: gender || null,
+        color: color || null,
+        fit: fit || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", params.id);
@@ -138,7 +154,7 @@ export default function EditItemPage() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 pb-28 sm:pb-6">
       <div>
         <Link
           href={`/item/${params.id}`}
@@ -152,7 +168,7 @@ export default function EditItemPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form id="edit-form" onSubmit={handleSubmit} className="space-y-4">
         <Field label="Tittel">
           <input
             type="text"
@@ -225,6 +241,66 @@ export default function EditItemPage() {
           )}
         </div>
 
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Kjønn</span>
+          <div className="flex flex-wrap gap-2">
+            {GENDERS.map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setGender(gender === g ? "" : g)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  gender === g
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Farge (valgfritt)</span>
+          <div className="flex flex-wrap gap-2">
+            {COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(color === c ? "" : c)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  color === c
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-stone-800">Passform (valgfritt)</span>
+          <div className="flex flex-wrap gap-2">
+            {FITS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFit(fit === f ? "" : f)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  fit === f
+                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <Field label="Størrelse">
             <select value={size} onChange={(e) => setSize(e.target.value)} className={input}>
@@ -259,9 +335,16 @@ export default function EditItemPage() {
         <Field label="Beskrivelse">
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className={`${input} resize-none`}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              const el = e.target;
+              const scrollY = window.scrollY;
+              el.style.height = "auto";
+              el.style.height = `${el.scrollHeight}px`;
+              window.scrollTo(0, scrollY);
+            }}
+            rows={6}
+            className={`${input} resize-none overflow-hidden`}
           />
         </Field>
 
@@ -286,11 +369,35 @@ export default function EditItemPage() {
           </div>
         </div>
 
-        {error && (
-          <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        {shipping !== "Kun henting" && (
+          <div className="space-y-1.5">
+            <span className="block text-sm font-medium text-stone-800">Pakkestørrelse (Posten)</span>
+            <p className="text-xs text-stone-500">Velg den størrelsen som passer varen din. Kjøper betaler frakten.</p>
+            <div className="space-y-2">
+              {POSTEN_PACKAGES.map((pkg) => (
+                <button
+                  key={pkg.id}
+                  type="button"
+                  onClick={() => setPackageSize(pkg.id)}
+                  className={`w-full rounded-xl border p-3 text-left transition ${
+                    packageSize === pkg.id
+                      ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]"
+                      : "border-stone-200 bg-white hover:border-stone-400"
+                  }`}
+                >
+                  <p className="text-sm font-medium">{pkg.label}</p>
+                  <p className="mt-0.5 text-[11px] text-stone-500">Maks {pkg.maxWeight} · {pkg.dimensions}</p>
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
-        <div className="flex gap-2">
+        {error && (
+          <p className="hidden rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:block">{error}</p>
+        )}
+
+        <div className="hidden gap-2 sm:flex">
           <Link
             href={`/item/${params.id}`}
             className="flex-1 rounded-full border border-stone-300 bg-white px-5 py-3 text-center text-sm font-medium text-stone-700 hover:border-stone-500"
@@ -299,6 +406,7 @@ export default function EditItemPage() {
           </Link>
           <button
             type="submit"
+            form="edit-form"
             disabled={saving}
             className="flex-1 rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
           >
@@ -306,6 +414,29 @@ export default function EditItemPage() {
           </button>
         </div>
       </form>
+
+      {/* Sticky submit bar — mobile only */}
+      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-stone-100 bg-white/95 px-4 py-3 backdrop-blur sm:hidden">
+        {error && (
+          <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>
+        )}
+        <div className="flex gap-2">
+          <Link
+            href={`/item/${params.id}`}
+            className="flex-1 rounded-full border border-stone-300 bg-white py-3 text-center text-sm font-medium text-stone-700"
+          >
+            Avbryt
+          </Link>
+          <button
+            type="submit"
+            form="edit-form"
+            disabled={saving}
+            className="flex-1 rounded-full bg-stone-900 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+          >
+            {saving ? "Lagrer…" : "Lagre endringer"}
+          </button>
+        </div>
+      </div>
     </section>
   );
 }

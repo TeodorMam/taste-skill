@@ -13,22 +13,24 @@ const FROM_EMAIL = process.env.RESEND_FROM ?? "Aktivbruk <kontakt@aktivbruk.com>
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aktivbruk.com";
 
 export async function GET(req: NextRequest) {
+  try {
   const secret = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret") ?? "";
   if (CRON_SECRET && secret !== CRON_SECRET) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    // Always 200 so cron-job.org doesn't auto-disable us; misconfig shows up in body
+    return NextResponse.json({ ok: false, error: "unauthorized" });
   }
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
   // Find delivered orders past their review window with no payout yet
   const { data: orders } = await admin.from("orders")
-    .select("id, amount_nok, platform_fee_nok, seller_id, buyer_id, item_id")
+    .select("id, amount_nok, platform_fee_nok, shipping_cost_nok, seller_id, buyer_id, item_id")
     .eq("status", "delivered")
     .is("payout_transfer_id", null)
     .lt("review_deadline", new Date().toISOString());
 
   if (!orders || orders.length === 0) {
-    return NextResponse.json({ processed: 0 });
+    return NextResponse.json({ ok: true, processed: 0 });
   }
 
   const results: { id: string; ok: boolean; error?: string }[] = [];
@@ -46,7 +48,9 @@ export async function GET(req: NextRequest) {
       const buyerEmail = buyerRes.data.user?.email;
       const sellerEmail = sellerRes.data.user?.email;
       const itemTitle = (itemRes as { data: { title: string } | null }).data?.title ?? "varen";
-      const sellerReceives = order.amount_nok - order.platform_fee_nok;
+      const shippingCost = order.shipping_cost_nok ?? 0;
+      // Seller receives full item price + shipping (buyer-fee model — no deduction).
+      const sellerReceives = order.amount_nok + shippingCost;
       const fmt = (n: number) => new Intl.NumberFormat("nb-NO").format(n) + " kr";
 
       await Promise.all([
@@ -90,5 +94,9 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ processed: results.length, results });
+  return NextResponse.json({ ok: true, processed: results.length, results });
+  } catch (err) {
+    console.error("[cron/payout] top-level error:", err);
+    return NextResponse.json({ ok: false, error: String(err) });
+  }
 }

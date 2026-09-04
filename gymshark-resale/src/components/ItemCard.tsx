@@ -14,15 +14,6 @@ function shippingIcon(s: string | null) {
   return "📦";
 }
 
-function relativeAge(iso: string): string {
-  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
-  if (days === 0) return "i dag";
-  if (days === 1) return "i går";
-  if (days < 7) return `${days}d`;
-  if (days < 30) return `${Math.floor(days / 7)}u`;
-  return `${Math.floor(days / 30)}mnd`;
-}
-
 export function ItemCard({
   item,
   seller,
@@ -58,11 +49,6 @@ export function ItemCard({
           </div>
         )}
         <FavoriteButton itemId={item.id} currentPrice={item.price} sellerId={item.seller_id} itemTitle={item.title} />
-        {item.brand && (
-          <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#5a6b32] backdrop-blur">
-            {item.brand}
-          </div>
-        )}
         {images.length > 1 && (
           <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/65 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
             <svg
@@ -89,13 +75,18 @@ export function ItemCard({
         )}
       </div>
       <div className="space-y-1 p-3">
+        {item.brand && (
+          <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-wider text-stone-400">
+            {item.brand}
+          </p>
+        )}
         <div className="flex items-start justify-between gap-2">
-          <p className="line-clamp-1 text-sm font-medium">{item.title}</p>
+          <p className="line-clamp-1 text-sm font-medium leading-snug">{item.title}</p>
           <p className="shrink-0 text-sm font-semibold">{formatPrice(item.price)}</p>
         </div>
         <div className="flex items-center justify-between gap-1">
           <p className="line-clamp-1 text-xs text-stone-500">
-            Str. {item.size} · {item.condition} · {relativeAge(item.updated_at || item.created_at)}
+            Str. {item.size} · {item.condition}
           </p>
           {shippingIcon(item.shipping) && (
             <span className="shrink-0 text-xs" title={item.shipping ?? ""}>
