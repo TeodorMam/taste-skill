@@ -22,7 +22,7 @@ export function ItemLikes({ itemId }: { itemId: string | number }) {
       // Fetch display names for first 3
       const first3 = data.slice(0, 3).map((r: { user_id: string }) => r.user_id);
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("profiles_public")
         .select("user_id, display_name")
         .in("user_id", first3);
       const pMap: Record<string, Profile> = {};

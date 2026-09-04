@@ -92,7 +92,7 @@ export default function ChatPage() {
     if (!meId || !item) return;
     const id = isSeller ? buyerId : (item.seller_id ?? "");
     if (!id) return;
-    supabase.from("profiles").select("*").eq("user_id", id).maybeSingle()
+    supabase.from("profiles_public").select("*").eq("user_id", id).maybeSingle()
       .then(({ data }) => setOtherProfile(data as Profile | null));
   }, [meId, item, isSeller, buyerId, supabase]);
 

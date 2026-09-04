@@ -178,7 +178,7 @@ export default function InboxPage() {
 
       if (otherIds.size > 0) {
         const { data: pData } = await supabase
-          .from("profiles").select("*").in("user_id", [...otherIds]);
+          .from("profiles_public").select("*").in("user_id", [...otherIds]);
         const pMap: Record<string, Profile> = {};
         for (const p of (pData ?? []) as Profile[]) pMap[p.user_id] = p;
         setProfilesMap(pMap);

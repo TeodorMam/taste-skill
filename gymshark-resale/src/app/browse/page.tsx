@@ -183,7 +183,7 @@ function BrowseInner() {
 
       const ids = Array.from(new Set(rows.map((r) => r.seller_id).filter((x): x is string => !!x)));
       if (ids.length === 0) return;
-      supabase.from("profiles").select("*").in("user_id", ids).then(({ data: pData }) => {
+      supabase.from("profiles_public").select("*").in("user_id", ids).then(({ data: pData }) => {
         if (cancelled) return;
         const map: Record<string, Profile> = {};
         for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
@@ -207,7 +207,7 @@ function BrowseInner() {
     const existingIds = new Set(Object.keys(sellers));
     const newIds = Array.from(new Set(rows.map((r) => r.seller_id).filter((x): x is string => !!x && !existingIds.has(x))));
     if (newIds.length === 0) return;
-    const { data: pData } = await supabase.from("profiles").select("*").in("user_id", newIds);
+    const { data: pData } = await supabase.from("profiles_public").select("*").in("user_id", newIds);
     const map: Record<string, Profile> = {};
     for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
     setSellers((prev) => ({ ...prev, ...map }));

@@ -105,7 +105,7 @@ export default function ItemPageClient() {
       const allBuyers = [...new Set((msgData ?? []).map((r) => (r as { buyer_id: string }).buyer_id))];
       setBuyerThreads(allBuyers);
       if (allBuyers.length === 0) return;
-      const { data: pData } = await supabase.from("profiles").select("*").in("user_id", allBuyers);
+      const { data: pData } = await supabase.from("profiles_public").select("*").in("user_id", allBuyers);
       const map: Record<string, Profile> = {};
       for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
       setBuyerProfiles(map);
@@ -114,7 +114,7 @@ export default function ItemPageClient() {
 
   useEffect(() => {
     if (!item?.seller_id) { setSeller(null); return; }
-    supabase.from("profiles").select("*").eq("user_id", item.seller_id).maybeSingle()
+    supabase.from("profiles_public").select("*").eq("user_id", item.seller_id).maybeSingle()
       .then(({ data }) => {
         const p = (data ?? null) as Profile | null;
         setSeller(p);
@@ -140,7 +140,7 @@ export default function ItemPageClient() {
       setSimilar(slice);
       const ids = Array.from(new Set(slice.map((r) => r.seller_id).filter((x): x is string => !!x)));
       if (ids.length === 0) return;
-      const { data: pData } = await supabase.from("profiles").select("*").in("user_id", ids);
+      const { data: pData } = await supabase.from("profiles_public").select("*").in("user_id", ids);
       const map: Record<string, Profile> = {};
       for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
       setSimilarSellers(map);

@@ -54,7 +54,7 @@ export default function SellerPage() {
       .order("created_at", { ascending: false })
       .then(({ data }) => setReviews((data ?? []) as Review[]));
     supabase
-      .from("profiles")
+      .from("profiles_public")
       .select("*")
       .eq("user_id", params.id)
       .maybeSingle()

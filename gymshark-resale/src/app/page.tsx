@@ -19,7 +19,7 @@ export default async function HomePage() {
   const sellerIds = [...new Set(items.map((i) => i.seller_id).filter((x): x is string => !!x))];
   const sellersMap: Record<string, Profile> = {};
   if (sellerIds.length > 0) {
-    const { data: pData } = await supabase.from("profiles").select("*").in("user_id", sellerIds);
+    const { data: pData } = await supabase.from("profiles_public").select("*").in("user_id", sellerIds);
     for (const p of (pData ?? []) as Profile[]) sellersMap[p.user_id] = p;
   }
 
