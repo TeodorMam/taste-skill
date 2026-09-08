@@ -109,7 +109,7 @@ function OrderCard({ order, role, onAction }: {
       <div className="flex gap-3 p-4">
         {imgSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imgSrc} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+          <img src={imgSrc} alt="" loading="lazy" decoding="async" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
         ) : (
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-2xl">📦</div>
         )}

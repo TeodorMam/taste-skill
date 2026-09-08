@@ -309,7 +309,7 @@ export default function InboxPage() {
                     <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-stone-100">
                       {cover ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={cover} alt="" className="h-full w-full object-cover" />
+                        <img src={cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       ) : (
                         <div className="h-full w-full bg-stone-200" />
                       )}
@@ -326,7 +326,7 @@ export default function InboxPage() {
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-stone-100">
                     {cover ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={cover} alt="" className="h-full w-full object-cover" />
+                      <img src={cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : (
                       <div className="h-full w-full bg-stone-200" />
                     )}

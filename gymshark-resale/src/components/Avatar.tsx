@@ -25,6 +25,8 @@ export function Avatar({
       <img
         src={profile.avatar_url}
         alt=""
+        loading="lazy"
+        decoding="async"
         className={`${container} shrink-0 rounded-full object-cover`}
       />
     );

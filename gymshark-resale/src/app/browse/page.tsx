@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   type Item,
@@ -53,6 +53,10 @@ function BrowseInner() {
   const [localPriceMin, setLocalPriceMin] = useState(0);
   const [localPriceMax, setLocalPriceMax] = useState(PRICE_MAX);
 
+  // Memoize the Supabase client so we don't spin up a new one on every
+  // render / effect fire. Under load this saves TCP setup and auth cost.
+  const supabase = useMemo(() => createClient(), []);
+
   const q = params.get("q") ?? "";
   const brand = params.get("brand") ?? "";
   const gender = params.get("gender") ?? "";
@@ -81,7 +85,24 @@ function BrowseInner() {
   }, [q]);
 
   useEffect(() => {
-    const supabase = createClient();
+    // Cache the "which brands actually exist" set for 10 min in sessionStorage.
+    // Hits every browse mount otherwise and blocks nothing meaningful — the
+    // list barely changes.
+    const CACHE_KEY = "aktivbruk:brand-set";
+    const TTL_MS = 10 * 60 * 1000;
+    try {
+      const raw = sessionStorage.getItem(CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { at: number; brands: string[] };
+        if (Date.now() - parsed.at < TTL_MS) {
+          setAvailableBrands(parsed.brands);
+          return;
+        }
+      }
+    } catch {
+      // no-op, fall through to fetch
+    }
+
     supabase
       .from("items")
       .select("brand")
@@ -89,9 +110,13 @@ function BrowseInner() {
       .then(({ data }) => {
         if (!data) return;
         const set = new Set((data as { brand: string }[]).map((r) => r.brand).filter(Boolean));
-        setAvailableBrands(BRANDS.filter((b) => set.has(b)));
+        const brands = BRANDS.filter((b) => set.has(b));
+        setAvailableBrands(brands);
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), brands }));
+        } catch { /* quota, private mode — ignore */ }
       });
-  }, []);
+  }, [supabase]);
 
   function setParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -166,7 +191,6 @@ function BrowseInner() {
   );
 
   useEffect(() => {
-    const supabase = createClient();
     let cancelled = false;
     setInitialLoading(true);
     setError(null);
@@ -192,10 +216,9 @@ function BrowseInner() {
     });
 
     return () => { cancelled = true; };
-  }, [buildQuery]);
+  }, [buildQuery, supabase]);
 
   async function loadMore() {
-    const supabase = createClient();
     setLoadingMore(true);
     const { data, error } = await buildQuery(supabase, offset);
     if (error) { setError(error.message); setLoadingMore(false); return; }
