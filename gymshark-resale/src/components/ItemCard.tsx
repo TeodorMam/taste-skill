@@ -6,6 +6,7 @@ import {
   itemImages,
   profileDisplayName,
 } from "@/lib/supabase";
+import { storageThumb } from "@/lib/image";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Avatar } from "@/components/Avatar";
 
@@ -25,6 +26,15 @@ export function ItemCard({
 }) {
   const images = itemImages(item);
   const cover = images[0] ?? null;
+  // Browse grid renders cards at ~300px on phones and ~360px on desktop,
+  // so a 600px transform gives 2x-density crispness without paying for the
+  // original's 3-12 MB. srcset lets small phones ask for 400px instead.
+  const coverSrc = storageThumb(cover, { width: 600, quality: 75, resize: "cover" });
+  const coverSrcSet = cover
+    ? [400, 600, 800]
+        .map((w) => `${storageThumb(cover, { width: w, quality: 75, resize: "cover" })} ${w}w`)
+        .join(", ")
+    : undefined;
   const showSeller = !hideSeller && !!item.seller_id;
   const sellerName = profileDisplayName(seller, item.seller_id);
 
@@ -37,7 +47,9 @@ export function ItemCard({
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={cover}
+            src={coverSrc}
+            srcSet={coverSrcSet}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             alt={item.title}
             loading="lazy"
             decoding="async"

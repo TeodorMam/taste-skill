@@ -53,3 +53,34 @@ export async function prepareImageForUpload(file: File): Promise<File> {
 export async function prepareImagesForUpload(files: File[]): Promise<File[]> {
   return Promise.all(files.map(prepareImageForUpload));
 }
+
+// Supabase Storage image transforms: turn the public-object URL into a
+// render/image URL so the CDN resizes on the fly. Requires the Pro plan.
+// Non-Supabase URLs (e.g. external avatars) and already-transformed URLs
+// are returned untouched so callers can pass any src through this helper.
+const STORAGE_PUBLIC_SEGMENT = "/storage/v1/object/public/";
+const STORAGE_RENDER_SEGMENT = "/storage/v1/render/image/public/";
+
+export type StorageThumbOptions = {
+  width?: number;
+  height?: number;
+  quality?: number;
+  resize?: "cover" | "contain" | "fill";
+};
+
+export function storageThumb(
+  url: string | null | undefined,
+  options: StorageThumbOptions = {},
+): string {
+  if (!url) return "";
+  if (!url.includes(STORAGE_PUBLIC_SEGMENT)) return url;
+
+  const rendered = url.replace(STORAGE_PUBLIC_SEGMENT, STORAGE_RENDER_SEGMENT);
+  const params = new URLSearchParams();
+  if (options.width) params.set("width", String(options.width));
+  if (options.height) params.set("height", String(options.height));
+  if (options.quality) params.set("quality", String(options.quality));
+  if (options.resize) params.set("resize", options.resize);
+  const qs = params.toString();
+  return qs ? `${rendered}?${qs}` : rendered;
+}
