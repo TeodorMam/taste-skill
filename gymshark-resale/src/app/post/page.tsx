@@ -18,7 +18,7 @@ import {
   type CategoryParent,
 } from "@/lib/supabase";
 import { POSTEN_PACKAGES } from "@/lib/shipping";
-import { convertHeicFiles } from "@/lib/heic";
+import { prepareImagesForUpload } from "@/lib/image";
 import { createClient } from "@/utils/supabase/client";
 import { FirstListingTips } from "@/components/FirstListingTips";
 
@@ -98,7 +98,7 @@ export default function PostPage() {
     // them, so previews render everywhere and the eventual upload is a
     // format every browser can display.
     const raw = Array.from(picked).slice(0, remaining);
-    const converted = await convertHeicFiles(raw);
+    const converted = await prepareImagesForUpload(raw);
     const toAdd = converted.map(makeSlot);
     setSlots((prev) => [...prev, ...toAdd]);
   }

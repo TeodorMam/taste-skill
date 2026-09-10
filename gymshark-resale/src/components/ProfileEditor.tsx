@@ -8,7 +8,7 @@ import {
   profileDisplayName,
 } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
-import { convertHeicToJpeg } from "@/lib/heic";
+import { prepareImageForUpload } from "@/lib/image";
 
 type EmailStage = "idle" | "editing" | "code";
 
@@ -84,7 +84,7 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
     setError(null);
     setUploading(true);
     // iPhone HEIC → JPEG so avatars render on desktop too.
-    const file = await convertHeicToJpeg(rawFile);
+    const file = await prepareImageForUpload(rawFile);
     const ext = file.name.split(".").pop() || "jpg";
     const path = `avatars/${userId}-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage
