@@ -55,7 +55,7 @@ export function ItemCard({
             alt={item.title}
             loading="lazy"
             decoding="async"
-            className={`h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] ${
+            className={`h-full w-full object-contain transition duration-300 group-hover:scale-[1.03] ${
               item.is_sold ? "opacity-60 grayscale" : ""
             }`}
           />

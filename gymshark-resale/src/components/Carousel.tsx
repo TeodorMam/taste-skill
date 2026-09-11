@@ -59,7 +59,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
           aria-label="Forstørr bilde"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={images[0]} alt={alt} className="h-full w-full object-cover" />
+          <img src={images[0]} alt={alt} className="h-full w-full object-contain" />
         </button>
         {lightbox !== null && <Lightbox images={images} index={lightbox} alt={alt} onClose={() => setLightbox(null)} onChange={setLightbox} />}
       </>
@@ -85,7 +85,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
               <img
                 src={src}
                 alt={`${alt} ${i + 1}`}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
                 loading={i === 0 ? "eager" : "lazy"}
               />
             </button>
