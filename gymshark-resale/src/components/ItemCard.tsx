@@ -6,7 +6,6 @@ import {
   itemImages,
   profileDisplayName,
 } from "@/lib/supabase";
-import { storageThumb } from "@/lib/image";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Avatar } from "@/components/Avatar";
 
@@ -26,17 +25,6 @@ export function ItemCard({
 }) {
   const images = itemImages(item);
   const cover = images[0] ?? null;
-  // Browse grid renders cards at ~300 px on phones and ~360 px on desktop,
-  // so a 600 px width transform gives 2x-density crispness without paying
-  // for the original's 3-12 MB. Only width is sent so Supabase preserves
-  // the seller photo's aspect ratio — the visible crop to the tile square
-  // is CSS (object-cover), not a transform.
-  const coverSrc = storageThumb(cover, { width: 600, quality: 75 });
-  const coverSrcSet = cover
-    ? [400, 600, 800]
-        .map((w) => `${storageThumb(cover, { width: w, quality: 75 })} ${w}w`)
-        .join(", ")
-    : undefined;
   const showSeller = !hideSeller && !!item.seller_id;
   const sellerName = profileDisplayName(seller, item.seller_id);
 
@@ -49,9 +37,7 @@ export function ItemCard({
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={coverSrc}
-            srcSet={coverSrcSet}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            src={cover}
             alt={item.title}
             loading="lazy"
             decoding="async"
