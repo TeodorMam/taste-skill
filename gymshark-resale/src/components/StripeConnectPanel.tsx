@@ -10,6 +10,7 @@ export function StripeConnectPanel() {
   const [status, setStatus] = useState<Status>("loading");
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const toast = useToast();
   const searchParams = useSearchParams();
 
@@ -74,10 +75,24 @@ export function StripeConnectPanel() {
       <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Selgerkonto</p>
 
       {status === "none" && (
-        <div className="mt-3 space-y-3">
+        <div className="mt-3 space-y-4">
           <p className="text-sm text-stone-700">
-            For å selge via Aktivbruk må du koble til en Stripe-konto. Stripe håndterer betaling og utbetaling trygt og sikkert.
+            For å selge må du koble til Stripe (trygg betaling). Det tar ca. 2 minutter.
           </p>
+          <ol className="space-y-2.5">
+            {[
+              { n: "1", label: "Klikk «Koble til Stripe»" },
+              { n: "2", label: <>Velg bransje: <strong>Klær og tilbehør</strong> og skriv inn nettsted: <strong>aktivbruk.com</strong></> },
+              { n: "3", label: "Fyll inn personlig info og bankinfo" },
+            ].map(({ n, label }) => (
+              <li key={n} className="flex items-start gap-2.5 text-sm text-stone-600">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-stone-100 text-[11px] font-semibold text-stone-500">
+                  {n}
+                </span>
+                <span>{label}</span>
+              </li>
+            ))}
+          </ol>
           <button
             onClick={handleConnect}
             disabled={connecting}
@@ -85,6 +100,10 @@ export function StripeConnectPanel() {
           >
             {connecting ? "Sender til Stripe…" : "Koble til Stripe →"}
           </button>
+          <p className="text-xs text-stone-400">
+            <span className="font-medium text-stone-500">Under 18?</span>{" "}
+            Be en foresatt opprette Stripe-konto og motta betaling for deg.
+          </p>
         </div>
       )}
 
@@ -101,13 +120,31 @@ export function StripeConnectPanel() {
             >
               {connecting ? "Sender til Stripe…" : "Fortsett verifisering →"}
             </button>
-            <button
-              onClick={handleDisconnect}
-              disabled={disconnecting}
-              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500 disabled:opacity-50"
-            >
-              {disconnecting ? "Kobler fra…" : "Koble fra"}
-            </button>
+            {!confirmDisconnect ? (
+              <button
+                onClick={() => setConfirmDisconnect(true)}
+                className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500"
+              >
+                Koble fra
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-stone-600">Er du sikker?</span>
+                <button
+                  onClick={() => { void handleDisconnect(); setConfirmDisconnect(false); }}
+                  disabled={disconnecting}
+                  className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                >
+                  {disconnecting ? "Kobler fra…" : "Ja, koble fra"}
+                </button>
+                <button
+                  onClick={() => setConfirmDisconnect(false)}
+                  className="text-xs text-stone-400 hover:text-stone-700"
+                >
+                  Avbryt
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -125,13 +162,31 @@ export function StripeConnectPanel() {
             >
               Åpne Stripe-dashboard ↗
             </a>
-            <button
-              onClick={handleDisconnect}
-              disabled={disconnecting}
-              className="text-xs text-stone-400 underline underline-offset-2 hover:text-stone-600 disabled:opacity-50"
-            >
-              {disconnecting ? "Kobler fra…" : "Koble fra"}
-            </button>
+            {!confirmDisconnect ? (
+              <button
+                onClick={() => setConfirmDisconnect(true)}
+                className="text-xs text-stone-400 underline underline-offset-2 hover:text-stone-600"
+              >
+                Koble fra
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-stone-600">Er du sikker?</span>
+                <button
+                  onClick={() => { void handleDisconnect(); setConfirmDisconnect(false); }}
+                  disabled={disconnecting}
+                  className="text-xs font-medium text-red-500 hover:text-red-700 disabled:opacity-50"
+                >
+                  {disconnecting ? "Kobler fra…" : "Ja, koble fra"}
+                </button>
+                <button
+                  onClick={() => setConfirmDisconnect(false)}
+                  className="text-xs text-stone-400 hover:text-stone-700"
+                >
+                  Avbryt
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

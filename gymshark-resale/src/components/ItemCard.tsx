@@ -6,21 +6,13 @@ import {
   itemImages,
   profileDisplayName,
 } from "@/lib/supabase";
+import { storageThumb } from "@/lib/image";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Avatar } from "@/components/Avatar";
 
 function shippingIcon(s: string | null) {
   if (!s || s === "Kun henting") return null;
   return "📦";
-}
-
-function relativeAge(iso: string): string {
-  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
-  if (days === 0) return "i dag";
-  if (days === 1) return "i går";
-  if (days < 7) return `${days}d`;
-  if (days < 30) return `${Math.floor(days / 7)}u`;
-  return `${Math.floor(days / 30)}mnd`;
 }
 
 export function ItemCard({
@@ -34,6 +26,15 @@ export function ItemCard({
 }) {
   const images = itemImages(item);
   const cover = images[0] ?? null;
+  // Browse grid renders cards at ~300px on phones and ~360px on desktop,
+  // so a 600px transform gives 2x-density crispness without paying for the
+  // original's 3-12 MB. srcset lets small phones ask for 400px instead.
+  const coverSrc = storageThumb(cover, { width: 600, quality: 75, resize: "cover" });
+  const coverSrcSet = cover
+    ? [400, 600, 800]
+        .map((w) => `${storageThumb(cover, { width: w, quality: 75, resize: "cover" })} ${w}w`)
+        .join(", ")
+    : undefined;
   const showSeller = !hideSeller && !!item.seller_id;
   const sellerName = profileDisplayName(seller, item.seller_id);
 
@@ -46,8 +47,12 @@ export function ItemCard({
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={cover}
+            src={coverSrc}
+            srcSet={coverSrcSet}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             alt={item.title}
+            loading="lazy"
+            decoding="async"
             className={`h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] ${
               item.is_sold ? "opacity-60 grayscale" : ""
             }`}
@@ -58,11 +63,6 @@ export function ItemCard({
           </div>
         )}
         <FavoriteButton itemId={item.id} currentPrice={item.price} sellerId={item.seller_id} itemTitle={item.title} />
-        {item.brand && (
-          <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#5a6b32] backdrop-blur">
-            {item.brand}
-          </div>
-        )}
         {images.length > 1 && (
           <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/65 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
             <svg
@@ -89,13 +89,18 @@ export function ItemCard({
         )}
       </div>
       <div className="space-y-1 p-3">
+        {item.brand && (
+          <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-wider text-stone-400">
+            {item.brand}
+          </p>
+        )}
         <div className="flex items-start justify-between gap-2">
-          <p className="line-clamp-1 text-sm font-medium">{item.title}</p>
+          <p className="line-clamp-1 text-sm font-medium leading-snug">{item.title}</p>
           <p className="shrink-0 text-sm font-semibold">{formatPrice(item.price)}</p>
         </div>
         <div className="flex items-center justify-between gap-1">
           <p className="line-clamp-1 text-xs text-stone-500">
-            Str. {item.size} · {item.condition} · {relativeAge(item.updated_at || item.created_at)}
+            Str. {item.size} · {item.condition}
           </p>
           {shippingIcon(item.shipping) && (
             <span className="shrink-0 text-xs" title={item.shipping ?? ""}>

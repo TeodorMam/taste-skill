@@ -29,7 +29,9 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [otherLastRead, setOtherLastRead] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -136,21 +138,33 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
     setError(null);
     const { data, error } = await supabase
       .from("messages")
-      .insert({
-        item_id: itemId,
-        buyer_id: buyerId,
-        sender_id: meId,
-        body: text,
-      })
+      .insert({ item_id: itemId, buyer_id: buyerId, sender_id: meId, body: text })
       .select("*")
       .single();
     setSending(false);
-    if (error) {
-      setError(error.message);
-      return;
-    }
+    if (error) { setError(error.message); return; }
     setBody("");
-    toast("Melding sendt");
+    const m = data as Message;
+    setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+  }
+
+  async function sendImage(file: File) {
+    setUploading(true);
+    setError(null);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `chat/${itemId}-${buyerId}-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("item-images")
+      .upload(path, file, { cacheControl: "3600", upsert: true });
+    if (upErr) { setError(upErr.message); setUploading(false); return; }
+    const { data: urlData } = supabase.storage.from("item-images").getPublicUrl(path);
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({ item_id: itemId, buyer_id: buyerId, sender_id: meId, body: "", image_url: urlData.publicUrl })
+      .select("*")
+      .single();
+    setUploading(false);
+    if (error) { setError(error.message); return; }
     const m = data as Message;
     setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
   }
@@ -183,15 +197,20 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
               key={m.id}
               className={`flex flex-col ${mine ? "items-end" : "items-start"}`}
             >
-              <div
-                className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
-                  mine
-                    ? "bg-stone-900 text-stone-50"
-                    : "bg-stone-100 text-stone-900"
-                }`}
-              >
-                {m.body}
-              </div>
+              {m.image_url ? (
+                <a href={m.image_url} target="_blank" rel="noopener noreferrer" className="max-w-[75%]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={m.image_url} alt="" className="rounded-2xl object-cover max-h-56 w-full" />
+                </a>
+              ) : (
+                <div
+                  className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
+                    mine ? "bg-stone-900 text-stone-50" : "bg-stone-100 text-stone-900"
+                  }`}
+                >
+                  {m.body}
+                </div>
+              )}
               <span className="mt-0.5 px-1 text-[10px] text-stone-400">
                 {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
               </span>
@@ -199,7 +218,31 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
           );
         })}
       </div>
-      <form onSubmit={send} className="flex gap-2 border-t border-stone-200 p-2">
+      <form onSubmit={send} className="flex items-center gap-2 border-t border-stone-200 p-2">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading || sending}
+          className="shrink-0 rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-40"
+          aria-label="Send bilde"
+        >
+          {uploading ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          )}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) sendImage(f);
+            e.target.value = "";
+          }}
+        />
         <input
           value={body}
           onChange={(e) => setBody(e.target.value)}

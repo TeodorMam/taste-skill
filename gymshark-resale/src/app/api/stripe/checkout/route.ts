@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createClient as createSupabaseServerClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
-import { stripe, calcFee } from "@/lib/stripe";
+import Stripe from "stripe";
+import { stripe } from "@/lib/stripe";
+import { calcBuyerFee } from "@/lib/fees";
+import { getPackageOption } from "@/lib/shipping";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,13 +21,13 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Logg inn for å kjøpe" }, { status: 401 });
 
-  const body = await req.json() as { item_id: string; offer_id?: string };
-  const { item_id, offer_id } = body;
+  const body = await req.json() as { item_id: string; offer_id?: string; delivery_method?: "shipping" | "meetup" };
+  const { item_id, offer_id, delivery_method = "shipping" } = body;
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
-  // Fetch item (source of truth for price)
-  const { data: item } = await admin.from("items").select("id, title, seller_id, price, is_sold").eq("id", item_id).maybeSingle();
+  // Fetch item (source of truth for price and shipping)
+  const { data: item } = await admin.from("items").select("id, title, image_url, image_urls, seller_id, price, is_sold, shipping, package_size").eq("id", item_id).maybeSingle();
   if (!item) return NextResponse.json({ error: "Annonsen finnes ikke" }, { status: 404 });
   if (item.is_sold) return NextResponse.json({ error: "Denne varen er allerede solgt" }, { status: 400 });
   if (item.seller_id === user.id) return NextResponse.json({ error: "Du kan ikke kjøpe din egen vare" }, { status: 400 });
@@ -37,6 +40,66 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Tilbudet er ikke gyldig" }, { status: 400 });
     }
     amountNok = offer.amount;
+  }
+
+  // Idempotency: if a non-cancelled order already exists for this item/offer,
+  // resume its checkout session if still open; otherwise cancel any orphaned
+  // rows (previous attempts errored before storing a valid session) and let a
+  // fresh order be created below. We iterate every match rather than using
+  // maybeSingle() so repeat attempts don't blow up on multiple stale rows.
+  {
+    const dupQuery = admin
+      .from("orders")
+      .select("id, stripe_checkout_session_id, status")
+      .eq("item_id", Number(item_id))
+      .neq("status", "cancelled");
+    const { data: dups } = await (offer_id
+      ? dupQuery.eq("offer_id", offer_id)
+      : dupQuery.eq("buyer_id", user.id)
+    );
+
+    const rows = dups ?? [];
+    const alreadyPaid = rows.find((r) => r.status !== "pending");
+    if (alreadyPaid) {
+      return NextResponse.json({ error: "Denne varen er allerede betalt" }, { status: 409 });
+    }
+
+    for (const row of rows) {
+      if (row.stripe_checkout_session_id) {
+        try {
+          const existing = await stripe.checkout.sessions.retrieve(row.stripe_checkout_session_id);
+          if (existing.status === "open" && existing.url) {
+            return NextResponse.json({ url: existing.url });
+          }
+        } catch (e) {
+          console.warn("[stripe/checkout] could not retrieve existing session:", e);
+        }
+      }
+    }
+
+    if (rows.length > 0) {
+      await admin
+        .from("orders")
+        .update({ status: "cancelled" })
+        .in("id", rows.map((r) => r.id));
+    }
+  }
+
+  // Calculate shipping cost from seller's chosen package size
+  const shippingCostNok = delivery_method === "shipping" && item.package_size
+    ? (getPackageOption(item.package_size)?.price ?? 0)
+    : 0;
+
+  // Validate buyer has shipping info
+  const { data: buyerProfile } = await admin.from("profiles")
+    .select("full_name, address, postal_code, city, phone")
+    .eq("user_id", user.id).maybeSingle();
+
+  if (delivery_method === "shipping" && (
+    !buyerProfile?.full_name || !buyerProfile?.address ||
+    !buyerProfile?.postal_code || !buyerProfile?.city || !buyerProfile?.phone
+  )) {
+    return NextResponse.json({ error: "Fyll inn leveringsinformasjon i profilen din før du kjøper" }, { status: 400 });
   }
 
   // Check seller has Stripe enabled
@@ -60,7 +123,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Selgeren har ikke aktivert betaling enda" }, { status: 400 });
   }
 
-  const platformFeeNok = calcFee(amountNok);
+  // Buyer-side "Kjøperbeskyttelse" fee shown as a separate line at checkout.
+  // Seller receives 100% of item price + shipping — this fee is on top for
+  // the buyer, not deducted from the seller's payout.
+  const platformFeeNok = calcBuyerFee(amountNok);
 
   // Create order record before Stripe call
   const { data: order, error: orderErr } = await admin.from("orders").insert({
@@ -70,7 +136,16 @@ export async function POST(req: NextRequest) {
     offer_id: offer_id ?? null,
     amount_nok: amountNok,
     platform_fee_nok: platformFeeNok,
+    delivery_method,
+    shipping_cost_nok: shippingCostNok,
     status: "pending",
+    item_title: item.title,
+    item_image: (item.image_urls as string[] | null)?.[0] ?? (item.image_url as string | null) ?? null,
+    buyer_name: buyerProfile?.full_name ?? null,
+    buyer_address: buyerProfile?.address ?? null,
+    buyer_postal_code: buyerProfile?.postal_code ?? null,
+    buyer_city: buyerProfile?.city ?? null,
+    buyer_phone: buyerProfile?.phone ?? null,
   }).select("id").single();
 
   if (orderErr || !order) {
@@ -81,10 +156,8 @@ export async function POST(req: NextRequest) {
   const { data: buyerData } = await admin.auth.admin.getUserById(user.id);
   const buyerEmail = buyerData.user?.email;
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    payment_method_types: ["card"],
-    line_items: [{
+  const lineItems: { price_data: { currency: string; unit_amount: number; product_data: { name: string; metadata?: Record<string, string> } }; quantity: number }[] = [
+    {
       price_data: {
         currency: "nok",
         unit_amount: amountNok * 100,
@@ -94,9 +167,43 @@ export async function POST(req: NextRequest) {
         },
       },
       quantity: 1,
-    }],
+    },
+  ];
+
+  if (shippingCostNok > 0) {
+    const pkg = getPackageOption(item.package_size);
+    lineItems.push({
+      price_data: {
+        currency: "nok",
+        unit_amount: shippingCostNok * 100,
+        product_data: { name: `Frakt — Posten ${pkg?.label ?? "Norgespakke"}` },
+      },
+      quantity: 1,
+    });
+  }
+
+  // Buyer-protection fee line
+  lineItems.push({
+    price_data: {
+      currency: "nok",
+      unit_amount: platformFeeNok * 100,
+      product_data: { name: "Kjøperbeskyttelse (Aktivbruk)" },
+    },
+    quantity: 1,
+  });
+
+  // Destination charge: funds route directly to the seller's Connect account
+  // at payment time (minus our application fee, which stays on the platform).
+  // The seller's Connect account is configured for manual payouts, so the
+  // money sits in escrow on their Stripe balance until we release it via
+  // stripe.payouts.create() when the buyer confirms delivery.
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    payment_method_types: ["card"],
+    line_items: lineItems,
     payment_intent_data: {
-      // No transfer_data: funds held on platform until buyer confirms delivery
+      application_fee_amount: platformFeeNok * 100,
+      transfer_data: { destination: sellerAccountId },
       metadata: {
         order_id: order.id,
         item_id: String(item.id),

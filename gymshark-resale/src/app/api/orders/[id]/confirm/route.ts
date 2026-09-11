@@ -23,7 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
     const { data: order } = await admin.from("orders")
-      .select("id, status, buyer_id, seller_id, amount_nok, platform_fee_nok, item_id, payout_transfer_id")
+      .select("id, status, buyer_id, seller_id, amount_nok, platform_fee_nok, shipping_cost_nok, item_id, payout_transfer_id")
       .eq("id", orderId).maybeSingle();
 
     if (!order) return NextResponse.json({ error: "Ordre ikke funnet" }, { status: 404 });
@@ -44,8 +44,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const buyerEmail = buyerRes.data.user?.email;
     const sellerEmail = sellerRes.data.user?.email;
     const itemTitle = (itemRes as { data: { title: string } | null }).data?.title ?? "varen";
-    const sellerReceives = order.amount_nok - order.platform_fee_nok;
+    const shippingCost = order.shipping_cost_nok ?? 0;
+    // Seller receives full item price + shipping reimbursement (buyer-fee model).
+    const sellerReceives = order.amount_nok + shippingCost;
     const fmt = (n: number) => new Intl.NumberFormat("nb-NO").format(n) + " kr";
+
+    // Insert a payout system message into the chat timeline
+    await admin.from("messages").insert({
+      item_id: String(order.item_id),
+      buyer_id: order.buyer_id,
+      sender_id: order.buyer_id,
+      body: "",
+      message_type: "payout",
+      metadata: { order_id: orderId, amount_nok: sellerReceives },
+    });
 
     await Promise.all([
       buyerEmail ? fetch("https://api.resend.com/emails", {
@@ -72,7 +84,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             <div style="background:#f0fdf4;padding:16px;border-radius:12px;margin-bottom:16px">
               <p style="margin:0 0 4px;font-size:13px;color:#166534">Du mottar</p>
               <p style="margin:0;font-size:22px;font-weight:700;color:#16a34a">${fmt(sellerReceives)}</p>
-              <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Salgspris ${fmt(order.amount_nok)} − 7% plattformavgift (${fmt(order.platform_fee_nok)})</p>
+              <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Hele salgsprisen${shippingCost > 0 ? ` + frakt (${fmt(shippingCost)})` : ""} — helt uten avgift for deg som selger 💚</p>
             </div>
             <p style="font-size:14px;color:#57534e">Betalingen er overført til din Stripe-konto og vil utbetales etter Stripes normale utbetalingsplan.</p>
             <a href="https://dashboard.stripe.com/express" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Åpne Stripe-dashboard</a>
@@ -85,6 +97,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[orders/confirm POST]", err);
-    return NextResponse.json({ error: "Noe gikk galt, prøv igjen" }, { status: 500 });
+    const detail = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: `Kunne ikke bekrefte: ${detail}` }, { status: 500 });
   }
 }

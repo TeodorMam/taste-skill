@@ -11,9 +11,11 @@ import {
   itemImages,
   profileDisplayName,
 } from "@/lib/supabase";
+import { getPackageOption } from "@/lib/shipping";
+import { calcBuyerFee } from "@/lib/fees";
+import { ReportButton } from "@/components/ReportButton";
 import { Avatar } from "@/components/Avatar";
 import { createClient } from "@/utils/supabase/client";
-import { ChatPanel } from "@/components/ChatPanel";
 import { ItemCard } from "@/components/ItemCard";
 import { Carousel } from "@/components/Carousel";
 import { ShareButton } from "@/components/ShareButton";
@@ -23,18 +25,8 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import { ItemLikes } from "@/components/ItemLikes";
 import { FirstListingSuccess } from "@/components/FirstListingSuccess";
 import { useToast } from "@/components/ToastProvider";
+import { BidModal } from "@/components/BidModal";
 
-function fmtBuyerTime(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "nå";
-  if (diffMin < 60) return `${diffMin}m`;
-  const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${diffH}t`;
-  return `${Math.floor(diffH / 24)}d`;
-}
 
 function fmtLastSeen(iso: string | null | undefined): string | null {
   if (!iso) return null;
@@ -66,15 +58,12 @@ export default function ItemPageClient() {
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
 
   const [buyerThreads, setBuyerThreads] = useState<string[]>([]);
-  const [buyerLastMsg, setBuyerLastMsg] = useState<Record<string, string>>({});
   const [buyerProfiles, setBuyerProfiles] = useState<Record<string, Profile>>({});
   const [showSoldPicker, setShowSoldPicker] = useState(false);
   const [soldToBuyer, setSoldToBuyer] = useState<string | null>(null);
-  const [activeBuyer, setActiveBuyer] = useState<string | null>(null);
   const [hasChatted, setHasChatted] = useState(false);
   const [myOffer, setMyOffer] = useState<Offer | null | undefined>(undefined);
-  const [buyerOffers, setBuyerOffers] = useState<Record<string, Offer>>({});
-  const [offerAmount, setOfferAmount] = useState("");
+  const [showBidModal, setShowBidModal] = useState(false);
   const [submittingOffer, setSubmittingOffer] = useState(false);
 
   const [similar, setSimilar] = useState<Item[]>([]);
@@ -85,6 +74,7 @@ export default function ItemPageClient() {
   const [buyingNow, setBuyingNow] = useState(false);
   const [payingOffer, setPayingOffer] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<"success" | "cancelled" | null>(null);
+  const [deliveryMethod, setDeliveryMethod] = useState<"shipping" | "meetup" | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -110,37 +100,12 @@ export default function ItemPageClient() {
   useEffect(() => {
     if (!item || !isSeller) return;
     (async () => {
-      const [msgRes, offersRes] = await Promise.all([
-        supabase.from("messages").select("buyer_id, created_at").eq("item_id", item.id).order("created_at", { ascending: false }),
-        supabase.from("offers").select("*").eq("item_id", item.id).order("created_at", { ascending: false }),
-      ]);
-
-      // Build messages metadata
-      const seen = new Set<string>();
-      const ordered: string[] = [];
-      const lastMsg: Record<string, string> = {};
-      for (const row of (msgRes.data ?? []) as { buyer_id: string; created_at: string }[]) {
-        if (!seen.has(row.buyer_id)) {
-          seen.add(row.buyer_id);
-          ordered.push(row.buyer_id);
-          lastMsg[row.buyer_id] = row.created_at;
-        }
-      }
-      setBuyerLastMsg(lastMsg);
-
-      // Build offers map
-      const offerMap: Record<string, Offer> = {};
-      for (const o of (offersRes.data ?? []) as Offer[]) if (!offerMap[o.buyer_id]) offerMap[o.buyer_id] = o;
-      setBuyerOffers(offerMap);
-
-      // Combined buyer list: message-senders first, then offer-only buyers
-      const offerOnlyBuyers = Object.keys(offerMap).filter((id) => !seen.has(id));
-      const allBuyers = [...ordered, ...offerOnlyBuyers];
+      const { data: msgData } = await supabase
+        .from("messages").select("buyer_id").eq("item_id", item.id);
+      const allBuyers = [...new Set((msgData ?? []).map((r) => (r as { buyer_id: string }).buyer_id))];
       setBuyerThreads(allBuyers);
-      setActiveBuyer((prev) => prev ?? allBuyers[0] ?? null);
-
       if (allBuyers.length === 0) return;
-      const { data: pData } = await supabase.from("profiles").select("*").in("user_id", allBuyers);
+      const { data: pData } = await supabase.from("profiles_public").select("*").in("user_id", allBuyers);
       const map: Record<string, Profile> = {};
       for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
       setBuyerProfiles(map);
@@ -149,7 +114,7 @@ export default function ItemPageClient() {
 
   useEffect(() => {
     if (!item?.seller_id) { setSeller(null); return; }
-    supabase.from("profiles").select("*").eq("user_id", item.seller_id).maybeSingle()
+    supabase.from("profiles_public").select("*").eq("user_id", item.seller_id).maybeSingle()
       .then(({ data }) => {
         const p = (data ?? null) as Profile | null;
         setSeller(p);
@@ -175,7 +140,7 @@ export default function ItemPageClient() {
       setSimilar(slice);
       const ids = Array.from(new Set(slice.map((r) => r.seller_id).filter((x): x is string => !!x)));
       if (ids.length === 0) return;
-      const { data: pData } = await supabase.from("profiles").select("*").in("user_id", ids);
+      const { data: pData } = await supabase.from("profiles_public").select("*").in("user_id", ids);
       const map: Record<string, Profile> = {};
       for (const p of (pData ?? []) as Profile[]) map[p.user_id] = p;
       setSimilarSellers(map);
@@ -213,7 +178,7 @@ export default function ItemPageClient() {
     if (data) setItem(data as Item);
     setShowSoldPicker(false);
     toast("Annonsen er markert som solgt");
-    if (buyerId) { setSoldToBuyer(buyerId); setActiveBuyer(buyerId); localStorage.setItem(`soldToBuyer:${item.id}`, buyerId); }
+    if (buyerId) { setSoldToBuyer(buyerId); localStorage.setItem(`soldToBuyer:${item.id}`, buyerId); }
   }
 
   async function toggleSold() {
@@ -234,35 +199,49 @@ export default function ItemPageClient() {
     router.push("/mine");
   }
 
-  async function submitOffer() {
-    if (!item || !userId || !offerAmount) return;
-    const amount = parseInt(offerAmount.replace(/\D/g, ""), 10);
-    if (!amount || amount <= 0) return;
+  async function submitOffer(amount: number) {
+    if (!item || !userId || amount <= 0) return;
     setSubmittingOffer(true);
     const { data, error: oErr } = await supabase.from("offers").insert({ item_id: item.id, buyer_id: userId, amount }).select("*").single();
-    setSubmittingOffer(false);
     if (!oErr && data) {
-      setMyOffer(data as Offer);
-      setOfferAmount("");
-      toast("Tilbud sendt");
+      const offer = data as Offer;
+      setMyOffer(offer);
+      await supabase.from("messages").insert({
+        item_id: item.id,
+        buyer_id: userId,
+        sender_id: userId,
+        body: "",
+        message_type: "bid",
+        metadata: { offer_id: offer.id, amount },
+      }).then(() => null);
       void supabase.rpc("notify_seller_of_offer", { p_item_id: String(item.id), p_amount: amount }).then(() => null);
+      toast("💸 Bud sendt");
+      setShowBidModal(false);
+      router.push(`/chat/${item.id}/${userId}`);
     } else if (oErr) { toast(`Feil: ${oErr.message}`); }
+    setSubmittingOffer(false);
   }
 
   async function handleCheckout(offerId?: string) {
     const setter = offerId ? setPayingOffer : setBuyingNow;
     setter(true);
+    const dm = item?.shipping === "Kun henting" ? "meetup"
+      : item?.shipping === "Kan sendes" ? "shipping"
+      : deliveryMethod ?? "shipping";
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item_id: String(item!.id), ...(offerId ? { offer_id: offerId } : {}) }),
+        body: JSON.stringify({ item_id: String(item!.id), delivery_method: dm, ...(offerId ? { offer_id: offerId } : {}) }),
       });
       const json = await res.json() as { url?: string; error?: string };
       if (json.url) {
         window.location.href = json.url;
       } else {
         toast(json.error ?? "Noe gikk galt");
+        if (json.error?.includes("leveringsinformasjon")) {
+          setTimeout(() => router.push("/profil"), 1200);
+        }
         setter(false);
       }
     } catch {
@@ -272,17 +251,57 @@ export default function ItemPageClient() {
   }
 
   async function withdrawOffer() {
-    if (!myOffer) return;
-    await supabase.from("offers").delete().eq("id", myOffer.id);
+    if (!myOffer || !item || !userId) return;
+    const offerId = myOffer.id;
+    await supabase.from("offers").delete().eq("id", offerId);
+    await supabase.from("messages").insert({
+      item_id: String(item.id),
+      buyer_id: myOffer.buyer_id,
+      sender_id: userId,
+      body: "🚫 Kjøper trakk tilbake budet",
+      message_type: "text",
+    });
+    void notifyOfferCancel(offerId, "buyer", false);
     setMyOffer(null);
   }
 
-  async function respondOffer(offerId: string, buyerId: string, status: "accepted" | "declined") {
-    const { data } = await supabase.from("offers").update({ status }).eq("id", offerId).select("*").single();
-    if (data) { setBuyerOffers((prev) => ({ ...prev, [buyerId]: data as Offer })); toast(status === "accepted" ? "Tilbud godtatt" : "Tilbud avslått"); }
+  async function cancelAcceptedOffer() {
+    if (!myOffer || !item || !userId) return;
+    if (!window.confirm("Avbryte det godkjente budet? Selger må godta et nytt bud hvis du ombestemmer deg.")) return;
+    const offerId = myOffer.id;
+    // Cancel any pending checkout that referenced this offer
+    await supabase
+      .from("orders")
+      .update({ status: "cancelled" })
+      .eq("offer_id", offerId)
+      .eq("status", "pending");
+    await supabase.from("offers").update({ status: "declined" }).eq("id", offerId);
+    await supabase.from("messages").insert({
+      item_id: String(item.id),
+      buyer_id: myOffer.buyer_id,
+      sender_id: userId,
+      body: "🚫 Kjøper avbrøt det godkjente budet",
+      message_type: "text",
+    });
+    void notifyOfferCancel(offerId, "buyer", true);
+    setMyOffer({ ...myOffer, status: "declined" });
+    toast("Bud avbrutt");
   }
 
-  if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>;
+  async function notifyOfferCancel(offerId: string, cancelledBy: "buyer" | "seller", wasAccepted: boolean) {
+    try {
+      await fetch("/api/offer-cancel-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offer_id: offerId, cancelled_by: cancelledBy, was_accepted: wasAccepted }),
+      });
+    } catch (e) {
+      console.warn("[notifyOfferCancel]", e);
+    }
+  }
+
+
+if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>;
   if (!item) return <p className="text-sm text-stone-500">Laster…</p>;
 
   return (
@@ -350,6 +369,7 @@ export default function ItemPageClient() {
           </p>
 
           {item.seller_id && !isSeller && (
+            <div className="space-y-2">
             <Link href={`/seller/${item.seller_id}`} className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 transition hover:border-stone-400">
               <Avatar profile={seller} size="md" />
               <div className="min-w-0 flex-1">
@@ -360,34 +380,86 @@ export default function ItemPageClient() {
               </div>
               <SellerRating sellerId={item.seller_id} size="md" />
             </Link>
-          )}
-
-          {item.shipping && item.shipping !== "Kun henting" && (
-            <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm">
-              <p className="font-medium text-stone-800">📦 Fraktestimater</p>
-              <p className="mt-0.5 text-xs text-stone-500">Kjøper betaler frakt. Avtal betalingsmetode (Vipps) i chatten.</p>
-              <ul className="mt-3 space-y-2 text-xs text-stone-700">
-                <li className="flex items-center justify-between"><span>Posten Servicepakke (opp til 5 kg)</span><span className="font-semibold">ca. 99 kr</span></li>
-                <li className="flex items-center justify-between"><span>Posten ePakke (opp til 20 kg)</span><span className="font-semibold">ca. 129 kr</span></li>
-                <li className="flex items-center justify-between"><span>PostNord MyPack Collect</span><span className="font-semibold">ca. 89 kr</span></li>
-              </ul>
-              <p className="mt-3 text-[11px] text-stone-400">Selger dropper pakken på nærmeste Posten/PostNord-punkt etter betaling.</p>
+            <div className="flex gap-3 px-1">
+              <ReportButton type="listing" targetId={String(item.id)} />
+              <ReportButton type="user" targetId={item.seller_id} />
+            </div>
             </div>
           )}
 
-          {/* Kjøp nå — shown to logged-in buyers when seller has Stripe enabled */}
-          {userId && !isSeller && !item.is_sold && sellerChargesEnabled && (
-            <div className="space-y-1">
-              <button
-                onClick={() => handleCheckout()}
-                disabled={buyingNow}
-                className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
-              >
-                {buyingNow ? "Sender til betaling…" : `Kjøp nå — ${formatPrice(item.price)}`}
-              </button>
-              <p className="text-center text-[11px] text-stone-400">Sikker betaling via Stripe · 7% plattformavgift inkludert</p>
-            </div>
-          )}
+          {/* Kjøp nå — hidden when buyer already has an accepted bid (use Betal nå instead) */}
+          {userId && !isSeller && !item.is_sold && sellerChargesEnabled && myOffer?.status !== "accepted" && (() => {
+            const pkg = getPackageOption(item.package_size);
+            const canShip = item.shipping !== "Kun henting" && !!pkg;
+            const canMeet = item.shipping !== "Kan sendes";
+            const showToggle = canShip && canMeet;
+            const effectiveDm = item.shipping === "Kun henting" ? "meetup"
+              : item.shipping === "Kan sendes" ? "shipping"
+              : deliveryMethod;
+            const shippingCost = effectiveDm === "shipping" && pkg ? pkg.price : 0;
+            const buyerFee = calcBuyerFee(item.price);
+            const totalPrice = item.price + shippingCost + buyerFee;
+            const canCheckout = item.shipping !== "Begge" || deliveryMethod !== null;
+
+            return (
+              <div className="space-y-3">
+                {showToggle && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryMethod("shipping")}
+                      className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "shipping" ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]" : "border-stone-200 hover:border-stone-400"}`}
+                    >
+                      <span className="text-xl">📦</span>
+                      <span className="text-sm font-medium">Frakt</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryMethod("meetup")}
+                      className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "meetup" ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]" : "border-stone-200 hover:border-stone-400"}`}
+                    >
+                      <span className="text-xl">🤝</span>
+                      <span className="text-sm font-medium">Møt selger</span>
+                    </button>
+                  </div>
+                )}
+
+                {(effectiveDm === "shipping" || (!showToggle && canShip)) && pkg && (
+                  <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm">
+                    <div>
+                      <p className="font-medium text-stone-800">📦 Frakt via Posten</p>
+                      <p className="text-xs text-stone-500">{pkg.label} · opp til {pkg.maxWeight}</p>
+                      <p className="mt-1 text-[11px] text-stone-400">Selger dropper pakken på nærmeste Posten-punkt etter betaling.</p>
+                    </div>
+                    <p className="ml-3 shrink-0 font-semibold text-stone-800">+{pkg.price} kr</p>
+                  </div>
+                )}
+
+                {(effectiveDm === "meetup" || item.shipping === "Kun henting") && (
+                  <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm">
+                    <p className="font-medium text-stone-800">🤝 Møt selger</p>
+                    <p className="mt-0.5 text-xs text-stone-500">Avtal tid og sted i chatten etter betaling. Pengene holdes trygt hos Aktivbruk til handelen er fullført.</p>
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <button
+                    onClick={() => { if (canCheckout) handleCheckout(); }}
+                    disabled={!canCheckout || buyingNow}
+                    className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {buyingNow ? "Sender til betaling…" : canCheckout ? `Kjøp nå — ${formatPrice(totalPrice)}` : "Kjøp nå"}
+                  </button>
+                  <p className="text-center text-[11px] text-stone-400">
+                    {!canCheckout
+                      ? "Velg leveringsmetode for å fortsette"
+                      : <>{formatPrice(item.price)} vare{shippingCost > 0 ? ` + ${formatPrice(shippingCost)} frakt` : ""} + {formatPrice(buyerFee)} <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">kjøperbeskyttelse</Link></>
+                    }
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
 
           {userId === null && (
             <Link href={`/login?next=/item/${item.id}`} className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black">
@@ -400,97 +472,112 @@ export default function ItemPageClient() {
           )}
 
           {userId && item.seller_id && !isSeller && !item.is_sold && myOffer !== undefined && (
-            <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-2">
+            <>
               {myOffer === null ? (
-                <>
-                  <p className="text-xs font-medium text-stone-700">Gi et tilbud</p>
-                  <div className="flex gap-2">
-                    <input type="text" inputMode="numeric" value={offerAmount} onChange={(e) => setOfferAmount(e.target.value.replace(/\D/g, ""))} placeholder={`Beløp (listepris ${formatPrice(item.price)})`} className="flex-1 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30" />
-                    <button onClick={submitOffer} disabled={submittingOffer || !offerAmount} className="shrink-0 rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50">{submittingOffer ? "…" : "Send"}</button>
-                  </div>
-                  <p className="text-[11px] text-stone-400">Selger kan godta, avslå eller ignorere tilbudet ditt.</p>
-                </>
+                <button
+                  onClick={() => setShowBidModal(true)}
+                  className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+                >
+                  💸 Gi bud
+                </button>
               ) : myOffer.status === "pending" ? (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-stone-600">Ditt tilbud</p>
-                    <p className="text-sm font-semibold">{formatPrice(myOffer.amount)}</p>
-                    <p className="text-[11px] text-stone-400">Venter på svar fra selger</p>
+                <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-stone-600">Ditt bud</p>
+                      <p className="text-sm font-semibold">{formatPrice(myOffer.amount)}</p>
+                      <p className="text-[11px] text-stone-400">Venter på svar fra selger</p>
+                    </div>
+                    <button onClick={withdrawOffer} className="text-xs text-stone-400 hover:text-red-600 underline underline-offset-2">Trekk tilbake</button>
                   </div>
-                  <button onClick={withdrawOffer} className="text-xs text-stone-400 hover:text-red-600 underline underline-offset-2">Trekk tilbake</button>
                 </div>
               ) : myOffer.status === "accepted" ? (
-                <div className="space-y-3">
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 space-y-3">
                   <div className="flex items-center gap-2 text-emerald-700">
                     <span className="text-lg">✓</span>
                     <div>
-                      <p className="text-sm font-semibold">Tilbud godtatt!</p>
+                      <p className="text-sm font-semibold">Bud godtatt!</p>
                       <p className="text-xs text-emerald-600">Selger godtok {formatPrice(myOffer.amount)}</p>
                     </div>
                   </div>
-                  {sellerChargesEnabled && (
-                    <button
-                      onClick={() => handleCheckout(myOffer.id)}
-                      disabled={payingOffer}
-                      className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
-                    >
-                      {payingOffer ? "Sender til betaling…" : `Betal nå — ${formatPrice(myOffer.amount)}`}
-                    </button>
-                  )}
-                  <p className="text-center text-[11px] text-stone-400">Sikker betaling via Stripe · 7% plattformavgift inkludert</p>
+                  {sellerChargesEnabled && (() => {
+                    const pkg = getPackageOption(item.package_size);
+                    const canShip = item.shipping !== "Kun henting" && !!pkg;
+                    const canMeet = item.shipping !== "Kan sendes";
+                    const showToggle = canShip && canMeet;
+                    const effectiveDm = item.shipping === "Kun henting" ? "meetup"
+                      : item.shipping === "Kan sendes" ? "shipping"
+                      : deliveryMethod;
+                    const shippingCost = effectiveDm === "shipping" && pkg ? pkg.price : 0;
+                    const buyerFee = calcBuyerFee(myOffer.amount);
+                    const canCheckout = item.shipping !== "Begge" || deliveryMethod !== null;
+                    return (
+                      <>
+                        {showToggle && (
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setDeliveryMethod("shipping")}
+                              className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "shipping" ? "border-[#5a6b32] bg-white ring-1 ring-[#5a6b32]" : "border-emerald-200 bg-white/60 hover:border-stone-400"}`}
+                            >
+                              <span className="text-xl">📦</span>
+                              <span className="text-sm font-medium">Frakt {pkg ? `(+${pkg.price} kr)` : ""}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeliveryMethod("meetup")}
+                              className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "meetup" ? "border-[#5a6b32] bg-white ring-1 ring-[#5a6b32]" : "border-emerald-200 bg-white/60 hover:border-stone-400"}`}
+                            >
+                              <span className="text-xl">🤝</span>
+                              <span className="text-sm font-medium">Møt selger</span>
+                            </button>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => { if (canCheckout) handleCheckout(myOffer.id); }}
+                          disabled={!canCheckout || payingOffer}
+                          className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          {payingOffer ? "Sender til betaling…" : canCheckout ? `Betal nå — ${formatPrice(myOffer.amount + shippingCost + buyerFee)}` : "Betal nå"}
+                        </button>
+                        <p className="text-center text-[11px] text-stone-400">
+                          {!canCheckout
+                            ? "Velg leveringsmetode for å fortsette"
+                            : <>{formatPrice(myOffer.amount)} bud{shippingCost > 0 ? ` + ${formatPrice(shippingCost)} frakt` : ""} + {formatPrice(buyerFee)} <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">kjøperbeskyttelse</Link></>}
+                        </p>
+                      </>
+                    );
+                  })()}
+                  <button
+                    onClick={cancelAcceptedOffer}
+                    className="mx-auto block text-[11px] text-stone-400 underline underline-offset-2 hover:text-red-600"
+                  >
+                    Avbryt bud
+                  </button>
                 </div>
               ) : (
-                <div>
-                  <p className="text-sm text-stone-600">Tilbudet på {formatPrice(myOffer.amount)} ble avslått.</p>
-                  <button onClick={() => setMyOffer(null)} className="mt-1 text-xs font-medium text-[#5a6b32] underline underline-offset-2">Gi nytt tilbud</button>
+                <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+                  <p className="text-sm text-stone-600">Budet på {formatPrice(myOffer.amount)} er ikke lenger aktivt.</p>
+                  <button onClick={() => { setMyOffer(null); setShowBidModal(true); }} className="mt-1 text-xs font-medium text-[#5a6b32] underline underline-offset-2">Gi nytt bud</button>
                 </div>
               )}
-            </div>
+            </>
           )}
 
           {userId && item.seller_id && !isSeller && (
-            <ChatPanel itemId={item.id} buyerId={userId} sellerId={item.seller_id} meId={userId} />
+            <Link
+              href={`/chat/${item.id}/${userId}`}
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-800 hover:border-stone-500 hover:bg-stone-50"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z" />
+              </svg>
+              Skriv til selger
+            </Link>
           )}
 
           {isSeller && item.seller_id && (
             <div className="space-y-3">
-              <h2 className="text-sm font-medium text-stone-800">{buyerThreads.length ? `Samtaler (${buyerThreads.length})` : "Ingen meldinger enda"}</h2>
-              {buyerThreads.length > 1 && (
-                <div className="flex flex-wrap gap-2">
-                  {buyerThreads.map((b, i) => {
-                    const isActive = activeBuyer === b;
-                    const t = buyerLastMsg[b];
-                    return (
-                      <button key={b} onClick={() => setActiveBuyer(b)} className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs ${isActive ? "border-[#5a6b32] bg-[#5a6b32] text-white" : "border-stone-300 text-stone-700 hover:border-stone-500"}`}>
-                        {i === 0 && !isActive && <span className="h-1.5 w-1.5 rounded-full bg-red-400" />}
-                        {profileDisplayName(buyerProfiles[b], b)}
-                        {t && <span className={isActive ? "opacity-70" : "text-stone-400"}>· {fmtBuyerTime(t)}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {activeBuyer && buyerOffers[activeBuyer] && (
-                <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
-                  {buyerOffers[activeBuyer].status === "pending" ? (
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-medium text-stone-500">
-                          Tilbud fra {profileDisplayName(buyerProfiles[activeBuyer], activeBuyer)}
-                        </p>
-                        <p className="text-base font-semibold">{formatPrice(buyerOffers[activeBuyer].amount)}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => respondOffer(buyerOffers[activeBuyer].id, activeBuyer, "accepted")} className="rounded-full bg-[#5a6b32] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#435022]">Godta</button>
-                        <button onClick={() => respondOffer(buyerOffers[activeBuyer].id, activeBuyer, "declined")} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500">Avslå</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-stone-500">Tilbud {formatPrice(buyerOffers[activeBuyer].amount)} · {buyerOffers[activeBuyer].status === "accepted" ? <span className="font-medium text-emerald-700">Godtatt ✓</span> : <span className="font-medium text-stone-500">Avslått</span>}</p>
-                  )}
-                </div>
-              )}
-              {activeBuyer && <ChatPanel itemId={item.id} buyerId={activeBuyer} sellerId={item.seller_id} meId={userId} />}
               {!item.is_sold && (
                 showSoldPicker ? (
                   <div className="space-y-2 rounded-xl border border-stone-200 bg-stone-50 p-3">
@@ -539,6 +626,15 @@ export default function ItemPageClient() {
           )}
         </div>
       </div>
+
+      {showBidModal && item && userId && (
+        <BidModal
+          item={item}
+          onClose={() => setShowBidModal(false)}
+          onSubmit={submitOffer}
+          submitting={submittingOffer}
+        />
+      )}
 
       {similar.length > 0 && (
         <section className="space-y-3">

@@ -40,6 +40,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       review_deadline: deadline.toISOString(),
     }).eq("id", orderId);
 
+    // Insert a delivered system message into the chat timeline
+    await admin.from("messages").insert({
+      item_id: String(order.item_id),
+      buyer_id: order.buyer_id,
+      sender_id: order.buyer_id,
+      body: "",
+      message_type: "delivered",
+      metadata: { order_id: orderId },
+    });
+
     // Email seller so they know buyer received it
     const [sellerRes, itemRes] = await Promise.all([
       admin.auth.admin.getUserById(order.seller_id),

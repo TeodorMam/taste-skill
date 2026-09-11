@@ -78,7 +78,7 @@ export default function MinePage() {
     const buyerIds = Array.from(new Set((msgs ?? []).map((m: { buyer_id: string }) => m.buyer_id)));
     if (buyerIds.length > 0) {
       const { data: pData } = await supabase
-        .from("profiles")
+        .from("profiles_public")
         .select("*")
         .in("user_id", buyerIds);
       const pMap: Record<string, Profile> = {};

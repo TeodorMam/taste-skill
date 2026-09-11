@@ -15,15 +15,32 @@ export type Item = {
   is_sold: boolean;
   sold_to_buyer_id: string | null;
   shipping: string | null;
+  package_size: string | null;
+  gender: string | null;
+  color: string | null;
+  fit: string | null;
   created_at: string;
   updated_at: string;
 };
 
+// Order matters: the first entry is the default on the post form.
+// "Begge" is default because it gives buyers the most flexibility and
+// sellers the widest possible pool of interested buyers.
 export const SHIPPING_OPTIONS = [
-  { value: "Kan sendes", label: "📦 Kan sendes", hint: "Kjøper betaler frakt" },
-  { value: "Kun henting", label: "🤝 Kun henting", hint: "Møtes lokalt" },
   { value: "Begge", label: "📦🤝 Begge", hint: "Fleksibel" },
+  { value: "Kun henting", label: "🤝 Kun henting", hint: "Møtes lokalt" },
+  { value: "Kan sendes", label: "📦 Kan sendes", hint: "Kjøper betaler frakt" },
 ] as const;
+
+export type MessageType =
+  | "text"
+  | "image"
+  | "bid"
+  | "bid_accepted"
+  | "payment"
+  | "shipped"
+  | "delivered"
+  | "payout";
 
 export type Message = {
   id: string;
@@ -31,6 +48,9 @@ export type Message = {
   buyer_id: string;
   sender_id: string;
   body: string;
+  image_url: string | null;
+  message_type: MessageType;
+  metadata: Record<string, unknown> | null;
   created_at: string;
 };
 
@@ -85,6 +105,11 @@ export type Profile = {
   stripe_account_id: string | null;
   stripe_charges_enabled: boolean;
   stripe_onboarding_complete: boolean;
+  full_name: string | null;
+  address: string | null;
+  postal_code: string | null;
+  city: string | null;
+  phone: string | null;
 };
 
 export function summarizeReviews(reviews: Review[]) {
@@ -240,6 +265,18 @@ export function categoryMatchesParent(
 }
 
 export const SIZES = ["XS", "S", "M", "L", "XL", "XXL"] as const;
+
+export const GENDERS = ["Herre", "Dame", "Unisex"] as const;
+
+export const COLORS = [
+  "Svart", "Hvit", "Grå", "Marineblå", "Blå", "Lyseblå",
+  "Grønn", "Oliven", "Rød", "Rosa", "Lilla", "Oransje",
+  "Gul", "Beige", "Brun", "Flerfarge",
+] as const;
+
+export const FITS = [
+  "Slim fit", "Regular fit", "Oversized", "Compression", "Athletic fit",
+] as const;
 
 export const CONDITIONS = [
   "Ny med merkelapp",

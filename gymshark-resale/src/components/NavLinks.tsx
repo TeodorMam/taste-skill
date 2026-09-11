@@ -14,7 +14,7 @@ function authHref(isLoggedIn: boolean, href: string) {
 
 export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
   const path = usePathname();
-  const { inbox, varsler } = useNavCounts(isLoggedIn);
+  const { inbox, varsler, orders } = useNavCounts(isLoggedIn);
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -49,16 +49,23 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
         Innboks
         {inbox > 0 && <Badge count={inbox} />}
       </Link>
-      <Link href={authHref(isLoggedIn, "/orders")} className={textCls("/orders")}>
+      <Link href={authHref(isLoggedIn, "/orders")} className={`relative ${textCls("/orders")}`}>
         Ordre
+        {orders > 0 && <Badge count={orders} />}
       </Link>
-      <Link href={authHref(isLoggedIn, "/post")} className={textCls("/post")}>
+      <Link href={authHref(isLoggedIn, "/sell")} className={textCls("/sell")}>
         Selg
       </Link>
-      <Link href={authHref(isLoggedIn, "/profil")} className={`flex items-center gap-2 ${textCls("/profil")}`}>
-        Min profil
-        {isLoggedIn && <Avatar profile={profile} size="sm" />}
-      </Link>
+      {isLoggedIn ? (
+        <Link href="/profil" className={`flex items-center gap-2 ${textCls("/profil")}`}>
+          Min profil
+          <Avatar profile={profile} size="sm" />
+        </Link>
+      ) : (
+        <Link href={`/login?next=${encodeURIComponent("/profil")}`} className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-black">
+          Logg inn
+        </Link>
+      )}
     </nav>
   );
 }

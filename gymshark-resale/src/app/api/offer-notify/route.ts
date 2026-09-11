@@ -33,18 +33,25 @@ export async function POST(req: Request) {
   const sellerEmail = sellerData.user?.email;
   if (!sellerEmail) return NextResponse.json({ ok: true, skipped: "no email" });
 
+  // Fetch buyer profile for display name
+  const { data: buyerProfile } = await admin
+    .from("profiles").select("display_name").eq("user_id", offer.buyer_id).maybeSingle();
+  const buyerName = (buyerProfile as { display_name: string | null } | null)?.display_name?.trim()
+    || `Kjøper #${String(offer.buyer_id).slice(0, 6)}`;
+
   const price = new Intl.NumberFormat("nb-NO").format(offer.amount);
   const link = `${SITE_URL}/item/${item.id}`;
-  const subject = `Du har fått et bud på "${item.title}"`;
+  const subject = `${buyerName} la inn et bud på "${item.title}"`;
 
   await sendEmail(sellerEmail, subject, `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1c1917;max-width:560px">
       <h2 style="margin:0 0 8px;font-size:18px">${subject}</h2>
       <div style="background:#f5f5f4;padding:16px;border-radius:12px;margin-bottom:16px">
-        <p style="margin:0;font-size:22px;font-weight:700">${price} kr</p>
+        <p style="margin:0;font-size:14px;color:#78716c">Bud fra ${buyerName}</p>
+        <p style="margin:4px 0 0;font-size:22px;font-weight:700">${price} kr</p>
       </div>
       <a href="${link}" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">
-        Se budet
+        Se budet →
       </a>
       <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
     </div>

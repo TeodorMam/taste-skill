@@ -14,29 +14,31 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aktivbruk.com";
 const REVIEW_HOURS = 48;
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret") ?? "";
-  if (CRON_SECRET && secret !== CRON_SECRET) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+  try {
+    const secret = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret") ?? "";
+    if (CRON_SECRET && secret !== CRON_SECRET) {
+      // Always 200 so cron-job.org doesn't auto-disable us; misconfig shows up in body
+      return NextResponse.json({ ok: false, error: "unauthorized" });
+    }
 
-  const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+    const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
-  // Fetch all shipped orders that have a trackable carrier
-  const { data: orders } = await admin
-    .from("orders")
-    .select("id, carrier, tracking_info, buyer_id, seller_id, item_id")
-    .eq("status", "shipped")
-    .not("tracking_info", "is", null)
-    .not("carrier", "is", null)
-    .neq("carrier", "other");
+    // Fetch all shipped orders that have a trackable carrier
+    const { data: orders } = await admin
+      .from("orders")
+      .select("id, carrier, tracking_info, buyer_id, seller_id, item_id")
+      .eq("status", "shipped")
+      .not("tracking_info", "is", null)
+      .not("carrier", "is", null)
+      .neq("carrier", "other");
 
-  if (!orders || orders.length === 0) {
-    return NextResponse.json({ checked: 0 });
-  }
+    if (!orders || orders.length === 0) {
+      return NextResponse.json({ ok: true, checked: 0 });
+    }
 
-  const results: { id: string; delivered: boolean; error?: string }[] = [];
+    const results: { id: string; delivered: boolean; error?: string }[] = [];
 
-  for (const order of orders) {
+    for (const order of orders) {
     try {
       const delivered = await isPackageDelivered(
         order.carrier as Carrier,
@@ -75,15 +77,16 @@ export async function GET(req: NextRequest) {
           body: JSON.stringify({
             from: FROM_EMAIL,
             to: buyerEmail,
-            subject: `Pakken din er levert — bekreft mottak av «${itemTitle}»`,
+            subject: `Varen er levert — ${itemTitle}`,
             html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
-              <h2 style="margin:0 0 8px;font-size:18px">Pakken din er levert!</h2>
-              <p style="margin:0 0 12px;font-size:14px;color:#57534e">Fraktselskapet bekrefter at <strong>${itemTitle}</strong> er levert.</p>
-              <p style="margin:0 0 16px;font-size:14px;color:#57534e">Du har <strong>${REVIEW_HOURS} timer</strong> på å bekrefte at alt er ok, eller melde et problem. Gjør du ingenting frigjøres betalingen automatisk til selger.</p>
-              <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
-                <a href="${SITE_URL}/orders" style="display:inline-block;background:#16a34a;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Alt OK ✓</a>
-                <a href="${SITE_URL}/orders" style="display:inline-block;background:#fff;color:#1c1917;border:1px solid #d6d3d1;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Meld problem</a>
-              </div>
+              <h2 style="margin:0 0 8px;font-size:18px">Varen er levert!</h2>
+              <p style="margin:0 0 8px;font-size:14px;color:#57534e">Du har nå <strong>${REVIEW_HOURS} timer</strong> på å:</p>
+              <ul style="margin:0 0 12px;padding-left:20px;font-size:14px;color:#57534e">
+                <li>Bekrefte at alt er i orden</li>
+                <li>Melde fra om et problem</li>
+              </ul>
+              <p style="margin:0 0 16px;font-size:14px;color:#57534e">Hvis du bekrefter at alt er OK, utbetales pengene til selger med én gang. Hvis du ikke gjør noe innen ${REVIEW_HOURS} timer, skjer dette automatisk.</p>
+              <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
               <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
             </div>`,
           }),
@@ -97,9 +100,14 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({
-    checked: results.length,
-    delivered: results.filter((r) => r.delivered).length,
-    results,
-  });
+    return NextResponse.json({
+      ok: true,
+      checked: results.length,
+      delivered: results.filter((r) => r.delivered).length,
+      results,
+    });
+  } catch (err) {
+    console.error("[cron/tracking] top-level error:", err);
+    return NextResponse.json({ ok: false, error: String(err) });
+  }
 }
