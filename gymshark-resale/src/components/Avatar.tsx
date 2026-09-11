@@ -1,14 +1,14 @@
 import { type Profile, profileInitials } from "@/lib/supabase";
-import { storageThumb } from "@/lib/image";
+import { browserSafeImage } from "@/lib/image";
 
 type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
 
-const sizes: Record<AvatarSize, { container: string; text: string; icon: number; px: number }> = {
-  xs: { container: "h-5 w-5",  text: "text-[8px]",  icon: 11, px: 40 },
-  sm: { container: "h-7 w-7",  text: "text-[11px]", icon: 15, px: 56 },
-  md: { container: "h-10 w-10", text: "text-sm",    icon: 20, px: 80 },
-  lg: { container: "h-12 w-12", text: "text-base",  icon: 24, px: 96 },
-  xl: { container: "h-14 w-14", text: "text-base",  icon: 28, px: 112 },
+const sizes: Record<AvatarSize, { container: string; text: string; icon: number }> = {
+  xs: { container: "h-5 w-5",  text: "text-[8px]",  icon: 11 },
+  sm: { container: "h-7 w-7",  text: "text-[11px]", icon: 15 },
+  md: { container: "h-10 w-10", text: "text-sm",    icon: 20 },
+  lg: { container: "h-12 w-12", text: "text-base",  icon: 24 },
+  xl: { container: "h-14 w-14", text: "text-base",  icon: 28 },
 };
 
 export function Avatar({
@@ -18,13 +18,13 @@ export function Avatar({
   profile: Profile | null | undefined;
   size?: AvatarSize;
 }) {
-  const { container, text, icon, px } = sizes[size];
+  const { container, text, icon } = sizes[size];
 
   if (profile?.avatar_url) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={storageThumb(profile.avatar_url, { width: px * 2, quality: 75 })}
+        src={browserSafeImage(profile.avatar_url)}
         alt=""
         loading="lazy"
         decoding="async"
