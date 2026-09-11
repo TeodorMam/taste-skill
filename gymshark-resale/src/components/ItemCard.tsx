@@ -6,6 +6,7 @@ import {
   itemImages,
   profileDisplayName,
 } from "@/lib/supabase";
+import { browserSafeImage } from "@/lib/image";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Avatar } from "@/components/Avatar";
 
@@ -37,7 +38,7 @@ export function ItemCard({
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={cover}
+            src={browserSafeImage(cover)}
             alt={item.title}
             loading="lazy"
             decoding="async"
