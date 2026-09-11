@@ -43,7 +43,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-square w-full items-center justify-center bg-stone-100 text-sm text-stone-400">
+      <div className="flex aspect-[3/4] w-full items-center justify-center bg-stone-100 text-sm text-stone-400">
         Ingen bilde
       </div>
     );
@@ -55,7 +55,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
         <button
           type="button"
           onClick={() => setLightbox(0)}
-          className="block aspect-square w-full cursor-zoom-in bg-stone-100"
+          className="block aspect-[3/4] w-full cursor-zoom-in bg-stone-100"
           aria-label="Forstørr bilde"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -71,7 +71,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
       <div className="relative">
         <div
           ref={ref}
-          className="flex aspect-square w-full snap-x snap-mandatory overflow-x-auto scroll-smooth bg-stone-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex aspect-[3/4] w-full snap-x snap-mandatory overflow-x-auto scroll-smooth bg-stone-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {images.map((src, i) => (
             <button
