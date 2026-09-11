@@ -46,7 +46,13 @@ function BrowseInner() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
-  const [debouncedQ, setDebouncedQ] = useState(params.get("q") ?? "");
+  // Search input is kept in local state so typing never triggers a
+  // router.replace() round-trip. The URL and the actual query only sync
+  // after a short debounce, matching how Google's own search field feels.
+  const initialQ = params.get("q") ?? "";
+  const [searchInput, setSearchInput] = useState(initialQ);
+  const [debouncedQ, setDebouncedQ] = useState(initialQ);
+  const lastSyncedQ = useRef(initialQ);
   const [showFilter, setShowFilter] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const [activeFilterPanel, setActiveFilterPanel] = useState<FilterKey | null>(null);
@@ -57,7 +63,7 @@ function BrowseInner() {
   // render / effect fire. Under load this saves TCP setup and auth cost.
   const supabase = useMemo(() => createClient(), []);
 
-  const q = params.get("q") ?? "";
+  const urlQ = params.get("q") ?? "";
   const brand = params.get("brand") ?? "";
   const gender = params.get("gender") ?? "";
   const color = params.get("color") ?? "";
@@ -79,10 +85,36 @@ function BrowseInner() {
     setLocalPriceMax(priceMax);
   }, [priceMin, priceMax]);
 
+  // Debounce: after 250 ms of no typing, sync the local input to both the
+  // URL (so it's shareable / back-button safe) and to debouncedQ (which
+  // fires the Supabase query). Keeping the router.replace off the hot path
+  // makes each keystroke a single React render on the input alone.
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQ(q), 400);
+    if (searchInput === lastSyncedQ.current) return;
+    const timer = setTimeout(() => {
+      lastSyncedQ.current = searchInput;
+      setDebouncedQ(searchInput);
+      const next = new URLSearchParams(params.toString());
+      if (searchInput) next.set("q", searchInput);
+      else next.delete("q");
+      router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+    }, 250);
     return () => clearTimeout(timer);
-  }, [q]);
+    // params/router are intentionally omitted so a URL update from this
+    // effect doesn't restart the debounce timer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  // If the URL's q changes from an external source (clearAll button, browser
+  // back button, chip clear), pull it back into the input so they stay in
+  // sync. lastSyncedQ acts as the "committed" watermark so we don't fight
+  // our own debounce push.
+  useEffect(() => {
+    if (urlQ === lastSyncedQ.current) return;
+    lastSyncedQ.current = urlQ;
+    setSearchInput(urlQ);
+    setDebouncedQ(urlQ);
+  }, [urlQ]);
 
   useEffect(() => {
     // Cache the "which brands actually exist" set for 10 min in sessionStorage.
@@ -287,8 +319,8 @@ function BrowseInner() {
 
         <input
           type="search"
-          value={q}
-          onChange={(e) => setParam("q", e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Søk tittel eller merke…"
           className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
         />
