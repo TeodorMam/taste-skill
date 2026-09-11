@@ -45,7 +45,7 @@ export function ItemCard({
       href={`/item/${item.id}`}
       className="group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow-md"
     >
-      <div className="relative aspect-square w-full overflow-hidden bg-stone-100">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-stone-100">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -55,7 +55,7 @@ export function ItemCard({
             alt={item.title}
             loading="lazy"
             decoding="async"
-            className={`h-full w-full object-contain transition duration-300 group-hover:scale-[1.03] ${
+            className={`h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] ${
               item.is_sold ? "opacity-60 grayscale" : ""
             }`}
           />
