@@ -1,11 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { storageThumb } from "@/lib/image";
-
-function detailSrc(url: string) {
-  return storageThumb(url, { width: 1200, quality: 80 });
-}
 
 export function Carousel({ images, alt }: { images: string[]; alt: string }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -64,7 +59,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
           aria-label="Forstørr bilde"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={detailSrc(images[0])} alt={alt} className="h-full w-full object-cover" />
+          <img src={images[0]} alt={alt} className="h-full w-full object-cover" />
         </button>
         {lightbox !== null && <Lightbox images={images} index={lightbox} alt={alt} onClose={() => setLightbox(null)} onChange={setLightbox} />}
       </>
@@ -88,7 +83,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={detailSrc(src)}
+                src={src}
                 alt={`${alt} ${i + 1}`}
                 className="h-full w-full object-cover"
                 loading={i === 0 ? "eager" : "lazy"}
