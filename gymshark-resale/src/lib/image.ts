@@ -84,3 +84,21 @@ export function storageThumb(
   const qs = params.toString();
   return qs ? `${rendered}?${qs}` : rendered;
 }
+
+// iPhone photos uploaded before the HEIC-to-JPEG converter shipped still
+// live in Storage as HEIC or DNG. iOS Safari renders them natively but
+// desktop Chrome/Firefox cannot, so those tiles show a broken icon there.
+// Route only those URLs through the render/image transform, which
+// re-encodes to JPEG on the CDN. Regular JPEG/PNG stays on the raw URL
+// so the tile keeps the natural aspect ratio we just fixed.
+const NON_BROWSER_FORMAT = /\.(heic|heif|dng|raw|tiff?)($|\?)/i;
+
+export function browserSafeImage(url: string | null | undefined): string {
+  if (!url) return "";
+  if (!NON_BROWSER_FORMAT.test(url)) return url;
+  if (!url.includes(STORAGE_PUBLIC_SEGMENT)) return url;
+  // A large bounding box so common phone photos aren't visibly downsized.
+  // Supabase re-encodes to JPEG whenever it serves through render/image,
+  // which is what unblocks desktop rendering.
+  return url.replace(STORAGE_PUBLIC_SEGMENT, STORAGE_RENDER_SEGMENT) + "?width=1600&quality=85";
+}

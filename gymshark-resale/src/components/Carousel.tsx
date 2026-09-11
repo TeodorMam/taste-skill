@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { browserSafeImage } from "@/lib/image";
 
 export function Carousel({ images, alt }: { images: string[]; alt: string }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -59,7 +60,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
           aria-label="Forstørr bilde"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={images[0]} alt={alt} className="h-full w-full object-contain" />
+          <img src={browserSafeImage(images[0])} alt={alt} className="h-full w-full object-contain" />
         </button>
         {lightbox !== null && <Lightbox images={images} index={lightbox} alt={alt} onClose={() => setLightbox(null)} onChange={setLightbox} />}
       </>
@@ -83,7 +84,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={src}
+                src={browserSafeImage(src)}
                 alt={`${alt} ${i + 1}`}
                 className="h-full w-full object-contain"
                 loading={i === 0 ? "eager" : "lazy"}
@@ -141,7 +142,7 @@ function Lightbox({ images, index, alt, onClose, onChange }: {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={images[index]}
+          src={browserSafeImage(images[index])}
           alt={`${alt} ${index + 1}`}
           className="max-h-full max-w-full cursor-zoom-in object-contain"
           draggable={false}
