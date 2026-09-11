@@ -24,7 +24,7 @@ export function Avatar({
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={storageThumb(profile.avatar_url, { width: px * 2, quality: 75, resize: "cover" })}
+        src={storageThumb(profile.avatar_url, { width: px * 2, quality: 75 })}
         alt=""
         loading="lazy"
         decoding="async"

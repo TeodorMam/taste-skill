@@ -26,13 +26,15 @@ export function ItemCard({
 }) {
   const images = itemImages(item);
   const cover = images[0] ?? null;
-  // Browse grid renders cards at ~300px on phones and ~360px on desktop,
-  // so a 600px transform gives 2x-density crispness without paying for the
-  // original's 3-12 MB. srcset lets small phones ask for 400px instead.
-  const coverSrc = storageThumb(cover, { width: 600, quality: 75, resize: "cover" });
+  // Browse grid renders cards at ~300 px on phones and ~360 px on desktop,
+  // so a 600 px width transform gives 2x-density crispness without paying
+  // for the original's 3-12 MB. Only width is sent so Supabase preserves
+  // the seller photo's aspect ratio — the visible crop to the tile square
+  // is CSS (object-cover), not a transform.
+  const coverSrc = storageThumb(cover, { width: 600, quality: 75 });
   const coverSrcSet = cover
     ? [400, 600, 800]
-        .map((w) => `${storageThumb(cover, { width: w, quality: 75, resize: "cover" })} ${w}w`)
+        .map((w) => `${storageThumb(cover, { width: w, quality: 75 })} ${w}w`)
         .join(", ")
     : undefined;
   const showSeller = !hideSeller && !!item.seller_id;
