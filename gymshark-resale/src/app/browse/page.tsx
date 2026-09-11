@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   type Item,
@@ -46,13 +46,12 @@ function BrowseInner() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
-  // Search input is kept in local state so typing never triggers a
-  // router.replace() round-trip. The URL and the actual query only sync
-  // after a short debounce, matching how Google's own search field feels.
+  // The search input lives in its own memoized <SearchBar/> below so its
+  // keystrokes never re-render this ~700-line component. It debounces
+  // internally and calls onCommit only when the value should hit the URL
+  // + query. debouncedQ mirrors the last committed value.
   const initialQ = params.get("q") ?? "";
-  const [searchInput, setSearchInput] = useState(initialQ);
   const [debouncedQ, setDebouncedQ] = useState(initialQ);
-  const lastSyncedQ = useRef(initialQ);
   const [showFilter, setShowFilter] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const [activeFilterPanel, setActiveFilterPanel] = useState<FilterKey | null>(null);
@@ -85,36 +84,19 @@ function BrowseInner() {
     setLocalPriceMax(priceMax);
   }, [priceMin, priceMax]);
 
-  // Debounce: after 250 ms of no typing, sync the local input to both the
-  // URL (so it's shareable / back-button safe) and to debouncedQ (which
-  // fires the Supabase query). Keeping the router.replace off the hot path
-  // makes each keystroke a single React render on the input alone.
-  useEffect(() => {
-    if (searchInput === lastSyncedQ.current) return;
-    const timer = setTimeout(() => {
-      lastSyncedQ.current = searchInput;
-      setDebouncedQ(searchInput);
-      const next = new URLSearchParams(params.toString());
-      if (searchInput) next.set("q", searchInput);
-      else next.delete("q");
-      router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
-    }, 250);
-    return () => clearTimeout(timer);
-    // params/router are intentionally omitted so a URL update from this
-    // effect doesn't restart the debounce timer.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput]);
+  // Stable ref so <SearchBar/>'s onCommit can push the latest URL search
+  // string without re-subscribing every render. Router itself is stable
+  // across renders in Next 13+.
+  const paramsStrRef = useRef(params.toString());
+  paramsStrRef.current = params.toString();
 
-  // If the URL's q changes from an external source (clearAll button, browser
-  // back button, chip clear), pull it back into the input so they stay in
-  // sync. lastSyncedQ acts as the "committed" watermark so we don't fight
-  // our own debounce push.
-  useEffect(() => {
-    if (urlQ === lastSyncedQ.current) return;
-    lastSyncedQ.current = urlQ;
-    setSearchInput(urlQ);
-    setDebouncedQ(urlQ);
-  }, [urlQ]);
+  const commitSearchQuery = useCallback((value: string) => {
+    setDebouncedQ(value);
+    const next = new URLSearchParams(paramsStrRef.current);
+    if (value) next.set("q", value);
+    else next.delete("q");
+    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+  }, [router]);
 
   useEffect(() => {
     // Cache the "which brands actually exist" set for 10 min in sessionStorage.
@@ -317,13 +299,7 @@ function BrowseInner() {
       <section className="space-y-3 pb-36 sm:pb-6">
         <h1 className="text-3xl font-semibold tracking-tight">Utforsk</h1>
 
-        <input
-          type="search"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Søk tittel eller merke…"
-          className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
-        />
+        <SearchBar externalValue={urlQ} onCommit={commitSearchQuery} />
 
         {/* Desktop filter bar — hidden on mobile where the floating pill handles this */}
         <div className="hidden sm:flex items-center gap-2.5">
@@ -666,6 +642,49 @@ function FilterSubPanel({
 
   return null;
 }
+
+// Isolated search input: keeps its own state and its own 200 ms debounce,
+// so keystrokes never re-render BrowseInner. It only calls onCommit when
+// the value should actually hit the URL + the Supabase query. externalValue
+// lets the parent reset it (Nullstill, browser back) without a sync loop —
+// lastCommittedRef tracks what we ourselves last pushed.
+const SearchBar = memo(function SearchBar({
+  externalValue,
+  onCommit,
+}: {
+  externalValue: string;
+  onCommit: (value: string) => void;
+}) {
+  const [value, setValue] = useState(externalValue);
+  const lastCommittedRef = useRef(externalValue);
+  const onCommitRef = useRef(onCommit);
+  onCommitRef.current = onCommit;
+
+  useEffect(() => {
+    if (value === lastCommittedRef.current) return;
+    const timer = setTimeout(() => {
+      lastCommittedRef.current = value;
+      onCommitRef.current(value);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [value]);
+
+  useEffect(() => {
+    if (externalValue === lastCommittedRef.current) return;
+    lastCommittedRef.current = externalValue;
+    setValue(externalValue);
+  }, [externalValue]);
+
+  return (
+    <input
+      type="search"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      placeholder="Søk tittel eller merke…"
+      className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
+    />
+  );
+});
 
 function OptionList({ children }: { children: React.ReactNode }) {
   return <div className="divide-y divide-stone-100 px-4">{children}</div>;
