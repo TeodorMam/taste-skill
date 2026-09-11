@@ -56,11 +56,15 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
         <button
           type="button"
           onClick={() => setLightbox(0)}
-          className="block aspect-[3/4] w-full cursor-zoom-in bg-stone-100"
+          className="block w-full cursor-zoom-in bg-stone-100"
           aria-label="Forstørr bilde"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={browserSafeImage(images[0])} alt={alt} className="h-full w-full object-contain" />
+          <img
+            src={browserSafeImage(images[0])}
+            alt={alt}
+            className="block h-auto max-h-[85vh] w-full object-contain"
+          />
         </button>
         {lightbox !== null && <Lightbox images={images} index={lightbox} alt={alt} onClose={() => setLightbox(null)} onChange={setLightbox} />}
       </>
@@ -72,21 +76,21 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
       <div className="relative">
         <div
           ref={ref}
-          className="flex aspect-[3/4] w-full snap-x snap-mandatory overflow-x-auto scroll-smooth bg-stone-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex w-full snap-x snap-mandatory items-center overflow-x-auto scroll-smooth bg-stone-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {images.map((src, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setLightbox(i)}
-              className="relative h-full w-full shrink-0 snap-center cursor-zoom-in"
+              className="relative flex w-full shrink-0 snap-center items-center justify-center cursor-zoom-in"
               aria-label={`Forstørr bilde ${i + 1}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={browserSafeImage(src)}
                 alt={`${alt} ${i + 1}`}
-                className="h-full w-full object-contain"
+                className="block h-auto max-h-[85vh] w-full object-contain"
                 loading={i === 0 ? "eager" : "lazy"}
               />
             </button>
