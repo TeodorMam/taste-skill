@@ -87,9 +87,14 @@ export default function ItemPageClient() {
 
   useEffect(() => {
     if (!params.id) return;
-    supabase.from("items").select("*").eq("id", params.id).single()
+    supabase.from("items").select("*").eq("id", params.id).maybeSingle()
       .then(({ data, error }) => {
-        if (error) setError(error.message);
+        // The server component already 404s missing items, so a null row
+        // here only happens in rare race conditions (deleted between the
+        // server render and this hydration). Show a friendly line instead
+        // of the raw Supabase error string.
+        if (error) setError("Kunne ikke laste varen. Prøv å oppdatere siden.");
+        else if (!data) setError("Denne varen finnes ikke lenger.");
         else setItem(data as Item);
       });
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
