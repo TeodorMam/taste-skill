@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+Allow: /browse
+Allow: /item/
+Allow: /about
+Allow: /vilkar
+Allow: /personvern
+Allow: /kjoperbeskyttelse
+
+Disallow: /profil
+Disallow: /seller
+Disallow: /inbox
+Disallow: /chat
+Disallow: /orders
+Disallow: /varsler
+Disallow: /favoritter
+Disallow: /mine
+Disallow: /login
+Disallow: /logout
+Disallow: /sell
+Disallow: /post
+Disallow: /item/*/edit
+Disallow: /api
+
+Sitemap: https://aktivbruk.com/sitemap.xml
