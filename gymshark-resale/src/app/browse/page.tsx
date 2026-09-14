@@ -296,58 +296,55 @@ function BrowseInner() {
 
   return (
     <>
-      <section className="space-y-3 pb-36 sm:pb-6">
+      <section className="space-y-3 pb-6">
         <h1 className="text-3xl font-semibold tracking-tight">Utforsk</h1>
 
         <SearchBar externalValue={urlQ} onCommit={commitSearchQuery} />
 
-        {/* Desktop filter bar — hidden on mobile where the floating pill handles this */}
-        <div className="hidden sm:flex items-center gap-2.5">
-          <select
-            value={sort}
-            onChange={(e) => setParam("sort", e.target.value === "newest" ? "" : e.target.value)}
-            className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-600 outline-none focus:border-[#5a6b32]"
+        {/* Filter + sort bar — same layout on mobile and desktop.
+            Filter/Sort sit as pill buttons on the left; active-filter
+            chips scroll horizontally to their right. */}
+        <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            onClick={() => setShowSort(true)}
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-sm font-medium text-stone-700 hover:border-stone-400"
           >
-            <option value="newest">Nyeste først</option>
-            <option value="price_asc">Pris lav → høy</option>
-            <option value="price_desc">Pris høy → lav</option>
-          </select>
+            <SortIcon />
+            Sorter
+          </button>
           <button
             onClick={() => { setActiveFilterPanel(null); setShowFilter(true); }}
-            className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-400 hover:text-stone-900"
+            className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium ${
+              activeFilterCount > 0
+                ? "border-[#5a6b32] bg-[#5a6b32] text-white"
+                : "border-stone-200 bg-white text-stone-700 hover:border-stone-400"
+            }`}
           >
             <FilterIcon />
             {activeFilterCount > 0 ? `Filter (${activeFilterCount})` : "Filter"}
           </button>
           {activeChips.length > 0 && (
-            <button onClick={clearAll} className="text-sm font-medium text-stone-400 hover:text-stone-700">
-              Nullstill
-            </button>
-          )}
-        </div>
-
-        {activeChips.length > 0 && (
-          <div className="-mx-4 overflow-x-auto px-4">
-            <div className="flex gap-1.5 pb-0.5">
+            <>
+              <div className="h-5 shrink-0 w-px bg-stone-200" />
               {activeChips.map((chip) => (
                 <button
                   key={chip.label}
                   onClick={chip.clear}
-                  className="flex shrink-0 items-center gap-1 rounded-full border border-[#5a6b32] bg-[#5a6b32] px-3 py-1.5 text-xs font-medium text-white"
+                  className="flex shrink-0 items-center gap-1 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500"
                 >
                   {chip.label}
-                  <span className="ml-0.5 opacity-75">✕</span>
+                  <span className="ml-0.5 opacity-60">✕</span>
                 </button>
               ))}
               <button
                 onClick={clearAll}
-                className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-500 hover:border-stone-400"
+                className="shrink-0 rounded-full px-2 py-1.5 text-xs font-medium text-stone-400 hover:text-stone-700"
               >
-                Nullstill alle
+                Nullstill
               </button>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
 
         {total !== null && (
           <p className="text-xs text-stone-400">
@@ -395,27 +392,6 @@ function BrowseInner() {
           </>
         )}
       </section>
-
-      {/* Floating bottom bar — mobile only (desktop has full screen space) */}
-      <div className="fixed bottom-[72px] left-0 right-0 z-30 flex justify-center px-4 pointer-events-none sm:hidden">
-        <div className="pointer-events-auto flex items-center rounded-full border border-stone-100 bg-white shadow-[0_4px_24px_rgba(0,0,0,0.12)]">
-          <button
-            onClick={() => setShowSort(true)}
-            className="flex items-center gap-2 rounded-l-full px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50"
-          >
-            <SortIcon />
-            Sorter
-          </button>
-          <div className="h-6 w-px bg-stone-200" />
-          <button
-            onClick={() => { setActiveFilterPanel(null); setShowFilter(true); }}
-            className="flex items-center gap-2 rounded-r-full px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50"
-          >
-            <FilterIcon />
-            {activeFilterCount > 0 ? `Filter (${activeFilterCount})` : "Filter"}
-          </button>
-        </div>
-      </div>
 
       {/* Sort sheet */}
       {showSort && (
