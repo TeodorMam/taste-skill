@@ -122,7 +122,7 @@ export default function SellPage() {
         <ol className="space-y-3">
           {[
             { step: "1", text: "Fyll inn navn, fødselsdato, adresse, telefon" },
-            { step: "2", text: <>Legg inn <strong>IBAN</strong> (norsk kontonummer)</> },
+            { step: "2", text: <>Legg inn <strong>IBAN</strong> (starter med NO)</> },
             { step: "3", text: "Ferdig — du er klar til å selge" },
           ].map(({ step, text }) => (
             <li key={step} className="flex items-start gap-3 text-sm text-stone-700">

@@ -83,7 +83,7 @@ export function StripeConnectPanel() {
           <ol className="space-y-2.5">
             {[
               { n: "1", label: "Fyll inn navn, fødselsdato, adresse, telefon" },
-              { n: "2", label: <>Legg inn <strong>IBAN</strong> (norsk kontonummer)</> },
+              { n: "2", label: <>Legg inn <strong>IBAN</strong> (starter med NO)</> },
               { n: "3", label: "Ferdig — du er klar til å selge" },
             ].map(({ n, label }) => (
               <li key={n} className="flex items-start gap-2.5 text-sm text-stone-600">
