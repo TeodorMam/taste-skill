@@ -134,6 +134,10 @@ export default function SellPage() {
           ))}
         </ol>
 
+        <p className="rounded-xl bg-[#5a6b32]/5 px-4 py-3 text-xs leading-relaxed text-stone-600">
+          💡 Bedriftsinformasjon og bedriftstype er allerede fylt ut for deg — bare klikk <strong>Fortsett</strong> på de sidene.
+        </p>
+
         <button
           onClick={handleConnect}
           disabled={connecting}
