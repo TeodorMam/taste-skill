@@ -31,8 +31,8 @@ export default async function HomePage() {
           <span className="text-[#5a6b32]">bedre priser.</span>
         </h1>
         <p className="max-w-xl text-base text-stone-600 sm:text-lg">
-          Kjøp og selg brukte treningsklær fra Gymshark, Nike, Lululemon, Alphalete
-          og flere. Ett minutt å legge ut — gratis å bruke.
+          Kjøp og selg brukte treningsklær fra Gymshark, Nike, YoungLA, Craft,
+          DFYNE og mange flere. Ett minutt å legge ut — gratis å bruke.
         </p>
         <div className="flex flex-wrap gap-3">
           <Link
@@ -52,14 +52,10 @@ export default async function HomePage() {
       </section>
 
       {/* ── Trust highlights ──────────────────────────────────────────────── */}
-      <section className="grid gap-4 rounded-2xl border border-stone-200 bg-white p-6 sm:grid-cols-3 sm:p-8">
+      <section className="grid gap-4 rounded-2xl border border-stone-200 bg-white p-6 sm:grid-cols-2 sm:p-8">
         <Highlight
           title="Trygt og enkelt"
           body="Chat direkte med selger i appen. Kjøperbeskyttelse inkludert."
-        />
-        <Highlight
-          title="Lokalt i Norge"
-          body="Finn varer i byen din — møtes, eller send via Posten."
         />
         <Highlight
           title="Spar og gjenbruk"
