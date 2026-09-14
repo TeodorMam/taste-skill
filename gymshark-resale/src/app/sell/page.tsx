@@ -115,14 +115,14 @@ export default function SellPage() {
           </button>
           <h1 className="text-2xl font-semibold tracking-tight">Sett opp utbetaling</h1>
           <p className="mt-2 text-sm leading-relaxed text-stone-600">
-            Ett skjema med personlig info, ett med kontonummer. Ca. 60-90 sekunder.
+            Ett skjema med personlig info, ett med IBAN. Under 2 min.
           </p>
         </div>
 
         <ol className="space-y-3">
           {[
             { step: "1", text: "Fyll inn navn, fødselsdato, adresse, telefon" },
-            { step: "2", text: <>Legg inn <strong>norsk kontonummer</strong> (IBAN)</> },
+            { step: "2", text: <>Legg inn <strong>IBAN</strong> (norsk kontonummer)</> },
             { step: "3", text: "Ferdig — du er klar til å selge" },
           ].map(({ step, text }) => (
             <li key={step} className="flex items-start gap-3 text-sm text-stone-700">

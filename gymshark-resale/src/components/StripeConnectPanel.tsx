@@ -78,12 +78,12 @@ export function StripeConnectPanel() {
         <div className="mt-3 space-y-4">
           <p className="text-sm text-stone-700">
             Sett opp utbetaling for å motta penger fra salg. Ett skjema med
-            personlig info, ett med kontonummer. Ca. 60-90 sekunder.
+            personlig info, ett med IBAN. Under 2 min.
           </p>
           <ol className="space-y-2.5">
             {[
               { n: "1", label: "Fyll inn navn, fødselsdato, adresse, telefon" },
-              { n: "2", label: <>Legg inn <strong>norsk kontonummer</strong> (IBAN)</> },
+              { n: "2", label: <>Legg inn <strong>IBAN</strong> (norsk kontonummer)</> },
               { n: "3", label: "Ferdig — du er klar til å selge" },
             ].map(({ n, label }) => (
               <li key={n} className="flex items-start gap-2.5 text-sm text-stone-600">
