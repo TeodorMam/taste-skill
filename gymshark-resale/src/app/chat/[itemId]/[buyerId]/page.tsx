@@ -92,7 +92,11 @@ export default function ChatPage() {
   const [otherLastRead, setOtherLastRead] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
 
   // Auth
   useEffect(() => {
@@ -138,6 +142,19 @@ export default function ChatPage() {
         const m = payload.new as Message;
         if (m.buyer_id !== buyerId) return;
         setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `item_id=eq.${itemId}` }, (payload) => {
+        const m = payload.new as Message;
+        if (m.buyer_id !== buyerId) return;
+        // Edits sync live to the other side — swap the row in-place.
+        setMessages((prev) => prev.map((x) => (x.id === m.id ? m : x)));
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages", filter: `item_id=eq.${itemId}` }, (payload) => {
+        const oldRow = payload.old as { id?: string; buyer_id?: string };
+        if (!oldRow?.id) return;
+        // Silent delete — the row just disappears for both parties, matching
+        // Signal / iMessage's "delete for everyone".
+        setMessages((prev) => prev.filter((x) => x.id !== oldRow.id));
       })
       .subscribe();
     return () => { cancelled = true; supabase.removeChannel(channel); };
@@ -215,7 +232,61 @@ export default function ChatPage() {
     el.style.height = Math.min(el.scrollHeight, 140) + "px";
   }, [body]);
 
+  // Grow the inline edit textarea to fit its content while editing.
+  useEffect(() => {
+    const el = editTextareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 200) + "px";
+  }, [editingId, editingText]);
+
+  // Close the message action menu when clicking outside of it.
+  useEffect(() => {
+    if (!openMenuId) return;
+    const close = () => setOpenMenuId(null);
+    // Delay one tick so the click that opened the menu doesn't immediately
+    // close it.
+    const t = setTimeout(() => document.addEventListener("click", close), 0);
+    return () => { clearTimeout(t); document.removeEventListener("click", close); };
+  }, [openMenuId]);
+
   // ─── Actions ───────────────────────────────────────────────────────────────
+
+  function beginEdit(m: Message) {
+    setEditingId(m.id);
+    setEditingText(m.body);
+    setOpenMenuId(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditingText("");
+  }
+
+  async function saveEdit(id: string) {
+    const text = editingText.trim();
+    if (!text) return;
+    const prev = messages.find((m) => m.id === id);
+    if (prev && prev.body === text) { cancelEdit(); return; }
+    // Optimistic: swap locally, then persist. Realtime UPDATE echoes back
+    // for the other side.
+    setMessages((rows) => rows.map((m) => (m.id === id ? { ...m, body: text, edited_at: new Date().toISOString() } : m)));
+    cancelEdit();
+    const { error } = await supabase
+      .from("messages")
+      .update({ body: text, edited_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) toast(error.message || "Kunne ikke redigere meldingen");
+  }
+
+  async function deleteMessage(id: string) {
+    setOpenMenuId(null);
+    // Silent delete: no confirm dialog and no "melding slettet" placeholder.
+    // The row just leaves the list on both sides.
+    setMessages((rows) => rows.filter((m) => m.id !== id));
+    const { error } = await supabase.from("messages").delete().eq("id", id);
+    if (error) toast(error.message || "Kunne ikke slette meldingen");
+  }
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -514,28 +585,86 @@ export default function ChatPage() {
 
           // ── Regular text bubble (or jumbo emoji) ──
           const jumbo = jumboEmojiCount(m.body);
+          const isEditing = editingId === m.id;
+          const menuOpen = openMenuId === m.id;
+          const wasEdited = !!m.edited_at;
+
+          if (isEditing) {
+            return (
+              <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
+                <div className="max-w-[85%] w-full sm:w-auto sm:min-w-[240px]">
+                  <textarea
+                    ref={editTextareaRef}
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") { e.preventDefault(); cancelEdit(); }
+                    }}
+                    rows={1}
+                    autoFocus
+                    className="w-full resize-none rounded-2xl border border-[#5a6b32] bg-white px-3 py-2 text-sm leading-snug text-stone-900 outline-none"
+                  />
+                  <div className="mt-1 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      className="rounded-full px-3 py-1 text-xs font-medium text-stone-500 hover:text-stone-900"
+                    >
+                      Avbryt
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => saveEdit(m.id)}
+                      disabled={!editingText.trim()}
+                      className="rounded-full bg-[#5a6b32] px-3 py-1 text-xs font-semibold text-white hover:bg-[#435022] disabled:opacity-40"
+                    >
+                      Lagre
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
           if (jumbo > 0) {
             const size = jumbo === 1 ? "text-6xl" : jumbo === 2 ? "text-5xl" : "text-4xl";
             return (
-              <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
-                <div className={`${size} px-1 leading-tight`}>{m.body}</div>
+              <div key={m.id} className={`relative flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
+                <button
+                  type="button"
+                  onClick={mine ? (e) => { e.stopPropagation(); setOpenMenuId(menuOpen ? null : m.id); } : undefined}
+                  className={`${size} px-1 leading-tight ${mine ? "cursor-pointer" : "cursor-default"}`}
+                  aria-label={mine ? "Meldingsvalg" : undefined}
+                >
+                  {m.body}
+                </button>
+                {mine && menuOpen && (
+                  <MessageMenu onEdit={() => beginEdit(m)} onDelete={() => deleteMessage(m.id)} />
+                )}
                 <span className="mt-1 px-1 text-[10px] text-stone-400">
-                  {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
+                  {fmtTime(m.created_at)}{wasEdited ? " · Redigert" : ""}{isSeen ? " · Sett" : ""}
                 </span>
               </div>
             );
           }
+
           return (
-            <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
-              <div
-                className={`max-w-[75%] whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm ${
-                  mine ? "bg-stone-900 text-stone-50" : "bg-stone-100 text-stone-900"
+            <div key={m.id} className={`relative flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
+              <button
+                type="button"
+                onClick={mine ? (e) => { e.stopPropagation(); setOpenMenuId(menuOpen ? null : m.id); } : undefined}
+                className={`max-w-[75%] text-left whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm ${
+                  mine ? "bg-stone-900 text-stone-50 cursor-pointer" : "bg-stone-100 text-stone-900 cursor-default"
                 }`}
+                aria-label={mine ? "Meldingsvalg" : undefined}
               >
                 {m.body}
-              </div>
+              </button>
+              {mine && menuOpen && (
+                <MessageMenu onEdit={() => beginEdit(m)} onDelete={() => deleteMessage(m.id)} />
+              )}
               <span className="mt-0.5 px-1 text-[10px] text-stone-400">
-                {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
+                {fmtTime(m.created_at)}{wasEdited ? " · Redigert" : ""}{isSeen ? " · Sett" : ""}
               </span>
             </div>
           );
@@ -573,14 +702,6 @@ export default function ChatPage() {
             ref={textareaRef}
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            onKeyDown={(e) => {
-              // Enter sends, Shift+Enter inserts a newline. Mirrors iMessage,
-              // Tise, Slack — anything with a multiline composer.
-              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-                e.preventDefault();
-                if (body.trim() && !sending) send(e as unknown as React.FormEvent);
-              }
-            }}
             placeholder="Skriv en melding…"
             rows={1}
             className="min-w-0 flex-1 resize-none rounded-2xl border border-stone-300 bg-white px-3 py-2 text-sm leading-snug outline-none focus:border-[#5a6b32]"
@@ -621,6 +742,40 @@ export default function ChatPage() {
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
+
+function MessageMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="absolute right-0 top-full z-10 mt-1 min-w-[140px] overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg"
+    >
+      <button
+        type="button"
+        onClick={onEdit}
+        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-stone-800 hover:bg-stone-100"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+        Rediger
+      </button>
+      <button
+        type="button"
+        onClick={onDelete}
+        className="flex w-full items-center gap-2 border-t border-stone-100 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6M14 11v6" />
+          <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+        </svg>
+        Slett
+      </button>
+    </div>
+  );
+}
 
 function BidCard({
   amount,

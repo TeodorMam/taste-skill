@@ -52,6 +52,7 @@ export type Message = {
   message_type: MessageType;
   metadata: Record<string, unknown> | null;
   created_at: string;
+  edited_at?: string | null;
 };
 
 export type Review = {
