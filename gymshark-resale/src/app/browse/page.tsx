@@ -396,9 +396,14 @@ function BrowseInner() {
       {/* Sort sheet */}
       {showSort && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setShowSort(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-white">
-            <div className="mx-auto my-2 h-1 w-10 rounded-full bg-stone-200" />
+          <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" onClick={() => setShowSort(false)} />
+          <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl bg-white shadow-[0_-12px_40px_rgba(0,0,0,0.18)]">
+            <button
+              type="button"
+              onClick={() => setShowSort(false)}
+              aria-label="Lukk sortering"
+              className="mx-auto mb-1 mt-2 h-1 w-10 rounded-full bg-stone-300"
+            />
             <div className="px-4 pb-10 pt-1">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-400">Sorter etter</p>
               {SORT_OPTIONS.map((opt) => (
@@ -416,18 +421,26 @@ function BrowseInner() {
         </>
       )}
 
-      {/* Filter sheet */}
+      {/* Filter sheet — bottom-anchored so the results grid stays partly
+          visible above (Finn/Tise pattern). Backdrop is subtle so the
+          grid you're narrowing shows through. Drag handle at top +
+          click-outside dismiss. */}
       {showFilter && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/30"
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]"
             onClick={() => { setShowFilter(false); setActiveFilterPanel(null); }}
           />
           <div
-            className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-white"
-            style={{ maxHeight: "92vh" }}
+            className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-3xl bg-white shadow-[0_-12px_40px_rgba(0,0,0,0.18)]"
+            style={{ maxHeight: "80vh" }}
           >
-            <div className="mx-auto my-2 h-1 w-10 shrink-0 rounded-full bg-stone-200" />
+            <button
+              type="button"
+              onClick={() => { setShowFilter(false); setActiveFilterPanel(null); }}
+              aria-label="Lukk filter"
+              className="mx-auto mb-1 mt-2 h-1 w-10 shrink-0 rounded-full bg-stone-300"
+            />
             <div className="flex shrink-0 items-center justify-between border-b border-stone-100 px-4 pb-3 pt-1">
               {activeFilterPanel ? (
                 <button

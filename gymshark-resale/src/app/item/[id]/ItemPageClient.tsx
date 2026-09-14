@@ -365,6 +365,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
             {item.category && (<><dt className="text-stone-500">Kategori</dt><dd className="text-right">{item.category}</dd></>)}
             <dt className="text-stone-500">Størrelse</dt><dd className="text-right">{item.size}</dd>
             <dt className="text-stone-500">Tilstand</dt><dd className="text-right">{item.condition}</dd>
+            {item.gender && (<><dt className="text-stone-500">Kjønn</dt><dd className="text-right">{item.gender}</dd></>)}
             <dt className="text-stone-500">Sted</dt><dd className="text-right">{item.location}</dd>
             {item.shipping && (<><dt className="text-stone-500">Frakt</dt><dd className="text-right font-medium">{item.shipping}</dd></>)}
           </dl>
