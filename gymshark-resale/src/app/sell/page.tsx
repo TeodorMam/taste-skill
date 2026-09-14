@@ -113,17 +113,17 @@ export default function SellPage() {
           >
             ← Tilbake
           </button>
-          <h1 className="text-2xl font-semibold tracking-tight">Koble til Stripe</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Sett opp utbetaling</h1>
           <p className="mt-2 text-sm leading-relaxed text-stone-600">
-            For å motta betaling må du koble til Stripe. Det tar ca. 2 minutter.
+            Ett skjema med personlig info, ett med kontonummer. Ca. 60-90 sekunder.
           </p>
         </div>
 
         <ol className="space-y-3">
           {[
-            { step: "1", text: "Klikk «Koble til Stripe» nedenfor" },
-            { step: "2", text: <>Velg bransje: <strong>Klær og tilbehør</strong> — skriv inn nettsted: <strong>aktivbruk.com</strong></> },
-            { step: "3", text: "Fyll inn personlig info og bankinfo som vanlig" },
+            { step: "1", text: "Fyll inn navn, fødselsdato, adresse, telefon" },
+            { step: "2", text: <>Legg inn <strong>norsk kontonummer</strong> (IBAN)</> },
+            { step: "3", text: "Ferdig — du er klar til å selge" },
           ].map(({ step, text }) => (
             <li key={step} className="flex items-start gap-3 text-sm text-stone-700">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-semibold text-stone-600">
@@ -139,12 +139,12 @@ export default function SellPage() {
           disabled={connecting}
           className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
         >
-          {connecting ? "Sender til Stripe…" : "Koble til Stripe →"}
+          {connecting ? "Sender til Stripe…" : "Fortsett →"}
         </button>
 
         <p className="text-xs text-stone-400">
           <span className="font-medium text-stone-500">Under 18?</span>{" "}
-          Be en foresatt opprette Stripe-konto og motta betaling for deg.
+          Be en foresatt opprette utbetalingskontoen og motta pengene for deg.
         </p>
       </section>
     );

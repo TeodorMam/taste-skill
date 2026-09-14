@@ -143,9 +143,14 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "account.updated") {
     const account = event.data.object as Stripe.Account;
+    // "Ready to receive payouts" = destination-charge model. New accounts
+    // only ask for the transfers capability so charges_enabled stays false
+    // for them; existing accounts still expose it via the old path.
+    const transfersActive = account.capabilities?.transfers === "active";
+    const ready = account.charges_enabled || (transfersActive && !!account.details_submitted);
     await admin.from("profiles").update({
-      stripe_charges_enabled: account.charges_enabled,
-      stripe_onboarding_complete: account.details_submitted,
+      stripe_charges_enabled: ready,
+      stripe_onboarding_complete: !!account.details_submitted,
     }).eq("stripe_account_id", account.id);
   }
 
