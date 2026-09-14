@@ -29,6 +29,26 @@ function fmtTime(iso: string): string {
   return d.toLocaleDateString("nb-NO", { day: "numeric", month: "short" }) + ` ${hm}`;
 }
 
+// iMessage-style jumbo emoji: when a message is only 1–3 emoji graphemes and
+// nothing else, we drop the bubble and render them large. Returns 0 for
+// anything else so the caller can render the normal bubble.
+function jumboEmojiCount(text: string): 0 | 1 | 2 | 3 {
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  try {
+    // Intl.Segmenter groups things like flags, skin-tone modifiers and ZWJ
+    // sequences into single "visual" graphemes — Array.from would split a
+    // Norwegian flag or 🤝🏻 into pieces and miscount.
+    const seg = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+    const parts = Array.from(seg.segment(trimmed), (s) => s.segment.trim()).filter(Boolean);
+    if (parts.length === 0 || parts.length > 3) return 0;
+    const allEmoji = parts.every((g) => /\p{Extended_Pictographic}/u.test(g));
+    return allEmoji ? (parts.length as 1 | 2 | 3) : 0;
+  } catch {
+    return 0;
+  }
+}
+
 // ─── Event card config ────────────────────────────────────────────────────────
 
 const EVENT_CONFIGS: Partial<Record<MessageType, { icon: string; title: string; sub: string }>> = {
@@ -71,6 +91,7 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [otherLastRead, setOtherLastRead] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   // Auth
@@ -184,6 +205,15 @@ export default function ChatPage() {
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages.length]);
+
+  // Auto-grow the message textarea as the user types, capped at ~5 lines so
+  // long drafts don't push the whole conversation out of view.
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 140) + "px";
+  }, [body]);
 
   // ─── Actions ───────────────────────────────────────────────────────────────
 
@@ -482,11 +512,23 @@ export default function ChatPage() {
             );
           }
 
-          // ── Regular text bubble ──
+          // ── Regular text bubble (or jumbo emoji) ──
+          const jumbo = jumboEmojiCount(m.body);
+          if (jumbo > 0) {
+            const size = jumbo === 1 ? "text-6xl" : jumbo === 2 ? "text-5xl" : "text-4xl";
+            return (
+              <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
+                <div className={`${size} px-1 leading-tight`}>{m.body}</div>
+                <span className="mt-1 px-1 text-[10px] text-stone-400">
+                  {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
+                </span>
+              </div>
+            );
+          }
           return (
             <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
               <div
-                className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
+                className={`max-w-[75%] whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm ${
                   mine ? "bg-stone-900 text-stone-50" : "bg-stone-100 text-stone-900"
                 }`}
               >
@@ -502,7 +544,7 @@ export default function ChatPage() {
 
       {/* ── Input bar ────────────────────────────────────────────────────── */}
       <div className="shrink-0 border-t border-stone-200 bg-white">
-        <form onSubmit={send} className="flex items-center gap-2 p-2">
+        <form onSubmit={send} className="flex items-end gap-2 p-2">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -527,11 +569,21 @@ export default function ChatPage() {
             className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) sendImage(f); e.target.value = ""; }}
           />
-          <input
+          <textarea
+            ref={textareaRef}
             value={body}
             onChange={(e) => setBody(e.target.value)}
+            onKeyDown={(e) => {
+              // Enter sends, Shift+Enter inserts a newline. Mirrors iMessage,
+              // Tise, Slack — anything with a multiline composer.
+              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault();
+                if (body.trim() && !sending) send(e as unknown as React.FormEvent);
+              }
+            }}
             placeholder="Skriv en melding…"
-            className="min-w-0 flex-1 rounded-full border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32]"
+            rows={1}
+            className="min-w-0 flex-1 resize-none rounded-2xl border border-stone-300 bg-white px-3 py-2 text-sm leading-snug outline-none focus:border-[#5a6b32]"
           />
           <button
             type="submit"
