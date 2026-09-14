@@ -77,7 +77,7 @@ export function StripeConnectPanel() {
       {status === "none" && (
         <div className="mt-3 space-y-4">
           <p className="text-sm text-stone-700">
-            Sett opp utbetaling for å motta penger fra salg. Ett skjema med
+            Sett opp selgerkonto for å motta betaling. Ett skjema med
             personlig info, ett med IBAN. Under 2 min.
           </p>
           <ol className="space-y-2.5">
@@ -102,7 +102,7 @@ export function StripeConnectPanel() {
             disabled={connecting}
             className="rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
           >
-            {connecting ? "Sender til Stripe…" : "Sett opp utbetaling →"}
+            {connecting ? "Sender til Stripe…" : "Kom i gang →"}
           </button>
           <p className="text-xs text-stone-400">
             <span className="font-medium text-stone-500">Under 18?</span>{" "}
