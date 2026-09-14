@@ -95,7 +95,7 @@ export function StripeConnectPanel() {
             ))}
           </ol>
           <p className="rounded-xl bg-[#5a6b32]/5 px-3 py-2 text-xs text-stone-600">
-            💡 Bedriftsinformasjon og bedriftstype er allerede fylt ut for deg — bare klikk <strong>Fortsett</strong> på de sidene.
+            💡 Bedriftsinfo har vi fylt ut for deg. Du skriver kun personlig info og IBAN.
           </p>
           <button
             onClick={handleConnect}
