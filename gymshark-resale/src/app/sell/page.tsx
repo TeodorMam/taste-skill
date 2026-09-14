@@ -113,9 +113,9 @@ export default function SellPage() {
           >
             ← Tilbake
           </button>
-          <h1 className="text-2xl font-semibold tracking-tight">Sett opp utbetaling</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Sett opp selgerkonto</h1>
           <p className="mt-2 text-sm leading-relaxed text-stone-600">
-            Ett skjema med personlig info, ett med IBAN. Under 2 min.
+            For å motta betaling. Ett skjema med personlig info, ett med IBAN. Under 2 min.
           </p>
         </div>
 
