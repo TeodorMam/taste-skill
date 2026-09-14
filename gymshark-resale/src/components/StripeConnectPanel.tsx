@@ -77,13 +77,14 @@ export function StripeConnectPanel() {
       {status === "none" && (
         <div className="mt-3 space-y-4">
           <p className="text-sm text-stone-700">
-            For å selge må du koble til Stripe (trygg betaling). Det tar ca. 2 minutter.
+            Sett opp utbetaling for å motta penger fra salg. Ett skjema med
+            personlig info, ett med kontonummer. Ca. 60-90 sekunder.
           </p>
           <ol className="space-y-2.5">
             {[
-              { n: "1", label: "Klikk «Koble til Stripe»" },
-              { n: "2", label: <>Velg bransje: <strong>Klær og tilbehør</strong> og skriv inn nettsted: <strong>aktivbruk.com</strong></> },
-              { n: "3", label: "Fyll inn personlig info og bankinfo" },
+              { n: "1", label: "Fyll inn navn, fødselsdato, adresse, telefon" },
+              { n: "2", label: <>Legg inn <strong>norsk kontonummer</strong> (IBAN)</> },
+              { n: "3", label: "Ferdig — du er klar til å selge" },
             ].map(({ n, label }) => (
               <li key={n} className="flex items-start gap-2.5 text-sm text-stone-600">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-stone-100 text-[11px] font-semibold text-stone-500">
@@ -98,11 +99,11 @@ export function StripeConnectPanel() {
             disabled={connecting}
             className="rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
           >
-            {connecting ? "Sender til Stripe…" : "Koble til Stripe →"}
+            {connecting ? "Sender til Stripe…" : "Sett opp utbetaling →"}
           </button>
           <p className="text-xs text-stone-400">
             <span className="font-medium text-stone-500">Under 18?</span>{" "}
-            Be en foresatt opprette Stripe-konto og motta betaling for deg.
+            Be en foresatt opprette utbetalingskontoen og motta pengene for deg.
           </p>
         </div>
       )}
