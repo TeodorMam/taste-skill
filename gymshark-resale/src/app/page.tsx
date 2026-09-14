@@ -51,18 +51,6 @@ export default async function HomePage() {
         <p className="text-xs text-stone-400">Gratis å bruke – ingen skjulte gebyrer</p>
       </section>
 
-      {/* ── Trust highlights ──────────────────────────────────────────────── */}
-      <section className="grid gap-4 rounded-2xl border border-stone-200 bg-white p-6 sm:grid-cols-2 sm:p-8">
-        <Highlight
-          title="Trygt og enkelt"
-          body="Chat direkte med selger i appen. Kjøperbeskyttelse inkludert."
-        />
-        <Highlight
-          title="Spar og gjenbruk"
-          body="Gi treningstøyet et nytt liv og kjøp til brøkdelen av pris."
-        />
-      </section>
-
       {/* ── Populært nå ───────────────────────────────────────────────────── */}
       {items.length > 0 && (
         <section className="space-y-4">
@@ -81,15 +69,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-    </div>
-  );
-}
-
-function Highlight({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="space-y-1">
-      <p className="text-sm font-semibold text-stone-900">{title}</p>
-      <p className="text-sm text-stone-600">{body}</p>
     </div>
   );
 }
