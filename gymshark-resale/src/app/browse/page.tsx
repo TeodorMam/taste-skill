@@ -54,6 +54,10 @@ function BrowseInner() {
   const [debouncedQ, setDebouncedQ] = useState(initialQ);
   const [showFilter, setShowFilter] = useState(false);
   const [showSort, setShowSort] = useState(false);
+  // Swipe-down state for the filter sheet's drag handle. Positive dragY
+  // pulls the sheet down; releasing past ~100px closes it.
+  const [dragY, setDragY] = useState(0);
+  const dragStartYRef = useRef<number | null>(null);
   const [activeFilterPanel, setActiveFilterPanel] = useState<FilterKey | null>(null);
   const [localPriceMin, setLocalPriceMin] = useState(0);
   const [localPriceMax, setLocalPriceMax] = useState(PRICE_MAX);
@@ -422,25 +426,48 @@ function BrowseInner() {
       )}
 
       {/* Filter sheet — bottom-anchored so the results grid stays partly
-          visible above (Finn/Tise pattern). Backdrop is subtle so the
-          grid you're narrowing shows through. Drag handle at top +
-          click-outside dismiss. */}
+          visible above (Finn/Tise pattern). Real swipe-to-dismiss on the
+          top strip. */}
       {showFilter && (
         <>
           <div
             className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]"
-            onClick={() => { setShowFilter(false); setActiveFilterPanel(null); }}
+            onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
           />
           <div
             className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-3xl bg-white shadow-[0_-12px_40px_rgba(0,0,0,0.18)]"
-            style={{ maxHeight: "80vh" }}
+            style={{
+              maxHeight: "62vh",
+              transform: `translateY(${dragY}px)`,
+              transition: dragStartYRef.current == null ? "transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1)" : "none",
+              touchAction: "pan-y",
+            }}
           >
-            <button
-              type="button"
-              onClick={() => { setShowFilter(false); setActiveFilterPanel(null); }}
-              aria-label="Lukk filter"
-              className="mx-auto mb-1 mt-2 h-1 w-10 shrink-0 rounded-full bg-stone-300"
-            />
+            <div
+              className="shrink-0 cursor-grab pt-2 pb-1 active:cursor-grabbing"
+              onTouchStart={(e) => { dragStartYRef.current = e.touches[0].clientY; }}
+              onTouchMove={(e) => {
+                if (dragStartYRef.current == null) return;
+                const delta = e.touches[0].clientY - dragStartYRef.current;
+                if (delta > 0) setDragY(delta);
+              }}
+              onTouchEnd={() => {
+                const shouldClose = dragY > 100;
+                dragStartYRef.current = null;
+                if (shouldClose) {
+                  setShowFilter(false);
+                  setActiveFilterPanel(null);
+                }
+                setDragY(0);
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
+                aria-label="Lukk filter"
+                className="mx-auto block h-1 w-10 rounded-full bg-stone-300"
+              />
+            </div>
             <div className="flex shrink-0 items-center justify-between border-b border-stone-100 px-4 pb-3 pt-1">
               {activeFilterPanel ? (
                 <button
@@ -536,7 +563,7 @@ function BrowseInner() {
             {/* Sticky CTA */}
             <div className="shrink-0 border-t border-stone-100 px-4 pb-8 pt-3">
               <button
-                onClick={() => { setShowFilter(false); setActiveFilterPanel(null); }}
+                onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
                 className="w-full rounded-full bg-[#5a6b32] py-4 text-base font-semibold text-white hover:bg-[#435022] active:bg-[#435022]"
               >
                 {total !== null ? `Se ${total} annonser` : "Se annonser"}
