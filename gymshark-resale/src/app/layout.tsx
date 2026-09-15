@@ -8,10 +8,17 @@ import { BottomNav } from "@/components/BottomNav";
 import { ClientProviders } from "@/components/ClientProviders";
 import { SearchButton } from "@/components/SearchButton";
 
+const SITE_DESCRIPTION =
+  "Norges første bruktmarked kun for treningsklær. Kjøp og selg brukt Gymshark, Nike, YoungLA, Craft, DFYNE og mer — trygg betaling via Stripe.";
+
 export const metadata: Metadata = {
-  title: "Aktivbruk — bruktmarked for treningsklær",
-  description:
-    "Kjøp og selg brukte treningsklær i Norge. Gymshark, Nike, Lululemon, Alphalete og mer.",
+  metadataBase: new URL("https://aktivbruk.com"),
+  title: {
+    default: "Aktivbruk — Norges første bruktmarked for treningsklær",
+    template: "%s | Aktivbruk",
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: "Aktivbruk",
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
@@ -26,6 +33,9 @@ export const metadata: Metadata = {
     "selg treningsklær",
     "gymshark brukt",
     "gymshark norge",
+    "youngla brukt",
+    "dfyne brukt",
+    "craft brukt",
     "alphalete brukt",
     "lululemon brukt",
     "nvgtn brukt",
@@ -38,20 +48,48 @@ export const metadata: Metadata = {
     "treningsklær norge",
   ],
   openGraph: {
-    title: "Aktivbruk — bruktmarked for treningsklær",
-    description:
-      "Kjøp og selg brukte treningsklær i Norge. Gymshark, Nike, Lululemon, Alphalete og mer.",
+    title: "Aktivbruk — Norges første bruktmarked for treningsklær",
+    description: SITE_DESCRIPTION,
     type: "website",
     locale: "nb_NO",
     siteName: "Aktivbruk",
+    url: "https://aktivbruk.com",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aktivbruk — bruktmarked for treningsklær",
-    description:
-      "Kjøp og selg brukte treningsklær i Norge.",
+    title: "Aktivbruk — Norges første bruktmarked for treningsklær",
+    description: SITE_DESCRIPTION,
   },
+  alternates: { canonical: "https://aktivbruk.com" },
 };
+
+// Site-wide JSON-LD — one Organization block so Google can pull a
+// knowledge-panel style entry for the brand, and a WebSite block with a
+// SearchAction so aktivbruk.com can qualify for Google's sitelinks
+// searchbox in the SERP.
+const SITE_JSON_LD = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Aktivbruk",
+    url: "https://aktivbruk.com",
+    logo: "https://aktivbruk.com/apple-icon.png",
+    email: "kontakt@aktivbruk.com",
+    description: SITE_DESCRIPTION,
+    areaServed: "NO",
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Aktivbruk",
+    url: "https://aktivbruk.com",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://aktivbruk.com/browse?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  },
+];
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient(await cookies());
@@ -62,6 +100,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="no">
       <body className="bg-stone-50 text-stone-900">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD) }}
+        />
         <ClientProviders>
         <header className="sticky top-0 z-10 border-b border-stone-200 bg-stone-50/80 backdrop-blur">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
