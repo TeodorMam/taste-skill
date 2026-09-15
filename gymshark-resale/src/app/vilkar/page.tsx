@@ -37,7 +37,7 @@ export default function VilkarPage() {
       <Block title="3. Selgerens ansvar">
         <ul className="space-y-1.5">
           <li>Annonsen skal gi en ærlig og nøyaktig beskrivelse av varen, inkludert feil og slitasje.</li>
-          <li>Du kan bare selge treningsklær og treningsrelatert utstyr.</li>
+          <li>Du kan bare selge treningstøy. Andre kategorier innen trening og sport kan bli aktuelt senere, men er ikke tilgjengelig i dag.</li>
           <li>Forfalskninger, tyvegods eller varer som bryter norsk lov er ikke tillatt.</li>
           <li>Du plikter å sende varen innen 7 dager etter betaling. Sender du ikke innen fristen, kanselleres ordren og kjøper refunderes fullt.</li>
           <li>For å motta betaling må du koble til en Stripe Express-konto og akseptere Stripes vilkår.</li>
