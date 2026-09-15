@@ -41,7 +41,6 @@ export const metadata: Metadata = {
     "nvgtn brukt",
     "aybl brukt",
     "bruktmarked treningsklær",
-    "treningsutstyr brukt",
     "aktivbruk",
     "brukte sportklær",
     "second hand treningsklær",
