@@ -182,7 +182,7 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
           <p className="py-6 text-center text-xs text-stone-400">
             {meId === sellerId
               ? "Ingen meldinger fra denne kjøperen enda."
-              : "Si hei — spør om størrelse, henting eller tilstand."}
+              : "Si hei, spør om størrelse, henting eller tilstand."}
           </p>
         )}
         {messages.map((m, i) => {

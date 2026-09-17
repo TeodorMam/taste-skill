@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
       const sellerEmail = sellerRes.data.user?.email;
       const itemTitle = (itemRes as { data: { title: string } | null }).data?.title ?? "varen";
       const shippingCost = order.shipping_cost_nok ?? 0;
-      // Seller receives full item price + shipping (buyer-fee model — no deduction).
+      // Seller receives full item price + shipping (buyer-fee model, no deduction).
       const sellerReceives = order.amount_nok + shippingCost;
       const fmt = (n: number) => new Intl.NumberFormat("nb-NO").format(n) + " kr";
 
@@ -59,11 +59,11 @@ export async function GET(req: NextRequest) {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
           body: JSON.stringify({
             from: FROM_EMAIL, to: buyerEmail,
-            subject: `Betaling frigjort automatisk — ${itemTitle}`,
+            subject: `Betaling frigjort automatisk, ${itemTitle}`,
             html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
               <p style="font-size:14px;color:#57534e">Bekreftelsesvinduet for <strong>${itemTitle}</strong> utløp uten at du tok handling. Betalingen er automatisk frigjort til selger.</p>
               <p style="font-size:14px;color:#57534e">Har du et problem med varen? Kontakt oss på <a href="mailto:${FROM_EMAIL.match(/<(.+)>/)?.[1] ?? "kontakt@aktivbruk.com"}">${FROM_EMAIL.match(/<(.+)>/)?.[1] ?? "kontakt@aktivbruk.com"}</a>.</p>
-              <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
+              <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
             </div>`,
           }),
         }) : Promise.resolve(),
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
           body: JSON.stringify({
             from: FROM_EMAIL, to: sellerEmail,
-            subject: `Betaling utbetalt — ${itemTitle}`,
+            subject: `Betaling utbetalt, ${itemTitle}`,
             html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
               <h2 style="margin:0 0 8px;font-size:18px">Betaling automatisk frigjort</h2>
               <div style="background:#f0fdf4;padding:16px;border-radius:12px;margin-bottom:16px">
@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
               </div>
               <p style="font-size:14px;color:#57534e">Bekreftelsesvinduet utløp, og betalingen er automatisk overført til din Stripe-konto.</p>
               <a href="https://dashboard.stripe.com/express" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Åpne Stripe-dashboard</a>
-              <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
+              <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
             </div>`,
           }),
         }) : Promise.resolve(),

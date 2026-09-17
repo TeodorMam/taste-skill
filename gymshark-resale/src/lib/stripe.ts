@@ -7,4 +7,4 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 // Platform fee constants moved to src/lib/fees.ts (client-safe).
 // The seller-side deduction model was replaced by a buyer-side
-// "Kjøperbeskyttelse" line item — see calcBuyerFee in that file.
+// "Kjøperbeskyttelse" line item, see calcBuyerFee in that file.

@@ -9,12 +9,12 @@ import { ClientProviders } from "@/components/ClientProviders";
 import { SearchButton } from "@/components/SearchButton";
 
 const SITE_DESCRIPTION =
-  "Norges første bruktmarked kun for treningsklær. Kjøp og selg brukt Gymshark, Nike, YoungLA, Craft, DFYNE og mer — trygg betaling via Stripe.";
+  "Norges første bruktmarked kun for treningsklær. Kjøp og selg brukt Gymshark, Nike, YoungLA, Craft, DFYNE og mer, trygg betaling via Stripe.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://aktivbruk.com"),
   title: {
-    default: "Aktivbruk — Norges første bruktmarked for treningsklær",
+    default: "Aktivbruk, Norges første bruktmarked for treningsklær",
     template: "%s | Aktivbruk",
   },
   description: SITE_DESCRIPTION,
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     "treningsklær norge",
   ],
   openGraph: {
-    title: "Aktivbruk — Norges første bruktmarked for treningsklær",
+    title: "Aktivbruk, Norges første bruktmarked for treningsklær",
     description: SITE_DESCRIPTION,
     type: "website",
     locale: "nb_NO",
@@ -56,13 +56,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aktivbruk — Norges første bruktmarked for treningsklær",
+    title: "Aktivbruk, Norges første bruktmarked for treningsklær",
     description: SITE_DESCRIPTION,
   },
   alternates: { canonical: "https://aktivbruk.com" },
 };
 
-// Site-wide JSON-LD — one Organization block so Google can pull a
+// Site-wide JSON-LD, one Organization block so Google can pull a
 // knowledge-panel style entry for the brand, and a WebSite block with a
 // SearchAction so aktivbruk.com can qualify for Google's sitelinks
 // searchbox in the SERP.
@@ -138,7 +138,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <footer className="mx-auto max-w-3xl px-4 pb-24 pt-4 text-xs text-stone-500 sm:pb-10">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p>
-              Aktivbruk — bruktmarked for treningsklær. Et uavhengig prosjekt, ikke
+              Aktivbruk, bruktmarked for treningsklær. Et uavhengig prosjekt, ikke
               tilknyttet noen merkevare.
             </p>
             <div className="flex items-center gap-4">

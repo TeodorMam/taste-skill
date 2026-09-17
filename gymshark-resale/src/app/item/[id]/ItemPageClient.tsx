@@ -321,7 +321,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
       )}
       {paymentStatus === "cancelled" && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          Betalingen ble avbrutt — varen er fortsatt tilgjengelig.
+          Betalingen ble avbrutt, varen er fortsatt tilgjengelig.
         </div>
       )}
 
@@ -393,7 +393,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
             </div>
           )}
 
-          {/* Kjøp nå — hidden when buyer already has an accepted bid (use Betal nå instead) */}
+          {/* Kjøp nå, hidden when buyer already has an accepted bid (use Betal nå instead) */}
           {userId && !isSeller && !item.is_sold && sellerChargesEnabled && myOffer?.status !== "accepted" && (() => {
             const pkg = getPackageOption(item.package_size);
             const canShip = item.shipping !== "Kun henting" && !!pkg;
@@ -454,7 +454,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                     disabled={!canCheckout || buyingNow}
                     className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {buyingNow ? "Sender til betaling…" : canCheckout ? `Kjøp nå — ${formatPrice(totalPrice)}` : "Kjøp nå"}
+                    {buyingNow ? "Sender til betaling…" : canCheckout ? `Kjøp nå, ${formatPrice(totalPrice)}` : "Kjøp nå"}
                   </button>
                   <p className="text-center text-[11px] text-stone-400">
                     {!canCheckout
@@ -544,7 +544,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                           disabled={!canCheckout || payingOffer}
                           className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                          {payingOffer ? "Sender til betaling…" : canCheckout ? `Betal nå — ${formatPrice(myOffer.amount + shippingCost + buyerFee)}` : "Betal nå"}
+                          {payingOffer ? "Sender til betaling…" : canCheckout ? `Betal nå, ${formatPrice(myOffer.amount + shippingCost + buyerFee)}` : "Betal nå"}
                         </button>
                         <p className="text-center text-[11px] text-stone-400">
                           {!canCheckout

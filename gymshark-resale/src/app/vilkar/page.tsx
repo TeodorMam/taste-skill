@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Vilkår for bruk — Aktivbruk",
+  title: "Vilkår for bruk, Aktivbruk",
   description: "Vilkår og betingelser for kjøp og salg på Aktivbruk.",
 };
 

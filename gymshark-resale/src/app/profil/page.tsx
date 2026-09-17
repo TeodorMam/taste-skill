@@ -83,7 +83,7 @@ export default function ProfilPage() {
             Mine vurderinger
           </p>
           {reviews.length === 0 ? (
-            <p className="mt-3 text-sm text-stone-400">Ingen vurderinger ennå — de vises her etter første salg.</p>
+            <p className="mt-3 text-sm text-stone-400">Ingen vurderinger ennå, de vises her etter første salg.</p>
           ) : rated ? (
             <Link
               href="/profil/vurderinger"

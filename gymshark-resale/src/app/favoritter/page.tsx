@@ -79,7 +79,7 @@ export default function FavorittePage() {
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Favoritter</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Varer du har lagret — trykk hjertet for å fjerne.
+          Varer du har lagret, trykk hjertet for å fjerne.
         </p>
       </div>
 

@@ -104,7 +104,7 @@ function BrowseInner() {
 
   useEffect(() => {
     // Cache the "which brands actually exist" set for 10 min in sessionStorage.
-    // Hits every browse mount otherwise and blocks nothing meaningful — the
+    // Hits every browse mount otherwise and blocks nothing meaningful, the
     // list barely changes.
     const CACHE_KEY = "aktivbruk:brand-set";
     const TTL_MS = 10 * 60 * 1000;
@@ -132,7 +132,7 @@ function BrowseInner() {
         setAvailableBrands(brands);
         try {
           sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), brands }));
-        } catch { /* quota, private mode — ignore */ }
+        } catch { /* quota, private mode, ignore */ }
       });
   }, [supabase]);
 
@@ -305,7 +305,7 @@ function BrowseInner() {
 
         <SearchBar externalValue={urlQ} onCommit={commitSearchQuery} />
 
-        {/* Filter + sort bar — same layout on mobile and desktop.
+        {/* Filter + sort bar, same layout on mobile and desktop.
             Filter/Sort sit as pill buttons on the left; active-filter
             chips scroll horizontally to their right. */}
         <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -425,7 +425,7 @@ function BrowseInner() {
         </>
       )}
 
-      {/* Filter sheet — bottom-anchored so the results grid stays partly
+      {/* Filter sheet, bottom-anchored so the results grid stays partly
           visible above (Finn/Tise pattern). Real swipe-to-dismiss on the
           top strip. */}
       {showFilter && (
@@ -487,7 +487,7 @@ function BrowseInner() {
             <div className="flex-1 overflow-y-auto">
               {!activeFilterPanel ? (
                 <div className="divide-y divide-stone-100 px-4">
-                  {/* Clickable filter rows — only show value when actively selected */}
+                  {/* Clickable filter rows, only show value when actively selected */}
                   {filterRows.map((row) => (
                     <button
                       key={row.key}
@@ -515,7 +515,7 @@ function BrowseInner() {
                     </button>
                   </div>
 
-                  {/* Price slider — inline, no sub-panel */}
+                  {/* Price slider, inline, no sub-panel */}
                   <div className="py-5 space-y-5">
                     <p className="text-sm font-medium text-stone-800">Pris</p>
                     <div className="space-y-1">
@@ -662,7 +662,7 @@ function FilterSubPanel({
 // Isolated search input: keeps its own state and its own 200 ms debounce,
 // so keystrokes never re-render BrowseInner. It only calls onCommit when
 // the value should actually hit the URL + the Supabase query. externalValue
-// lets the parent reset it (Nullstill, browser back) without a sync loop —
+// lets the parent reset it (Nullstill, browser back) without a sync loop
 // lastCommittedRef tracks what we ourselves last pushed.
 const SearchBar = memo(function SearchBar({
   externalValue,

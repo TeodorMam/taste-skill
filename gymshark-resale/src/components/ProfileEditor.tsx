@@ -197,10 +197,10 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
               {missingShipping
                 ? "Fyll inn navn, adresse og telefon for å kunne kjøpe og motta varer."
                 : missingName && missingAvatar
-                  ? "Legg til visningsnavn og profilbilde — kjøpere stoler mer på fullstendige profiler."
+                  ? "Legg til visningsnavn og profilbilde, kjøpere stoler mer på fullstendige profiler."
                   : missingName
-                    ? "Legg til et visningsnavn — kjøpere stoler mer på fullstendige profiler."
-                    : "Legg til profilbilde — kjøpere stoler mer på fullstendige profiler."}
+                    ? "Legg til et visningsnavn, kjøpere stoler mer på fullstendige profiler."
+                    : "Legg til profilbilde, kjøpere stoler mer på fullstendige profiler."}
             </p>
           </div>
         )}
@@ -355,7 +355,7 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
           onChange={(e) => setBio(e.target.value)}
           rows={3}
           maxLength={280}
-          placeholder="Litt om deg — hva du selger, hvor du trener, osv."
+          placeholder="Litt om deg, hva du selger, hvor du trener, osv."
           className={`${inp} resize-none`}
         />
         <p className="mt-1 text-[10px] text-stone-400">{bio.length}/280</p>
@@ -397,7 +397,7 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
             className={`${inp} tracking-widest`}
           />
         </Field>
-        <p className="mt-1 text-[10px] text-stone-400">Lagres privat — vises ikke på profilen din.</p>
+        <p className="mt-1 text-[10px] text-stone-400">Lagres privat, vises ikke på profilen din.</p>
       </div>
 
       {error && (

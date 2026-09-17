@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     let accountId: string = profile?.stripe_account_id ?? "";
 
     if (!accountId) {
-      // Only request the transfers capability — that's all a destination
+      // Only request the transfers capability, that's all a destination
       // charge needs to route funds to the seller. Skipping card_payments
       // is what makes Stripe drop the "bransje", "nettsted",
       // "bedriftstype" and product-description screens: those exist to
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         capabilities: { transfers: { requested: true } },
         business_type: "individual",
         business_profile: {
-          // MCC 5651 — Family Clothing Stores. Stripe requires an MCC
+          // MCC 5651, Family Clothing Stores. Stripe requires an MCC
           // and rejects "undefined". Pre-filling stops the hosted flow
           // from asking the seller which industry they're in.
           mcc: "5651",
@@ -102,7 +102,7 @@ export async function GET() {
       // New accounts only request the `transfers` capability, so
       // Stripe's `charges_enabled` flag (which is about *direct* card
       // acceptance) stays false. What we actually need is "can this
-      // seller receive a destination-charge transfer" — which is
+      // seller receive a destination-charge transfer", which is
       // capabilities.transfers === "active" and details_submitted.
       const transfersActive = account.capabilities?.transfers === "active";
       const ready = account.charges_enabled || (transfersActive && account.details_submitted);
@@ -111,7 +111,7 @@ export async function GET() {
           stripe_charges_enabled: true,
           stripe_onboarding_complete: account.details_submitted,
         }).eq("user_id", user.id);
-        // Fall through — will run the payout-schedule check below
+        // Fall through, will run the payout-schedule check below
       }
     }
 

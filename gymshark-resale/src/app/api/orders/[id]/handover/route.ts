@@ -55,14 +55,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: buyerEmail,
-          subject: `Varen er levert — ${itemTitle}`,
+          subject: `Varen er levert, ${itemTitle}`,
           html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
             <h2 style="margin:0 0 8px;font-size:18px">Varen er levert!</h2>
             <p style="margin:0 0 12px;font-size:14px;color:#57534e">Selger har bekreftet overlevering av <strong>${itemTitle}</strong>.</p>
             <p style="margin:0 0 12px;font-size:14px;color:#57534e">Du har nå <strong>${REVIEW_HOURS} timer</strong> på å bekrefte at alt er i orden, eller melde et problem.</p>
             <p style="margin:0 0 16px;font-size:14px;color:#57534e">Hvis du bekrefter at alt er OK, utbetales pengene til selger med én gang. Hvis du ikke gjør noe innen ${REVIEW_HOURS} timer, skjer dette automatisk.</p>
             <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
-            <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
+            <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
           </div>`,
         }),
       });

@@ -138,7 +138,7 @@ function Lightbox({ images, index, alt, onClose, onChange }: {
         </button>
       </div>
 
-      {/* Image — overflow-auto + touch-action lets browser handle pinch-zoom on mobile */}
+      {/* Image, overflow-auto + touch-action lets browser handle pinch-zoom on mobile */}
       <div
         className="flex min-h-0 flex-1 items-center justify-center overflow-auto"
         style={{ touchAction: "pinch-zoom" }}

@@ -230,7 +230,7 @@ function LoginInner() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Glemt passord</h1>
           <p className="mt-1 text-sm text-stone-500">
-            {forgotStage === "idle" && "Skriv inn e-posten din — vi sender en engangskode."}
+            {forgotStage === "idle" && "Skriv inn e-posten din, vi sender en engangskode."}
             {forgotStage === "sent" && "Skriv inn koden fra e-posten."}
             {forgotStage === "verified" && "Velg et nytt passord."}
           </p>
@@ -299,7 +299,7 @@ function LoginInner() {
             : signupStage === "code" ? `Vi sendte en kode til ${email}.`
             : signupStage === "password" ? "Velg et sikkert passord for kontoen din."
             : signupStage === "dob" ? "Du må være minst 15 år for å bruke Aktivbruk."
-            : signupStage === "profile" ? "Legg til visningsnavn — kan endres når som helst."
+            : signupStage === "profile" ? "Legg til visningsnavn, kan endres når som helst."
             : signupStage === "delivery" ? "Brukes til levering. Kan legges til senere."
             : "Lag en konto på under ett minutt."}
         </p>
@@ -312,7 +312,7 @@ function LoginInner() {
         </div>
       )}
 
-      {/* Step 1 — email */}
+      {/* Step 1, email */}
       {tab === "signup" && signupStage === "email" && (
         <form onSubmit={sendSignupCode} className="space-y-3">
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
@@ -322,7 +322,7 @@ function LoginInner() {
         </form>
       )}
 
-      {/* Step 1 — email code */}
+      {/* Step 1, email code */}
       {tab === "signup" && signupStage === "code" && (
         <form onSubmit={verifySignupCode} className="space-y-3">
           {info && <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{info}</p>}
@@ -337,7 +337,7 @@ function LoginInner() {
         </form>
       )}
 
-      {/* Step 2 — password */}
+      {/* Step 2, password */}
       {tab === "signup" && signupStage === "password" && (
         <form onSubmit={setSignupPassword} className="space-y-3">
           <PasswordInput value={password} onChange={setPassword} placeholder="Passord (minst 6 tegn)"
@@ -349,7 +349,7 @@ function LoginInner() {
         </form>
       )}
 
-      {/* Step 3 — date of birth */}
+      {/* Step 3, date of birth */}
       {tab === "signup" && signupStage === "dob" && (
         <form onSubmit={submitDob} className="space-y-3">
           <input type="text" inputMode="numeric" value={dob}
@@ -361,13 +361,13 @@ function LoginInner() {
         </form>
       )}
 
-      {/* Step 4 — basic profile */}
+      {/* Step 4, basic profile */}
       {tab === "signup" && signupStage === "profile" && (
         <form onSubmit={submitProfile} className="space-y-3">
           <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
             placeholder="Visningsnavn (f.eks. Kari N.)" maxLength={40} autoFocus className={inp} />
           <textarea value={bio} onChange={(e) => setBio(e.target.value)}
-            placeholder="Kort bio (valgfritt) — hva du selger, hvor du trener"
+            placeholder="Kort bio (valgfritt), hva du selger, hvor du trener"
             rows={3} maxLength={280} className={`${inp} resize-none`} />
           {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
           <button type="submit" disabled={submitting} className={btn}>{submitting ? "Lagrer…" : "Fortsett"}</button>
@@ -376,7 +376,7 @@ function LoginInner() {
         </form>
       )}
 
-      {/* Step 5 — delivery info */}
+      {/* Step 5, delivery info */}
       {tab === "signup" && signupStage === "delivery" && (
         <form onSubmit={submitDelivery} className="space-y-3">
           <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}

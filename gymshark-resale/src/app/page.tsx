@@ -32,7 +32,7 @@ export default async function HomePage() {
         </h1>
         <p className="max-w-xl text-base text-stone-600 sm:text-lg">
           Kjøp og selg brukte treningsklær fra Gymshark, Nike, YoungLA, Craft,
-          DFYNE og mange flere. Ett minutt å legge ut — gratis å bruke.
+          DFYNE og mange flere. Ett minutt å legge ut, gratis å bruke.
         </p>
         <div className="flex flex-wrap gap-3">
           <Link

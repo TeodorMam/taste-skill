@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Om Aktivbruk — bruktmarked for treningstøy",
+  title: "Om Aktivbruk, bruktmarked for treningstøy",
   description:
     "Aktivbruk er en markedsplass for brukt treningstøy, bygget fra bunnen av en 16-åring. Målet er å bli det naturlige stedet for brukt trening og sport.",
 };

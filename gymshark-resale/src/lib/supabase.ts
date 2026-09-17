@@ -165,7 +165,7 @@ export const BRANDS = [
 // Sport-spesifikt were removed once we committed to being a training-
 // clothes marketplace first. They may return once those categories
 // actually launch. Existing listings that were saved with those older
-// category strings still render fine — they just no longer appear in
+// category strings still render fine, they just no longer appear in
 // the filter dropdowns or the /post selector.
 export const CATEGORY_TREE = [
   {

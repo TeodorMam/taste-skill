@@ -16,10 +16,10 @@ export async function generateMetadata({
       .select("*")
       .eq("id", id)
       .single();
-    if (!data) return { title: "Vare — Aktivbruk" };
+    if (!data) return { title: "Vare, Aktivbruk" };
     const item = data as Item;
     const images = itemImages(item);
-    const title = `${item.title} — ${formatPrice(item.price)} | Aktivbruk`;
+    const title = `${item.title}, ${formatPrice(item.price)} | Aktivbruk`;
     const description =
       item.description?.slice(0, 160) ||
       `${item.brand ?? "Treningsklær"} · Str. ${item.size} · ${item.condition} · ${item.location}`;
@@ -42,7 +42,7 @@ export async function generateMetadata({
       },
     };
   } catch {
-    return { title: "Vare — Aktivbruk" };
+    return { title: "Vare, Aktivbruk" };
   }
 }
 

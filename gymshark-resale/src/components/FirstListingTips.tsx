@@ -10,13 +10,13 @@ const STEPS = [
     emoji: "📸",
     title: "Bilder selger varen",
     body: "Ta 3–5 bilder i dagslys, mot en ren bakgrunn. Vis fronten, baksiden, eventuelle merker eller slitasje. Det første bildet blir cover.",
-    tip: "Tips: Brett ut plagget på sengen — det er enkelt og ser ryddig ut.",
+    tip: "Tips: Brett ut plagget på sengen, det er enkelt og ser ryddig ut.",
   },
   {
     emoji: "💸",
     title: "Riktig pris = rask salg",
     body: "Sjekk hva lignende plagg går for på Aktivbruk og Finn. Brukt godt selger best på 30–50 % av nypris. Hoodier og tights går raskest.",
-    tip: "Tips: Sett gjerne litt over det du forventer — folk forhandler.",
+    tip: "Tips: Sett gjerne litt over det du forventer, folk forhandler.",
   },
   {
     emoji: "✍️",

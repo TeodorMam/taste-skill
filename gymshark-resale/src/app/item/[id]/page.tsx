@@ -29,16 +29,16 @@ function buildSeoTitle(item: Item): string {
 }
 
 // A tight two-sentence meta description that includes every keyword we can
-// think of a Norwegian buyer typing into Google — brand, category, size,
+// think of a Norwegian buyer typing into Google, brand, category, size,
 // condition, city, and the seller's own first sentence when it exists.
 function buildSeoDescription(item: Item): string {
   const facts = [item.brand, item.category, item.size ? `Str. ${item.size}` : null, item.condition, item.location]
     .filter(Boolean)
     .join(" · ");
-  const priceLine = `Brukt ${(item.brand || "treningstøy").toString().toLowerCase()} til ${formatPrice(item.price)} på Aktivbruk — Norges første bruktmarked kun for treningsklær.`;
+  const priceLine = `Brukt ${(item.brand || "treningstøy").toString().toLowerCase()} til ${formatPrice(item.price)} på Aktivbruk, Norges første bruktmarked kun for treningsklær.`;
   const desc = (item.description || "").trim();
   const firstSentence = desc ? desc.split(/(?<=[.!?])\s+/)[0] : "";
-  return [facts, priceLine, firstSentence].filter(Boolean).join(" — ");
+  return [facts, priceLine, firstSentence].filter(Boolean).join(", ");
 }
 
 // Product schema Google understands as a real for-sale item, unlocking rich
@@ -55,7 +55,7 @@ function buildProductJsonLd(item: Item, id: string) {
     "@context": "https://schema.org",
     "@type": "Product",
     name: item.title,
-    description: item.description || `${item.brand ?? ""} ${item.title} — brukt treningstøy fra Aktivbruk.`.trim(),
+    description: item.description || `${item.brand ?? ""} ${item.title}, brukt treningstøy fra Aktivbruk.`.trim(),
     image: images.length > 0 ? images : undefined,
     sku: `aktivbruk-${id}`,
     ...(item.brand && { brand: { "@type": "Brand", name: item.brand } }),
@@ -79,7 +79,7 @@ export async function generateMetadata(
   const { id } = await params;
   const item = await fetchItem(id);
   if (!item) {
-    return { title: "Varen finnes ikke — Aktivbruk", robots: { index: false, follow: false } };
+    return { title: "Varen finnes ikke, Aktivbruk", robots: { index: false, follow: false } };
   }
   const cover = itemImages(item)[0];
   const title = buildSeoTitle(item);
@@ -115,7 +115,7 @@ export default async function ItemPage(
   const jsonLd = buildProductJsonLd(item, id);
   return (
     <>
-      {/* Product JSON-LD — invisible to users, read by Google, unlocks rich
+      {/* Product JSON-LD, invisible to users, read by Google, unlocks rich
           results (image + price + used-condition badge) in search. */}
       <script
         type="application/ld+json"

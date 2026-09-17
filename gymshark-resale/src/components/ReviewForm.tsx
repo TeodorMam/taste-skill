@@ -73,7 +73,7 @@ export function ReviewForm({
     return (
       <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm">
         <p className="font-medium text-stone-800">
-          Takk for vurderingen — {renderStars(existing.rating ?? (existing.is_positive ? 4 : 2), 16)}
+          Takk for vurderingen, {renderStars(existing.rating ?? (existing.is_positive ? 4 : 2), 16)}
         </p>
         {existing.comment && (
           <p className="mt-1 text-stone-600">{existing.comment}</p>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Personvernerklæring — Aktivbruk",
+  title: "Personvernerklæring, Aktivbruk",
   description: "Hvordan Aktivbruk samler inn, bruker og beskytter personopplysningene dine.",
 };
 
