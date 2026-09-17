@@ -452,7 +452,7 @@ export default function PostPage() {
               el.style.height = `${el.scrollHeight}px`;
               window.scrollTo(0, scrollY);
             }}
-            placeholder="Fortell om varen — størrelse, bruk, tilstand, grunnen til salg…"
+            placeholder="Fortell om varen, størrelse, bruk, tilstand, grunnen til salg…"
             rows={6}
             className={`${input} resize-none overflow-hidden`}
           />
@@ -505,7 +505,7 @@ export default function PostPage() {
 
       </form>
 
-      {/* Sticky submit bar — mobile only, sits above the bottom nav */}
+      {/* Sticky submit bar, mobile only, sits above the bottom nav */}
       <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-stone-100 bg-white/95 px-4 py-3 backdrop-blur sm:hidden">
         {error && (
           <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>

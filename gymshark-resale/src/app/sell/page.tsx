@@ -24,7 +24,7 @@ export default function SellPage() {
         return;
       }
 
-      // Always re-verify with Stripe — even on ?stripe=return. Users can
+      // Always re-verify with Stripe, even on ?stripe=return. Users can
       // bail on onboarding partway and Stripe will still redirect them
       // back here, which used to falsely flash the "success" screen and
       // let them list a broken (unbuyable) item.
@@ -40,7 +40,7 @@ export default function SellPage() {
         return;
       }
 
-      // Not yet enabled — show either the intro (never started) or the
+      // Not yet enabled, show either the intro (never started) or the
       // connect step (in-progress / needs to finish) so they can retry.
       setStep(json.account_id ? "connect" : "intro");
     }
@@ -123,7 +123,7 @@ export default function SellPage() {
           {[
             { step: "1", text: "Fyll inn navn, fødselsdato, adresse, telefon" },
             { step: "2", text: <>Legg inn <strong>IBAN</strong> (starter med NO)</> },
-            { step: "3", text: "Ferdig — du er klar til å selge" },
+            { step: "3", text: "Ferdig, du er klar til å selge" },
           ].map(({ step, text }) => (
             <li key={step} className="flex items-start gap-3 text-sm text-stone-700">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-semibold text-stone-600">

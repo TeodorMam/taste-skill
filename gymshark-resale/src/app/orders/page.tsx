@@ -40,9 +40,9 @@ type Order = {
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   pending: "Venter på betaling",
-  paid: "Betalt — ikke sendt enda",
-  shipped: "Sendt — under transport",
-  delivered: "Mottatt — venter på bekreftelse",
+  paid: "Betalt, ikke sendt enda",
+  shipped: "Sendt, under transport",
+  delivered: "Mottatt, venter på bekreftelse",
   confirmed: "Bekreftet mottatt",
   disputed: "Tvist åpnet",
   paid_out: "Fullført",
@@ -162,9 +162,9 @@ function OrderCard({ order, role, onAction }: {
           {pkg && (
             <div className="rounded-xl border border-[#5a6b32]/30 bg-[#5a6b32]/5 p-3">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5a6b32]">Kjøp denne pakken</p>
-              <p className="mt-0.5 text-sm font-semibold text-stone-900">Posten {pkg.label} — {pkg.price} kr</p>
+              <p className="mt-0.5 text-sm font-semibold text-stone-900">Posten {pkg.label}, {pkg.price} kr</p>
               <p className="text-[11px] text-stone-500">Inntil {pkg.maxWeight} · {pkg.dimensions}</p>
-              <p className="mt-1.5 text-[11px] text-stone-500">Ikke velg noen annen størrelse — kjøper har betalt for akkurat denne.</p>
+              <p className="mt-1.5 text-[11px] text-stone-500">Ikke velg noen annen størrelse, kjøper har betalt for akkurat denne.</p>
             </div>
           )}
 
@@ -177,7 +177,7 @@ function OrderCard({ order, role, onAction }: {
                 <li className="flex gap-2"><span className="font-semibold text-stone-800">4.</span><span>Betal frakt og send inn</span></li>
               </ol>
               <div className="space-y-0.5 text-xs text-stone-500">
-                <p>Frakten er allerede betalt av kjøper — du får dette tilbake i utbetalingen.</p>
+                <p>Frakten er allerede betalt av kjøper, du får dette tilbake i utbetalingen.</p>
                 <p>Levering tar vanligvis 2–5 virkedager.</p>
               </div>
             </div>
@@ -253,7 +253,7 @@ function OrderCard({ order, role, onAction }: {
 
       {role === "seller" && order.status === "confirmed" && (
         <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-emerald-700 font-medium">✓ Kjøper bekreftet — betaling overføres til deg</p>
+          <p className="text-xs text-emerald-700 font-medium">✓ Kjøper bekreftet, betaling overføres til deg</p>
         </div>
       )}
 
@@ -268,7 +268,7 @@ function OrderCard({ order, role, onAction }: {
 
       {role === "seller" && order.status === "disputed" && (
         <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs font-medium text-red-700">⚠ Kjøper har meldt problem — betaling er satt på vent</p>
+          <p className="text-xs font-medium text-red-700">⚠ Kjøper har meldt problem, betaling er satt på vent</p>
           <p className="mt-1 text-xs text-stone-500">Aktivbruk behandler saken. Ingen automatisk refusjon skjer.</p>
         </div>
       )}
@@ -278,15 +278,15 @@ function OrderCard({ order, role, onAction }: {
         <div className="border-t border-stone-100 px-4 py-3">
           <p className="text-xs text-stone-500">
             {order.delivery_method === "meetup"
-              ? "Betalt — avtal tid og sted med selger i chatten."
-              : "Betalt og bekreftet — venter på at selger sender varen."}
+              ? "Betalt, avtal tid og sted med selger i chatten."
+              : "Betalt og bekreftet, venter på at selger sender varen."}
           </p>
         </div>
       )}
 
       {role === "buyer" && order.status === "shipped" && (
         <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-stone-500">Varen er sendt — vi følger pakken og varsler deg når den er levert.</p>
+          <p className="text-xs text-stone-500">Varen er sendt, vi følger pakken og varsler deg når den er levert.</p>
         </div>
       )}
 
@@ -342,7 +342,7 @@ function OrderCard({ order, role, onAction }: {
 
       {role === "buyer" && order.status === "confirmed" && (
         <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-emerald-700 font-medium">✓ Du bekreftet mottak — betaling er frigjort til selger</p>
+          <p className="text-xs text-emerald-700 font-medium">✓ Du bekreftet mottak, betaling er frigjort til selger</p>
         </div>
       )}
 
@@ -354,7 +354,7 @@ function OrderCard({ order, role, onAction }: {
 
       {role === "buyer" && order.status === "disputed" && (
         <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs font-medium text-red-700">⚠ Tvist åpnet — betaling er satt på vent</p>
+          <p className="text-xs font-medium text-red-700">⚠ Tvist åpnet, betaling er satt på vent</p>
           <p className="mt-1 text-xs text-stone-500">Vi behandler saken og tar kontakt. Ingen automatisk refusjon skjer.</p>
         </div>
       )}
@@ -404,10 +404,10 @@ export default function OrdersPage() {
 
     const messages: Record<string, string> = {
       ship: "Merket som sendt",
-      handover: "Overlevering bekreftet — kjøper har 48 timer på å bekrefte",
-      deliver: "Merket som levert — kjøper har 48 timer på å bekrefte",
-      confirm: "Mottak bekreftet — betaling frigjøres til selger",
-      dispute: "Problem meldt — betaling satt på vent",
+      handover: "Overlevering bekreftet, kjøper har 48 timer på å bekrefte",
+      deliver: "Merket som levert, kjøper har 48 timer på å bekrefte",
+      confirm: "Mottak bekreftet, betaling frigjøres til selger",
+      dispute: "Problem meldt, betaling satt på vent",
     };
     toast(messages[action] ?? "Oppdatert");
   }

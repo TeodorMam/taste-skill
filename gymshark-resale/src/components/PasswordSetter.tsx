@@ -68,7 +68,7 @@ export function PasswordSetter() {
       >
         <p className="font-medium">Sett et passord</p>
         <p className="mt-0.5 text-xs text-stone-500">
-          For raskere innlogging neste gang — slipper koden på e-post.
+          For raskere innlogging neste gang, slipper koden på e-post.
         </p>
       </button>
     );

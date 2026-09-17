@@ -6,7 +6,7 @@ const BASE_URL = "https://aktivbruk.com";
 
 // Dynamic sitemap so Google (and other crawlers) index only the public,
 // evergreen pages plus every currently-active listing. Anything omitted
-// here won't be pushed as a preferred sitelink — that's how we keep
+// here won't be pushed as a preferred sitelink, that's how we keep
 // user profiles and internal dashboards out of search results.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();

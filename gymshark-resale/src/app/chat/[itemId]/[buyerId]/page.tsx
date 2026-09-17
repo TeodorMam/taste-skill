@@ -37,7 +37,7 @@ function jumboEmojiCount(text: string): 0 | 1 | 2 | 3 {
   if (!trimmed) return 0;
   try {
     // Intl.Segmenter groups things like flags, skin-tone modifiers and ZWJ
-    // sequences into single "visual" graphemes — Array.from would split a
+    // sequences into single "visual" graphemes, Array.from would split a
     // Norwegian flag or 🤝🏻 into pieces and miscount.
     const seg = new Intl.Segmenter(undefined, { granularity: "grapheme" });
     const parts = Array.from(seg.segment(trimmed), (s) => s.segment.trim()).filter(Boolean);
@@ -146,13 +146,13 @@ export default function ChatPage() {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `item_id=eq.${itemId}` }, (payload) => {
         const m = payload.new as Message;
         if (m.buyer_id !== buyerId) return;
-        // Edits sync live to the other side — swap the row in-place.
+        // Edits sync live to the other side, swap the row in-place.
         setMessages((prev) => prev.map((x) => (x.id === m.id ? m : x)));
       })
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages", filter: `item_id=eq.${itemId}` }, (payload) => {
         const oldRow = payload.old as { id?: string; buyer_id?: string };
         if (!oldRow?.id) return;
-        // Silent delete — the row just disappears for both parties, matching
+        // Silent delete, the row just disappears for both parties, matching
         // Signal / iMessage's "delete for everyone".
         setMessages((prev) => prev.filter((x) => x.id !== oldRow.id));
       })
@@ -311,7 +311,7 @@ export default function ChatPage() {
     setUploading(true);
     setError(null);
     // Convert HEIC (iPhone default) to JPEG so the image renders on every
-    // device — desktop browsers can't display HEIC natively.
+    // device, desktop browsers can't display HEIC natively.
     const file = await prepareImageForUpload(rawFile);
     const ext = file.name.split(".").pop() || "jpg";
     const path = `chat/${itemId}-${buyerId}-${Date.now()}.${ext}`;
@@ -364,7 +364,7 @@ export default function ChatPage() {
     if (data) setOffersMap((prev) => ({ ...prev, [offerId]: data as Offer }));
 
     if (status === "accepted") {
-      // Insert a bid_accepted event message — silently skipped if migration not yet applied
+      // Insert a bid_accepted event message, silently skipped if migration not yet applied
       await supabase.from("messages").insert({
         item_id: itemId,
         buyer_id: buyerId,
@@ -516,7 +516,7 @@ export default function ChatPage() {
           <p className="py-10 text-center text-xs text-stone-400">
             {isSeller
               ? "Ingen meldinger fra denne kjøperen enda."
-              : "Si hei — spør om størrelse, henting eller tilstand."}
+              : "Si hei, spør om størrelse, henting eller tilstand."}
           </p>
         )}
 

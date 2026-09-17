@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
           <a href="${link}" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">
             Se annonsen
           </a>
-          <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
+          <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
         </div>
       `;
     }

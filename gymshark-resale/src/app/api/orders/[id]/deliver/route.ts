@@ -27,7 +27,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .eq("id", orderId).maybeSingle();
 
     if (!order) return NextResponse.json({ error: "Ordre ikke funnet" }, { status: 404 });
-    // Buyer marks as received — not the seller
+    // Buyer marks as received, not the seller
     if (order.buyer_id !== user.id) return NextResponse.json({ error: "Ikke autorisert" }, { status: 403 });
     if (order.status !== "shipped") return NextResponse.json({ error: `Ordre er i status '${order.status}'` }, { status: 400 });
 
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             <h2 style="margin:0 0 8px;font-size:18px">Kjøper bekreftet mottak!</h2>
             <p style="font-size:14px;color:#57534e">Kjøper har mottatt <strong>${itemTitle}</strong> og har ${REVIEW_HOURS} timer på å bekrefte at alt er ok eller melde problem. Hvis de ikke gjør noe, utbetales betalingen automatisk til deg.</p>
             <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
-            <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
+            <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
           </div>`,
         }),
       });

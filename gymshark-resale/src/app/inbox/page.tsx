@@ -143,7 +143,7 @@ export default function InboxPage() {
         for (const it of (extra ?? []) as Item[]) iMap[String(it.id)] = it;
       }
 
-      // Build thread list — only threads this user is part of
+      // Build thread list, only threads this user is part of
       const rawThreads: Thread[] = [];
       const otherIds = new Set<string>();
 

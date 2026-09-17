@@ -22,7 +22,7 @@ export function ReportButton({ type, targetId }: { type: ReportType; targetId: s
       if (res.ok) {
         setOpen(false);
         setReason("");
-        toast("Rapport sendt — vi ser på det");
+        toast("Rapport sendt, vi ser på det");
       } else {
         toast("Noe gikk galt, prøv igjen");
       }

@@ -1,5 +1,5 @@
 // Client-side HEIC/HEIF → JPEG conversion. iPhone photos are HEIC by default
-// and desktop browsers (Chrome/Firefox/Edge) cannot render them at all —
+// and desktop browsers (Chrome/Firefox/Edge) cannot render them at all
 // so listings uploaded from iPhone appeared blank on desktop. Convert at
 // pick time so the preview, upload, and every future view all deal in JPEG.
 //

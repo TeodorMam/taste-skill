@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Buyer-side "Kjøperbeskyttelse" fee shown as a separate line at checkout.
-  // Seller receives 100% of item price + shipping — this fee is on top for
+  // Seller receives 100% of item price + shipping, this fee is on top for
   // the buyer, not deducted from the seller's payout.
   const platformFeeNok = calcBuyerFee(amountNok);
 
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
       price_data: {
         currency: "nok",
         unit_amount: shippingCostNok * 100,
-        product_data: { name: `Frakt — Posten ${pkg?.label ?? "Norgespakke"}` },
+        product_data: { name: `Frakt, Posten ${pkg?.label ?? "Norgespakke"}` },
       },
       quantity: 1,
     });

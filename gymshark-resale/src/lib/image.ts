@@ -3,7 +3,7 @@
 // 250 KB version looks identical in a browser. Cuts cached-egress bandwidth
 // dramatically without touching the user flow.
 //
-// Both helpers are safe to call on any image the file picker returns —
+// Both helpers are safe to call on any image the file picker returns
 // non-HEIC files skip the HEIC step, and files already under the cap still
 // re-encode to strip metadata and standardize quality.
 

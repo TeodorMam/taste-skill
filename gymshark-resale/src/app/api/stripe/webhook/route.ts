@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     console.log("[webhook] checkout.session.completed orderId:", orderId, "itemId:", itemId);
 
     if (!orderId || !itemId) {
-      console.log("[webhook] missing orderId or itemId — skipping");
+      console.log("[webhook] missing orderId or itemId, skipping");
       return NextResponse.json({ received: true });
     }
 
@@ -102,32 +102,32 @@ export async function POST(req: NextRequest) {
             <li>Melde fra om et problem</li>
           </ul>
           <p style="margin:0 0 16px;font-size:14px;color:#57534e">Hvis du ikke gjør noe innen 48 timer, fullføres handelen automatisk og pengene utbetales til selger.</p>`;
-      await sendEmail(buyerEmail, `Betaling bekreftet — ${itemTitle}`, `
+      await sendEmail(buyerEmail, `Betaling bekreftet, ${itemTitle}`, `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1c1917;max-width:560px">
           <h2 style="margin:0 0 8px;font-size:18px">Betaling bekreftet!</h2>
           <p style="margin:0 0 12px;color:#57534e;font-size:14px">Du har kjøpt <strong>${escapeHtml(itemTitle)}</strong> for totalt <strong>${fmt(buyerTotal)}</strong>${shippingCost > 0 ? ` (${fmt(existing.amount_nok)} vare + ${fmt(shippingCost)} frakt + ${fmt(existing.platform_fee_nok)} kjøperbeskyttelse)` : ` (${fmt(existing.amount_nok)} vare + ${fmt(existing.platform_fee_nok)} kjøperbeskyttelse)`}. Pengene holdes trygt hos Aktivbruk til handelen er fullført.</p>
           ${buyerSteps}
           <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
-          <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
+          <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
         </div>
       `);
     }
 
     if (sellerEmail) {
       const sellerInstruction = isMeetup
-        ? `Betalingen holdes trygt hos Aktivbruk. Avtal møte med kjøper i chatten og marker overleveringen som fullført i dine ordre når dere har møttes — utbetaling skjer etter kjøper bekrefter mottak (eller automatisk etter 48 timer).`
-        : `Betalingen holdes trygt hos Aktivbruk. Send varen og marker som sendt i dine ordre — utbetaling skjer etter kjøper bekrefter mottak (eller automatisk etter 48 timer).`;
+        ? `Betalingen holdes trygt hos Aktivbruk. Avtal møte med kjøper i chatten og marker overleveringen som fullført i dine ordre når dere har møttes, utbetaling skjer etter kjøper bekrefter mottak (eller automatisk etter 48 timer).`
+        : `Betalingen holdes trygt hos Aktivbruk. Send varen og marker som sendt i dine ordre, utbetaling skjer etter kjøper bekrefter mottak (eller automatisk etter 48 timer).`;
       await sendEmail(sellerEmail, `Du har solgt «${itemTitle}»!`, `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1c1917;max-width:560px">
           <h2 style="margin:0 0 8px;font-size:18px">Du har solgt «${escapeHtml(itemTitle)}»!</h2>
           <div style="background:#f5f5f4;padding:16px;border-radius:12px;margin-bottom:16px">
             <p style="margin:0 0 4px;font-size:13px;color:#78716c">Du mottar</p>
             <p style="margin:0;font-size:22px;font-weight:700;color:#1c1917">${fmt(sellerReceives)}</p>
-            <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Hele salgsprisen${shippingCost > 0 ? ` + frakt (${fmt(shippingCost)})` : ""} — helt uten avgift for deg som selger 💚</p>
+            <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Hele salgsprisen${shippingCost > 0 ? ` + frakt (${fmt(shippingCost)})` : ""}, helt uten avgift for deg som selger 💚</p>
           </div>
           <p style="margin:0 0 12px;font-size:14px">${sellerInstruction}</p>
           <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
-          <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
+          <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
         </div>
       `);
     }

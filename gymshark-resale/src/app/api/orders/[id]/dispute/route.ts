@@ -40,7 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       dispute_reason: reason || null,
     }).eq("id", orderId);
 
-    // Notify all parties — no payout, no refund
+    // Notify all parties, no payout, no refund
     const [buyerRes, sellerRes, itemRes] = await Promise.all([
       admin.auth.admin.getUserById(order.buyer_id),
       admin.auth.admin.getUserById(order.seller_id),
@@ -57,13 +57,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
           from: FROM_EMAIL, to: buyerEmail,
-          subject: `Problem meldt — ${itemTitle}`,
+          subject: `Problem meldt, ${itemTitle}`,
           html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
             <h2 style="margin:0 0 8px;font-size:18px">Vi har mottatt din melding</h2>
-            <p style="font-size:14px;color:#57534e">Du har meldt et problem med <strong>${itemTitle}</strong>. Betalingen på <strong>${fmt(order.amount_nok)}</strong> er satt på vent — ingen penger overføres til selger.</p>
-            <p style="font-size:14px;color:#57534e">Vi vil ta kontakt med deg og selger for å løse saken. Ingen automatisk refusjon skjer — vi behandler dette manuelt.</p>
+            <p style="font-size:14px;color:#57534e">Du har meldt et problem med <strong>${itemTitle}</strong>. Betalingen på <strong>${fmt(order.amount_nok)}</strong> er satt på vent, ingen penger overføres til selger.</p>
+            <p style="font-size:14px;color:#57534e">Vi vil ta kontakt med deg og selger for å løse saken. Ingen automatisk refusjon skjer, vi behandler dette manuelt.</p>
             <p style="font-size:14px;color:#57534e">Kontakt oss på <a href="mailto:${ADMIN_EMAIL}">${ADMIN_EMAIL}</a> hvis du har spørsmål.</p>
-            <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
+            <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
           </div>`,
         }),
       }) : Promise.resolve(),
@@ -72,13 +72,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
           from: FROM_EMAIL, to: sellerEmail,
-          subject: `Kjøper har meldt problem — ${itemTitle}`,
+          subject: `Kjøper har meldt problem, ${itemTitle}`,
           html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
             <h2 style="margin:0 0 8px;font-size:18px">Kjøper har meldt et problem</h2>
             <p style="font-size:14px;color:#57534e">Kjøper har meldt et problem med <strong>${itemTitle}</strong>. Betalingen på <strong>${fmt(order.amount_nok)}</strong> er satt på vent mens vi undersøker saken.</p>
             ${reason ? `<p style="font-size:14px;color:#57534e">Årsak oppgitt av kjøper: <em>${reason}</em></p>` : ""}
             <p style="font-size:14px;color:#57534e">Vi vil kontakte deg for mer informasjon. Ingen automatisk refusjon skjer.</p>
-            <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk — bruktmarked for treningsklær</p>
+            <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
           </div>`,
         }),
       }) : Promise.resolve(),
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
           from: FROM_EMAIL, to: ADMIN_EMAIL,
-          subject: `[Tvist] Ordre ${orderId} — ${itemTitle}`,
+          subject: `[Tvist] Ordre ${orderId}, ${itemTitle}`,
           html: `<p>Ordre: ${orderId}<br>Vare: ${itemTitle}<br>Beløp: ${fmt(order.amount_nok)}<br>Kjøper: ${buyerEmail ?? order.buyer_id}<br>Selger: ${sellerEmail ?? order.seller_id}<br>Årsak: ${reason || "(ikke oppgitt)"}<br><br><a href="${SITE_URL}/orders">Administrer</a></p>`,
         }),
       }),

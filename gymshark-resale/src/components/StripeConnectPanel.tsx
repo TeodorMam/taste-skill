@@ -17,7 +17,7 @@ export function StripeConnectPanel() {
   useEffect(() => {
     fetchStatus();
     if (searchParams.get("stripe") === "return") {
-      toast("Kobler til Stripe — dette tar noen sekunder…");
+      toast("Kobler til Stripe, dette tar noen sekunder…");
       const t = setTimeout(fetchStatus, 4000);
       return () => clearTimeout(t);
     }
@@ -84,7 +84,7 @@ export function StripeConnectPanel() {
             {[
               { n: "1", label: "Fyll inn navn, fødselsdato, adresse, telefon" },
               { n: "2", label: <>Legg inn <strong>IBAN</strong> (starter med NO)</> },
-              { n: "3", label: "Ferdig — du er klar til å selge" },
+              { n: "3", label: "Ferdig, du er klar til å selge" },
             ].map(({ n, label }) => (
               <li key={n} className="flex items-start gap-2.5 text-sm text-stone-600">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-stone-100 text-[11px] font-semibold text-stone-500">

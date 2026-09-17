@@ -170,7 +170,7 @@ export default function MinePage() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Mine annonser</h1>
           <p className="mt-1 text-sm text-stone-500">
-            Alt du har lagt ut — på ett sted.
+            Alt du har lagt ut, på ett sted.
           </p>
         </div>
         <Link
@@ -220,7 +220,7 @@ export default function MinePage() {
                 ? "Ingen solgte annonser enda"
                 : "Ingen annonser enda"}
           </p>
-          <p className="mt-1">Legg ut din første vare — det tar under ett minutt.</p>
+          <p className="mt-1">Legg ut din første vare, det tar under ett minutt.</p>
           <Link
             href="/post"
             className="mt-4 inline-block rounded-full bg-stone-900 px-5 py-2.5 text-xs font-medium text-stone-50 hover:bg-black"

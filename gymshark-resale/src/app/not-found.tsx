@@ -8,7 +8,7 @@ export default function NotFound() {
       </p>
       <h1 className="text-4xl font-semibold tracking-tight">Ikke funnet</h1>
       <p className="mx-auto max-w-md text-sm text-stone-600">
-        Siden du leter etter finnes ikke — den er kanskje solgt, slettet, eller
+        Siden du leter etter finnes ikke, den er kanskje solgt, slettet, eller
         så har lenken en skrivefeil.
       </p>
       <div className="flex flex-wrap justify-center gap-2">
