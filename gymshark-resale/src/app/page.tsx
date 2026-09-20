@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
-import { ItemsWithLoadMore, PAGE_SIZE } from "@/components/ItemsWithLoadMore";
+import { ItemsWithLoadMore } from "@/components/ItemsWithLoadMore";
+import { PAGE_SIZE } from "@/lib/pagination";
 import { type Item, type Profile } from "@/lib/supabase";
 
 export default async function HomePage() {
@@ -55,19 +56,20 @@ export default async function HomePage() {
       </section>
 
       {/* ── Nytt inne ─────────────────────────────────────────────────────── */}
-      {items.length > 0 && (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">Nytt inne</h2>
-            <p className="mt-0.5 text-sm text-stone-500">Nylig lagt ut treningsklær</p>
-          </div>
-          <ItemsWithLoadMore
-            initialItems={items}
-            initialSellers={sellersMap}
-            total={count ?? null}
-          />
-        </section>
-      )}
+      {/* Rendered unconditionally. An empty grid is a far smaller failure
+          than the whole section vanishing, which is what a guard here did
+          when the query silently returned nothing. */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Nytt inne</h2>
+          <p className="mt-0.5 text-sm text-stone-500">Nylig lagt ut treningsklær</p>
+        </div>
+        <ItemsWithLoadMore
+          initialItems={items}
+          initialSellers={sellersMap}
+          total={count ?? null}
+        />
+      </section>
     </div>
   );
 }
