@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireAdminDb, fmtWhen, fmtAgo } from "@/lib/admin";
+import { requireAdminDb, fmtAgo } from "@/lib/admin";
 import {
   type Item,
   type Message,
@@ -22,6 +22,26 @@ export const metadata = {
 const DAY = 86_400_000;
 const sinceIso = (ms: number) => new Date(Date.now() - ms).toISOString();
 
+/**
+ * A sale is an order that was actually paid for and not undone. Everything
+ * else (abandoned checkouts, cancellations, refunds) is noise in a total.
+ */
+const isSale = (o: OrderRow) =>
+  !!o.paid_at && o.status !== "cancelled" && o.status !== "refunded";
+
+type OrderRow = {
+  id: string;
+  item_id: string | number | null;
+  buyer_id: string;
+  seller_id: string;
+  amount_nok: number;
+  platform_fee_nok: number;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
+  shipped_at: string | null;
+};
+
 const STATUS: Record<string, { label: string; className: string }> = {
   pending:   { label: "Venter",     className: "bg-stone-100 text-stone-600" },
   paid:      { label: "Betalt",     className: "bg-[#5a6b32]/10 text-[#435022]" },
@@ -34,38 +54,70 @@ const STATUS: Record<string, { label: string; className: string }> = {
   refunded:  { label: "Refundert",  className: "bg-amber-100 text-amber-800" },
 };
 
-type Order = {
-  id: string;
-  item_id: string | number | null;
-  buyer_id: string;
-  seller_id: string;
-  amount_nok: number;
-  status: string;
-  created_at: string;
-};
+/** What is wrong with this order, if anything, in the order it matters. */
+function needsAction(o: OrderRow): { label: string; className: string } | null {
+  if (o.status === "disputed")
+    return { label: "Tvist, må løses", className: "bg-red-100 text-red-700" };
+  if (o.status === "paid" && !o.shipped_at && Date.now() - new Date(o.created_at).getTime() > 2 * DAY)
+    return { label: "Betalt, ikke sendt", className: "bg-amber-100 text-amber-800" };
+  if (o.status === "pending" && Date.now() - new Date(o.created_at).getTime() > DAY)
+    return { label: "Betaling ikke fullført", className: "bg-stone-100 text-stone-600" };
+  return null;
+}
 
-function StatTile({ label, value, hint }: { label: string; value: number; hint: string }) {
+function Stat({
+  label,
+  value,
+  sub,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+  accent?: boolean;
+}) {
   return (
     <div className="rounded-2xl border border-stone-200 bg-white p-4">
       <p className="text-xs font-medium uppercase tracking-wider text-stone-400">{label}</p>
-      <p className="mt-1.5 text-3xl font-semibold tracking-tight text-stone-900">{value}</p>
-      <p className="mt-0.5 text-xs text-stone-500">{hint}</p>
+      <p
+        className={`mt-1.5 text-3xl font-semibold tracking-tight ${
+          accent ? "text-[#5a6b32]" : "text-stone-900"
+        }`}
+      >
+        {value}
+      </p>
+      <p className="mt-0.5 text-xs text-stone-500">{sub}</p>
     </div>
   );
 }
 
-function SectionHeading({ title, sub }: { title: string; sub: string }) {
+function Section({
+  title,
+  sub,
+  children,
+}: {
+  title: string;
+  sub?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div>
-      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-      <p className="mt-0.5 text-sm text-stone-500">{sub}</p>
-    </div>
+    <section className="space-y-3">
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+        {sub && <p className="mt-0.5 text-sm text-stone-500">{sub}</p>}
+      </div>
+      {children}
+    </section>
   );
 }
 
-function Empty({ children }: { children: React.ReactNode }) {
+function Quiet({ children }: { children: React.ReactNode }) {
+  return <p className="px-1 text-sm text-stone-400">{children}</p>;
+}
+
+function Rows({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-stone-200 bg-white px-4 py-8 text-center text-sm text-stone-400">
+    <div className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
       {children}
     </div>
   );
@@ -79,33 +131,50 @@ export default async function AdminPage() {
     return (
       <div className="space-y-4 py-10">
         <h1 className="text-2xl font-semibold tracking-tight">Admin</h1>
-        <Empty>SUPABASE_SERVICE_ROLE_KEY mangler i miljøet, så dashboardet kan ikke lese data.</Empty>
+        <Quiet>SUPABASE_SERVICE_ROLE_KEY mangler i miljøet, så dashboardet kan ikke lese data.</Quiet>
       </div>
     );
   }
 
   const since7d = sinceIso(7 * DAY);
-  const since24h = sinceIso(DAY);
+  const since30d = sinceIso(30 * DAY);
 
-  const [activeItemsRes, recentItemsRes, ordersRes, paidRes, messagesRes] = await Promise.all([
+  const [activeRes, itemsRes, ordersRes, usersRes, newUsersRes, messagesRes] = await Promise.all([
     db.from("items").select("id", { count: "exact", head: true }).eq("is_sold", false),
-    db.from("items").select("*", { count: "exact" }).gte("created_at", since7d).order("created_at", { ascending: false }),
-    db.from("orders").select("*").order("created_at", { ascending: false }).limit(10),
-    db.from("orders").select("id", { count: "exact", head: true }).gte("paid_at", since7d),
-    db.from("messages").select("*").gte("created_at", since7d).order("created_at", { ascending: false }),
+    db.from("items").select("*", { count: "exact" }).gte("created_at", since30d).order("created_at", { ascending: false }),
+    // Every order, so lifetime totals are lifetime totals. Narrow columns keep
+    // it small; at a few thousand orders this is still a trivial payload.
+    db.from("orders")
+      .select("id,item_id,buyer_id,seller_id,amount_nok,platform_fee_nok,status,created_at,paid_at,shipped_at")
+      .order("created_at", { ascending: false })
+      .limit(5000),
+    db.from("profiles").select("user_id", { count: "exact", head: true }),
+    db.from("profiles").select("user_id", { count: "exact", head: true }).gte("created_at", since30d),
+    db.from("messages").select("*").gte("created_at", since30d).order("created_at", { ascending: false }),
   ]);
 
-  const activeItems = activeItemsRes.count ?? 0;
-  const newItems7d = recentItemsRes.count ?? 0;
-  const paidOrders7d = paidRes.count ?? 0;
-  const recentItems = (recentItemsRes.data ?? []) as Item[];
-  const orders = (ordersRes.data ?? []) as Order[];
+  const activeItems = activeRes.count ?? 0;
+  const recentItems = (itemsRes.data ?? []) as Item[];
+  const newItems30d = itemsRes.count ?? 0;
+  const orders = (ordersRes.data ?? []) as OrderRow[];
+  const users = usersRes.count ?? 0;
+  const newUsers30d = newUsersRes.count ?? 0;
   const messages = (messagesRes.data ?? []) as Message[];
 
-  const newItems24h = recentItems.filter((i) => i.created_at >= since24h);
+  const sales = orders.filter(isSale);
+  const revenue = sales.reduce((sum, o) => sum + (o.amount_nok ?? 0), 0);
+  const income = sales.reduce((sum, o) => sum + (o.platform_fee_nok ?? 0), 0);
+  const sales30d = sales.filter((o) => (o.paid_at ?? "") >= since30d);
+  const income30d = sales30d.reduce((sum, o) => sum + (o.platform_fee_nok ?? 0), 0);
 
-  // A thread is (item_id, buyer_id). Messages arrive newest first, so the first
-  // one seen for a key is that thread's latest.
+  const actionable = orders.filter((o) => needsAction(o) !== null);
+  const recentSales = sales.slice(0, 8);
+  const hiddenOrders = orders.length - sales.length - actionable.filter((o) => !isSale(o)).length;
+
+  const newItems7d = recentItems.filter((i) => i.created_at >= since7d);
+
+  // A thread is (item_id, buyer_id). Messages arrive newest first, so the
+  // first one seen for a key is that thread's latest.
   type Thread = { itemId: string; buyerId: string; last: Message; count: number };
   const threadMap = new Map<string, Thread>();
   for (const m of messages) {
@@ -119,18 +188,19 @@ export default async function AdminPage() {
     a.last.created_at < b.last.created_at ? 1 : -1,
   );
 
-  // Titles for items referenced by orders and threads but not in the 7d window.
+  // Titles for items referenced by orders and threads but outside the 30d window.
   const itemMap: Record<string, Item> = {};
   for (const i of recentItems) itemMap[String(i.id)] = i;
+  const shownOrders = [...actionable, ...recentSales];
   const missingItemIds = [
-    ...new Set([
-      ...orders.map((o) => o.item_id).filter((x): x is string | number => x !== null),
-      ...threads.map((t) => t.itemId),
-    ].map(String)),
+    ...new Set(
+      [
+        ...shownOrders.map((o) => o.item_id).filter((x): x is string | number => x !== null),
+        ...threads.map((t) => t.itemId),
+      ].map(String),
+    ),
   ].filter((id) => !itemMap[id]);
   if (missingItemIds.length > 0) {
-    // Tolerated rather than awaited on: a lookup that fails degrades to a
-    // missing title, it does not take the dashboard down.
     const { data } = await db.from("items").select("*").in("id", missingItemIds);
     for (const i of (data ?? []) as Item[]) itemMap[String(i.id)] = i;
   }
@@ -138,11 +208,13 @@ export default async function AdminPage() {
   // profiles_public, not profiles: the dashboard has no business holding
   // addresses and phone numbers just to print a display name.
   const userIds = [
-    ...new Set([
-      ...orders.flatMap((o) => [o.buyer_id, o.seller_id]),
-      ...recentItems.map((i) => i.seller_id),
-      ...threads.flatMap((t) => [t.buyerId, t.last.sender_id]),
-    ].filter((x): x is string => !!x)),
+    ...new Set(
+      [
+        ...shownOrders.flatMap((o) => [o.buyer_id, o.seller_id]),
+        ...recentItems.map((i) => i.seller_id),
+        ...threads.flatMap((t) => [t.buyerId, t.last.sender_id]),
+      ].filter((x): x is string => !!x),
+    ),
   ];
   const profileMap: Record<string, Profile> = {};
   if (userIds.length > 0) {
@@ -156,62 +228,112 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-10 py-8 sm:py-10">
-      <header className="flex flex-wrap items-baseline justify-between gap-2">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900">
-            Admin<span className="text-[#5a6b32]">.</span>
-          </h1>
-          <p className="mt-1 text-sm text-stone-500">Live oversikt over Aktivbruk</p>
-        </div>
-        <p className="text-xs text-stone-400">Oppdatert {fmtWhen(new Date().toISOString())}</p>
+      <header>
+        <h1 className="text-3xl font-semibold tracking-tight text-stone-900">
+          Admin<span className="text-[#5a6b32]">.</span>
+        </h1>
+        <p className="mt-1 text-sm text-stone-500">Oppdatert {fmtAgo(new Date().toISOString())}</p>
       </header>
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile label="Aktive" value={activeItems} hint="varer til salgs" />
-        <StatTile label="Solgt" value={paidOrders7d} hint="betalt siste 7 d" />
-        <StatTile label="Nye" value={newItems7d} hint="annonser siste 7 d" />
-        <StatTile label="Chats" value={threads.length} hint="aktive siste 7 d" />
+        <Stat
+          label="Aktive"
+          value={String(activeItems)}
+          sub={`${newItems30d} nye siste 30 d`}
+        />
+        <Stat
+          label="Salg"
+          value={String(sales.length)}
+          sub={`${sales30d.length} siste 30 d`}
+        />
+        <Stat
+          label="Omsetning"
+          value={formatPrice(revenue)}
+          sub="gjennom plattformen"
+        />
+        <Stat
+          label="Inntekt"
+          value={formatPrice(income)}
+          sub={`${formatPrice(income30d)} siste 30 d`}
+          accent
+        />
+        <div className="col-span-2 sm:col-span-4">
+          <p className="px-1 text-xs text-stone-400">
+            {users} registrerte brukere, {newUsers30d} nye siste 30 dager. Inntekt er
+            kjøperbeskyttelse-gebyret, altså din andel.
+          </p>
+        </div>
       </section>
 
-      <section className="space-y-4">
-        <SectionHeading title="Nyeste ordre" sub="De 10 siste, uansett status" />
-        {orders.length === 0 ? (
-          <Empty>Ingen ordre ennå.</Empty>
-        ) : (
-          <div className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
-            {orders.map((o) => {
-              const s = STATUS[o.status] ?? { label: o.status, className: "bg-stone-100 text-stone-600" };
+      {actionable.length > 0 && (
+        <Section title="Krever handling" sub="Det eneste her som haster">
+          <Rows>
+            {actionable.map((o) => {
+              const flag = needsAction(o)!;
               return (
                 <div key={o.id} className="flex items-start justify-between gap-3 p-4">
                   <div className="min-w-0 space-y-1">
                     <p className="line-clamp-1 text-sm font-medium">{title(o.item_id)}</p>
                     <p className="line-clamp-1 text-xs text-stone-500">
-                      {name(o.buyer_id)} <span className="text-stone-300">kjøpte av</span> {name(o.seller_id)}
+                      {name(o.buyer_id)} kjøpte av {name(o.seller_id)}
                     </p>
-                    <p className="text-xs text-stone-400">
-                      {fmtWhen(o.created_at)} · {fmtAgo(o.created_at)}
-                    </p>
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${flag.className}`}>
+                        {flag.label}
+                      </span>
+                      <span className="text-xs text-stone-400">{fmtAgo(o.created_at)}</span>
+                    </div>
                   </div>
-                  <div className="flex shrink-0 flex-col items-end gap-1.5">
-                    <p className="text-sm font-semibold">{formatPrice(o.amount_nok)}</p>
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${s.className}`}>
-                      {s.label}
-                    </span>
-                  </div>
+                  <p className="shrink-0 text-sm font-semibold">{formatPrice(o.amount_nok)}</p>
                 </div>
               );
             })}
-          </div>
-        )}
-      </section>
+          </Rows>
+        </Section>
+      )}
 
-      <section className="space-y-4">
-        <SectionHeading title="Nye annonser" sub="Lagt ut siste 24 timer" />
-        {newItems24h.length === 0 ? (
-          <Empty>Ingen nye annonser det siste døgnet.</Empty>
+      <Section title="Siste salg" sub="Betalte ordre, nyeste først">
+        {recentSales.length === 0 ? (
+          <Quiet>Ingen salg ennå.</Quiet>
         ) : (
-          <div className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
-            {newItems24h.map((item) => (
+          <>
+            <Rows>
+              {recentSales.map((o) => {
+                const s = STATUS[o.status] ?? { label: o.status, className: "bg-stone-100 text-stone-600" };
+                return (
+                  <div key={o.id} className="flex items-start justify-between gap-3 p-4">
+                    <div className="min-w-0 space-y-1">
+                      <p className="line-clamp-1 text-sm font-medium">{title(o.item_id)}</p>
+                      <p className="line-clamp-1 text-xs text-stone-500">
+                        {name(o.buyer_id)} kjøpte av {name(o.seller_id)}
+                      </p>
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${s.className}`}>
+                          {s.label}
+                        </span>
+                        <span className="text-xs text-stone-400">{fmtAgo(o.paid_at ?? o.created_at)}</span>
+                      </div>
+                    </div>
+                    <p className="shrink-0 text-sm font-semibold">{formatPrice(o.amount_nok)}</p>
+                  </div>
+                );
+              })}
+            </Rows>
+            {hiddenOrders > 0 && (
+              <Quiet>
+                {hiddenOrders} kansellerte eller ufullførte ordre er ikke vist.
+              </Quiet>
+            )}
+          </>
+        )}
+      </Section>
+
+      <Section title="Nye annonser" sub="Lagt ut siste 7 dager">
+        {newItems7d.length === 0 ? (
+          <Quiet>Ingen nye annonser denne uka.</Quiet>
+        ) : (
+          <Rows>
+            {newItems7d.map((item) => (
               <Link
                 key={item.id}
                 href={`/item/${item.id}`}
@@ -226,19 +348,17 @@ export default async function AdminPage() {
                 <p className="shrink-0 text-sm font-semibold">{formatPrice(item.price)}</p>
               </Link>
             ))}
-          </div>
+          </Rows>
         )}
-      </section>
+      </Section>
 
-      <section className="space-y-4">
-        <SectionHeading title="Aktive chats" sub="Tråder med melding siste 7 døgn, nyeste først" />
+      <Section title="Aktive chats" sub="Tråder med melding siste 30 dager">
         {threads.length === 0 ? (
-          <Empty>Ingen aktive samtaler.</Empty>
+          <Quiet>Ingen aktive samtaler.</Quiet>
         ) : (
-          <div className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
+          <Rows>
             {threads.map((t) => {
               const item = itemMap[t.itemId];
-              const sellerId = item?.seller_id ?? null;
               return (
                 <Link
                   key={`${t.itemId}:${t.buyerId}`}
@@ -248,9 +368,9 @@ export default async function AdminPage() {
                   <div className="min-w-0 space-y-1">
                     <p className="line-clamp-1 text-sm font-medium">{title(t.itemId)}</p>
                     <p className="line-clamp-1 text-xs text-stone-500">
-                      {name(t.buyerId)} <span className="text-stone-300">og</span> {name(sellerId)}
+                      {name(t.buyerId)} og {name(item?.seller_id ?? null)}
                     </p>
-                    <p className="line-clamp-1 text-xs text-stone-400">
+                    <p className="text-xs text-stone-400">
                       {t.count} {t.count === 1 ? "melding" : "meldinger"} · {fmtAgo(t.last.created_at)}
                     </p>
                   </div>
@@ -258,9 +378,9 @@ export default async function AdminPage() {
                 </Link>
               );
             })}
-          </div>
+          </Rows>
         )}
-      </section>
+      </Section>
     </div>
   );
 }

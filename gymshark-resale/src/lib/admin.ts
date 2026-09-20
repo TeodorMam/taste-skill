@@ -36,7 +36,13 @@ export async function requireAdminDb(): Promise<SupabaseClient | null> {
 }
 
 /** Server renders in UTC on Netlify, so the timezone has to be explicit. */
-const osloTime = new Intl.DateTimeFormat("nb-NO", {
+const osloDate = new Intl.DateTimeFormat("nb-NO", {
+  timeZone: "Europe/Oslo",
+  day: "numeric",
+  month: "short",
+});
+
+const osloDateTime = new Intl.DateTimeFormat("nb-NO", {
   timeZone: "Europe/Oslo",
   day: "numeric",
   month: "short",
@@ -45,16 +51,24 @@ const osloTime = new Intl.DateTimeFormat("nb-NO", {
 });
 
 export function fmtWhen(iso: string | null): string {
-  if (!iso) return "–";
-  return osloTime.format(new Date(iso));
+  if (!iso) return "\u2013";
+  return osloDateTime.format(new Date(iso));
 }
 
+/**
+ * One timestamp per row, not two. Relative reads better while something is
+ * still fresh; past a week the date is what you actually want, and "48 d
+ * siden" is precision nobody asked for.
+ */
 export function fmtAgo(iso: string | null): string {
-  if (!iso) return "";
-  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
+  if (!iso) return "\u2013";
+  const date = new Date(iso);
+  const mins = Math.round((Date.now() - date.getTime()) / 60_000);
   if (mins < 1) return "nå";
   if (mins < 60) return `${mins} min siden`;
   const hours = Math.round(mins / 60);
   if (hours < 24) return `${hours} t siden`;
-  return `${Math.round(hours / 24)} d siden`;
+  const days = Math.round(hours / 24);
+  if (days < 7) return `${days} d siden`;
+  return osloDate.format(date);
 }
