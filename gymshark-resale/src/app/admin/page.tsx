@@ -123,6 +123,39 @@ function Rows({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** One row shape for every order list, so they cannot drift apart. */
+function OrderLine({
+  title,
+  who,
+  chip,
+  when,
+  amount,
+  dim = false,
+}: {
+  title: string;
+  who: string;
+  chip: { label: string; className: string };
+  when: string;
+  amount: number;
+  dim?: boolean;
+}) {
+  return (
+    <div className={`flex items-start justify-between gap-3 p-4 ${dim ? "opacity-60" : ""}`}>
+      <div className="min-w-0 space-y-1">
+        <p className="line-clamp-1 text-sm font-medium">{title}</p>
+        <p className="line-clamp-1 text-xs text-stone-500">{who}</p>
+        <div className="flex items-center gap-2 pt-0.5">
+          <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${chip.className}`}>
+            {chip.label}
+          </span>
+          <span className="text-xs text-stone-400">{when}</span>
+        </div>
+      </div>
+      <p className="shrink-0 text-sm font-semibold">{formatPrice(amount)}</p>
+    </div>
+  );
+}
+
 export default async function AdminPage() {
   // Redirects anyone who is not the admin before a privileged client exists.
   const db = await requireAdminDb();
@@ -169,7 +202,8 @@ export default async function AdminPage() {
 
   const actionable = orders.filter((o) => needsAction(o) !== null);
   const recentSales = sales.slice(0, 8);
-  const hiddenOrders = orders.length - sales.length - actionable.filter((o) => !isSale(o)).length;
+  const actionableIds = new Set(actionable.map((o) => o.id));
+  const hidden = orders.filter((o) => !isSale(o) && !actionableIds.has(o.id));
 
   const newItems7d = recentItems.filter((i) => i.created_at >= since7d);
 
@@ -271,21 +305,14 @@ export default async function AdminPage() {
             {actionable.map((o) => {
               const flag = needsAction(o)!;
               return (
-                <div key={o.id} className="flex items-start justify-between gap-3 p-4">
-                  <div className="min-w-0 space-y-1">
-                    <p className="line-clamp-1 text-sm font-medium">{title(o.item_id)}</p>
-                    <p className="line-clamp-1 text-xs text-stone-500">
-                      {name(o.buyer_id)} kjøpte av {name(o.seller_id)}
-                    </p>
-                    <div className="flex items-center gap-2 pt-0.5">
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${flag.className}`}>
-                        {flag.label}
-                      </span>
-                      <span className="text-xs text-stone-400">{fmtAgo(o.created_at)}</span>
-                    </div>
-                  </div>
-                  <p className="shrink-0 text-sm font-semibold">{formatPrice(o.amount_nok)}</p>
-                </div>
+                <OrderLine
+                  key={o.id}
+                  title={title(o.item_id)}
+                  who={`${name(o.buyer_id)} kjøpte av ${name(o.seller_id)}`}
+                  chip={flag}
+                  when={fmtAgo(o.created_at)}
+                  amount={o.amount_nok}
+                />
               );
             })}
           </Rows>
@@ -296,35 +323,59 @@ export default async function AdminPage() {
         {recentSales.length === 0 ? (
           <Quiet>Ingen salg ennå.</Quiet>
         ) : (
-          <>
-            <Rows>
-              {recentSales.map((o) => {
-                const s = STATUS[o.status] ?? { label: o.status, className: "bg-stone-100 text-stone-600" };
-                return (
-                  <div key={o.id} className="flex items-start justify-between gap-3 p-4">
-                    <div className="min-w-0 space-y-1">
-                      <p className="line-clamp-1 text-sm font-medium">{title(o.item_id)}</p>
-                      <p className="line-clamp-1 text-xs text-stone-500">
-                        {name(o.buyer_id)} kjøpte av {name(o.seller_id)}
-                      </p>
-                      <div className="flex items-center gap-2 pt-0.5">
-                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${s.className}`}>
-                          {s.label}
-                        </span>
-                        <span className="text-xs text-stone-400">{fmtAgo(o.paid_at ?? o.created_at)}</span>
-                      </div>
-                    </div>
-                    <p className="shrink-0 text-sm font-semibold">{formatPrice(o.amount_nok)}</p>
-                  </div>
-                );
-              })}
-            </Rows>
-            {hiddenOrders > 0 && (
-              <Quiet>
-                {hiddenOrders} kansellerte eller ufullførte ordre er ikke vist.
-              </Quiet>
-            )}
-          </>
+          <Rows>
+            {recentSales.map((o) => (
+              <OrderLine
+                key={o.id}
+                title={title(o.item_id)}
+                who={`${name(o.buyer_id)} kjøpte av ${name(o.seller_id)}`}
+                chip={STATUS[o.status] ?? { label: o.status, className: "bg-stone-100 text-stone-600" }}
+                when={fmtAgo(o.paid_at ?? o.created_at)}
+                amount={o.amount_nok}
+              />
+            ))}
+          </Rows>
+        )}
+
+        {/* A native disclosure, so this stays a server component: no state, no
+            client bundle, and it still works with JavaScript off. Telling you
+            something is hidden without letting you look at it is worse than
+            either showing it or leaving it out. */}
+        {hidden.length > 0 && (
+          <details className="group">
+            <summary className="flex cursor-pointer list-none items-center gap-1.5 px-1 text-sm text-stone-400 transition hover:text-stone-600 [&::-webkit-details-marker]:hidden">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform group-open:rotate-90"
+                aria-hidden
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+              {hidden.length} {hidden.length === 1 ? "kansellert eller ufullført ordre" : "kansellerte eller ufullførte ordre"}
+            </summary>
+            <div className="mt-2">
+              <Rows>
+                {hidden.map((o) => (
+                  <OrderLine
+                    key={o.id}
+                    title={title(o.item_id)}
+                    who={`${name(o.buyer_id)} kjøpte av ${name(o.seller_id)}`}
+                    chip={STATUS[o.status] ?? { label: o.status, className: "bg-stone-100 text-stone-600" }}
+                    when={fmtAgo(o.created_at)}
+                    amount={o.amount_nok}
+                    dim
+                  />
+                ))}
+              </Rows>
+            </div>
+          </details>
         )}
       </Section>
 
