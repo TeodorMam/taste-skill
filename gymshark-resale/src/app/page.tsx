@@ -1,18 +1,21 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
-import { ItemCard } from "@/components/ItemCard";
+import { ItemsWithLoadMore, PAGE_SIZE } from "@/components/ItemsWithLoadMore";
 import { type Item, type Profile } from "@/lib/supabase";
 
 export default async function HomePage() {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const { data: rawItems } = await supabase
+  // First page only. The count tells ItemsWithLoadMore whether to show the
+  // "Se flere" button without it having to make a throwaway request.
+  const { data: rawItems, count } = await supabase
     .from("items")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("is_sold", false)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(0, PAGE_SIZE - 1);
 
   const items = (rawItems ?? []) as Item[];
   const sellerIds = [...new Set(items.map((i) => i.seller_id).filter((x): x is string => !!x))];
@@ -51,22 +54,18 @@ export default async function HomePage() {
         <p className="text-xs text-stone-400">Gratis å bruke – ingen skjulte gebyrer</p>
       </section>
 
-      {/* ── Populært nå ───────────────────────────────────────────────────── */}
+      {/* ── Nytt inne ─────────────────────────────────────────────────────── */}
       {items.length > 0 && (
         <section className="space-y-4">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight">Populært nå</h2>
+            <h2 className="text-lg font-semibold tracking-tight">Nytt inne</h2>
             <p className="mt-0.5 text-sm text-stone-500">Nylig lagt ut treningsklær</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {items.map((item) => (
-              <ItemCard
-                key={item.id}
-                item={item}
-                seller={item.seller_id ? (sellersMap[item.seller_id] ?? null) : null}
-              />
-            ))}
-          </div>
+          <ItemsWithLoadMore
+            initialItems={items}
+            initialSellers={sellersMap}
+            total={count ?? null}
+          />
         </section>
       )}
     </div>
