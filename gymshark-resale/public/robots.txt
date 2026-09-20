@@ -20,6 +20,7 @@ Disallow: /logout
 Disallow: /sell
 Disallow: /post
 Disallow: /item/*/edit
+Disallow: /admin
 Disallow: /api
 
 Sitemap: https://aktivbruk.com/sitemap.xml
