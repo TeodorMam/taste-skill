@@ -1,8 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { createClient as createServerClient } from "@/utils/supabase/server";
-import { createClient } from "@supabase/supabase-js";
+import { requireAdminDb, fmtWhen, fmtAgo } from "@/lib/admin";
 import {
   type Item,
   type Message,
@@ -22,37 +19,8 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const ADMIN_USER_ID = process.env.ADMIN_USER_ID;
-
 const DAY = 86_400_000;
 const sinceIso = (ms: number) => new Date(Date.now() - ms).toISOString();
-
-/** Server renders in UTC on Netlify, so the timezone has to be explicit. */
-const osloTime = new Intl.DateTimeFormat("nb-NO", {
-  timeZone: "Europe/Oslo",
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-});
-
-function fmtWhen(iso: string | null): string {
-  if (!iso) return "–";
-  return osloTime.format(new Date(iso));
-}
-
-function fmtAgo(iso: string | null): string {
-  if (!iso) return "";
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.round(diff / 60_000);
-  if (mins < 1) return "nå";
-  if (mins < 60) return `${mins} min siden`;
-  const hours = Math.round(mins / 60);
-  if (hours < 24) return `${hours} t siden`;
-  return `${Math.round(hours / 24)} d siden`;
-}
 
 const STATUS: Record<string, { label: string; className: string }> = {
   pending:   { label: "Venter",     className: "bg-stone-100 text-stone-600" },
@@ -104,14 +72,10 @@ function Empty({ children }: { children: React.ReactNode }) {
 }
 
 export default async function AdminPage() {
-  // Gate first, on the session cookie, before any privileged client exists.
-  const supabase = createServerClient(await cookies());
-  const { data: { user } } = await supabase.auth.getUser();
+  // Redirects anyone who is not the admin before a privileged client exists.
+  const db = await requireAdminDb();
 
-  // Fails closed: a missing ADMIN_USER_ID locks the page rather than opening it.
-  if (!ADMIN_USER_ID || !user || user.id !== ADMIN_USER_ID) redirect("/");
-
-  if (!SERVICE_ROLE_KEY) {
+  if (!db) {
     return (
       <div className="space-y-4 py-10">
         <h1 className="text-2xl font-semibold tracking-tight">Admin</h1>
@@ -119,10 +83,6 @@ export default async function AdminPage() {
       </div>
     );
   }
-
-  // Only reached by the admin. Orders and messages are behind RLS that scopes
-  // them to their own participants, so a platform-wide view needs this key.
-  const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
   const since7d = sinceIso(7 * DAY);
   const since24h = sinceIso(DAY);
@@ -282,7 +242,7 @@ export default async function AdminPage() {
               return (
                 <Link
                   key={`${t.itemId}:${t.buyerId}`}
-                  href={`/chat/${t.itemId}/${t.buyerId}`}
+                  href={`/admin/chat/${t.itemId}/${t.buyerId}`}
                   className="flex items-start justify-between gap-3 p-4 transition hover:bg-stone-50"
                 >
                   <div className="min-w-0 space-y-1">
