@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "check:rsc": "node scripts/check-rsc-boundary.mjs",
+    "prebuild": "npm run check:rsc",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
