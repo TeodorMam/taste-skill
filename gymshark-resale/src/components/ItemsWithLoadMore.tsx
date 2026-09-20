@@ -4,8 +4,7 @@ import { useMemo, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { ItemCard } from "@/components/ItemCard";
 import { type Item, type Profile } from "@/lib/supabase";
-
-export const PAGE_SIZE = 24;
+import { PAGE_SIZE } from "@/lib/pagination";
 
 /**
  * Grid of items with an explicit "Se flere" button, no infinite scroll.
