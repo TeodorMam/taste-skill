@@ -12,6 +12,32 @@ import { usePathname } from "next/navigation";
  */
 const KEY = "ab_session";
 
+/**
+ * Teodor's own visits would otherwise be a large share of the count at this
+ * volume, and a number he cannot trust is worse than no number.
+ *
+ * Opting out is per browser and permanent: load /?notrack=1 once on each
+ * device, /?notrack=0 to undo. localStorage rather than sessionStorage so it
+ * survives closing the tab, and no server or login involved, so it works
+ * logged out and in a second browser too.
+ *
+ * window.location is read directly instead of useSearchParams, which would
+ * force every page in the app into dynamic rendering from the root layout.
+ */
+const OPT_OUT = "ab_notrack";
+
+function optedOut(): boolean {
+  try {
+    const flag = new URLSearchParams(window.location.search).get("notrack");
+    if (flag === "1") localStorage.setItem(OPT_OUT, "1");
+    if (flag === "0") localStorage.removeItem(OPT_OUT);
+    return localStorage.getItem(OPT_OUT) === "1";
+  } catch {
+    // Blocked storage. Better to count the visit than to lose it.
+    return false;
+  }
+}
+
 function sessionId(): string | null {
   try {
     const existing = sessionStorage.getItem(KEY);
@@ -32,6 +58,7 @@ export function Analytics() {
 
   useEffect(() => {
     if (!pathname || lastSent.current === pathname) return;
+    if (optedOut()) return;
     lastSent.current = pathname;
 
     const payload = JSON.stringify({
