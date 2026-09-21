@@ -225,7 +225,10 @@ export default async function AdminPage() {
   // Titles for items referenced by orders and threads but outside the 30d window.
   const itemMap: Record<string, Item> = {};
   for (const i of recentItems) itemMap[String(i.id)] = i;
-  const shownOrders = [...actionable, ...recentSales];
+  // Every order the page actually renders, the collapsed ones included.
+  // Leaving `hidden` out here made those rows fall back to "Slettet vare" and
+  // "Bruker #abc123" for items and people that were there all along.
+  const shownOrders = [...actionable, ...recentSales, ...hidden];
   const missingItemIds = [
     ...new Set(
       [
