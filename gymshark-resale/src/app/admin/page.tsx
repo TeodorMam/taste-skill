@@ -172,7 +172,7 @@ export default async function AdminPage() {
   const since7d = sinceIso(7 * DAY);
   const since30d = sinceIso(30 * DAY);
 
-  const [activeRes, itemsRes, ordersRes, usersRes, newUsersRes, messagesRes] = await Promise.all([
+  const [activeRes, itemsRes, ordersRes, usersRes, newUsersRes, messagesRes, viewsRes] = await Promise.all([
     db.from("items").select("id", { count: "exact", head: true }).eq("is_sold", false),
     db.from("items").select("*", { count: "exact" }).gte("created_at", since30d).order("created_at", { ascending: false }),
     // Every order, so lifetime totals are lifetime totals. Narrow columns keep
@@ -184,6 +184,8 @@ export default async function AdminPage() {
     db.from("profiles").select("user_id", { count: "exact", head: true }),
     db.from("profiles").select("user_id", { count: "exact", head: true }).gte("created_at", since30d),
     db.from("messages").select("*").gte("created_at", since30d).order("created_at", { ascending: false }),
+    // Narrow columns, capped: enough to aggregate honestly at this volume.
+    db.from("pageviews").select("path,referrer_host,session_id,created_at").gte("created_at", since30d).limit(20000),
   ]);
 
   const activeItems = activeRes.count ?? 0;
@@ -193,6 +195,28 @@ export default async function AdminPage() {
   const users = usersRes.count ?? 0;
   const newUsers30d = newUsersRes.count ?? 0;
   const messages = (messagesRes.data ?? []) as Message[];
+
+  type View = { path: string; referrer_host: string | null; session_id: string | null; created_at: string };
+  const trackingReady = !viewsRes.error;
+  const views = (viewsRes.data ?? []) as View[];
+  const views7d = views.filter((v) => v.created_at >= since7d);
+
+  const sessionsIn = (rows: View[]) =>
+    new Set(rows.map((v) => v.session_id).filter((x): x is string => !!x)).size;
+
+  // Sessions that reached an item page. This is the step that matters: a visit
+  // that never looks at a product was never going to buy anything.
+  const itemSessions = new Set(
+    views7d.filter((v) => v.path.startsWith("/item/")).map((v) => v.session_id).filter((x): x is string => !!x),
+  ).size;
+
+  const tally = (rows: string[]) => {
+    const counts = new Map<string, number>();
+    for (const key of rows) counts.set(key, (counts.get(key) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  };
+  const topPages = tally(views7d.map((v) => v.path));
+  const topSources = tally(views7d.map((v) => v.referrer_host ?? "direkte"));
 
   const sales = orders.filter(isSale);
   const revenue = sales.reduce((sum, o) => sum + (o.amount_nok ?? 0), 0);
@@ -301,6 +325,62 @@ export default async function AdminPage() {
           </p>
         </div>
       </section>
+
+      <Section title="Trafikk" sub="Siste 7 dager, bots holdt utenfor">
+        {!trackingReady ? (
+          <Quiet>
+            Tabellen finnes ikke ennå. Kjør supabase/0037_pageviews.sql i Supabase SQL Editor,
+            så begynner tallene å komme inn.
+          </Quiet>
+        ) : views7d.length === 0 ? (
+          <Quiet>Ingen besøk registrert ennå. Tallene begynner når noen laster siden.</Quiet>
+        ) : (
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-2xl border border-stone-200 bg-white p-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-stone-400">Besøkende</p>
+                <p className="mt-1.5 text-3xl font-semibold tracking-tight">{sessionsIn(views7d)}</p>
+                <p className="mt-0.5 text-xs text-stone-500">{sessionsIn(views)} siste 30 d</p>
+              </div>
+              <div className="rounded-2xl border border-stone-200 bg-white p-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-stone-400">Sidevisninger</p>
+                <p className="mt-1.5 text-3xl font-semibold tracking-tight">{views7d.length}</p>
+                <p className="mt-0.5 text-xs text-stone-500">{views.length} siste 30 d</p>
+              </div>
+              <div className="rounded-2xl border border-stone-200 bg-white p-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-stone-400">Så en vare</p>
+                <p className="mt-1.5 text-3xl font-semibold tracking-tight text-[#5a6b32]">{itemSessions}</p>
+                <p className="mt-0.5 text-xs text-stone-500">av {sessionsIn(views7d)} besøkende</p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-stone-200 bg-white p-4">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-stone-400">Mest besøkt</p>
+                <ul className="space-y-1.5">
+                  {topPages.map(([path, n]) => (
+                    <li key={path} className="flex items-baseline justify-between gap-3 text-sm">
+                      <span className="line-clamp-1 text-stone-700">{path}</span>
+                      <span className="shrink-0 text-stone-400">{n}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-2xl border border-stone-200 bg-white p-4">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-stone-400">Kommer fra</p>
+                <ul className="space-y-1.5">
+                  {topSources.map(([host, n]) => (
+                    <li key={host} className="flex items-baseline justify-between gap-3 text-sm">
+                      <span className="line-clamp-1 text-stone-700">{host}</span>
+                      <span className="shrink-0 text-stone-400">{n}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+      </Section>
 
       {actionable.length > 0 && (
         <Section title="Krever handling" sub="Det eneste her som haster">

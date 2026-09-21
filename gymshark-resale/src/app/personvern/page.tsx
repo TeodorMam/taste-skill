@@ -68,6 +68,10 @@ export default function PersonvernPage() {
               "Teknisk",
               "IP-adresse, nettleser- og enhetsinformasjon samt andre tekniske opplysninger som er nødvendige for sikkerhet, drift og feilsøking",
             ],
+            [
+              "Besøksstatistikk",
+              "Vi teller hvilke sider som blir besøkt og hvilket nettsted du eventuelt kom fra. Vi lagrer ikke IP-adresse, informasjonskapsler eller nettleserinformasjon sammen med dette, og statistikken kan ikke knyttes til deg. Derfor bruker Aktivbruk heller ingen cookie-banner",
+            ],
           ]}
         />
         <p>
