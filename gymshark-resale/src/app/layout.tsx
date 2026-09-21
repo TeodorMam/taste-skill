@@ -7,6 +7,7 @@ import { NavLinks } from "@/components/NavLinks";
 import { BottomNav } from "@/components/BottomNav";
 import { ClientProviders } from "@/components/ClientProviders";
 import { SearchButton } from "@/components/SearchButton";
+import { Analytics } from "@/components/Analytics";
 
 const SITE_DESCRIPTION =
   "Norges første bruktmarked kun for treningsklær. Kjøp og selg brukt Gymshark, Nike, YoungLA, Craft, DFYNE og mer, trygg betaling via Stripe.";
@@ -104,6 +105,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD) }}
         />
         <ClientProviders>
+        <Analytics />
         <header className="sticky top-0 z-10 border-b border-stone-200 bg-stone-50/80 backdrop-blur">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
             <Link href="/" className="text-base font-semibold tracking-tight">
