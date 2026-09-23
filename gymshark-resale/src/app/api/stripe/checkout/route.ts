@@ -211,8 +211,8 @@ export async function POST(req: NextRequest) {
         seller_id: item.seller_id,
       },
     },
-    success_url: `${SITE_URL}/item/${item.id}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${SITE_URL}/item/${item.id}?payment=cancelled`,
+    success_url: `${SITE_URL}/vare/${item.id}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${SITE_URL}/vare/${item.id}?payment=cancelled`,
     customer_email: buyerEmail,
     locale: "nb",
     metadata: {

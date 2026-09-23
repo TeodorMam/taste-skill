@@ -12,8 +12,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/`,                 changeFrequency: "daily",   priority: 1.0, lastModified: now },
-    { url: `${BASE_URL}/browse`,           changeFrequency: "hourly",  priority: 0.9, lastModified: now },
-    { url: `${BASE_URL}/about`,            changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE_URL}/varer`,           changeFrequency: "hourly",  priority: 0.9, lastModified: now },
+    { url: `${BASE_URL}/om`,            changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/vilkar`,           changeFrequency: "yearly",  priority: 0.3 },
     { url: `${BASE_URL}/personvern`,       changeFrequency: "yearly",  priority: 0.3 },
     { url: `${BASE_URL}/kjoperbeskyttelse`,changeFrequency: "yearly",  priority: 0.4 },
@@ -29,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .limit(1000);
 
     const itemPages: MetadataRoute.Sitemap = (data ?? []).map((row: { id: string | number; updated_at?: string; created_at?: string }) => ({
-      url: `${BASE_URL}/item/${row.id}`,
+      url: `${BASE_URL}/vare/${row.id}`,
       lastModified: row.updated_at || row.created_at,
       changeFrequency: "weekly" as const,
       priority: 0.7,

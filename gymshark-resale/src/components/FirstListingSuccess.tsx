@@ -47,7 +47,7 @@ export function FirstListingSuccess({
     const params = new URLSearchParams(searchParams.toString());
     params.delete("welcome");
     const qs = params.toString();
-    router.replace(`/item/${itemId}${qs ? `?${qs}` : ""}`, { scroll: false });
+    router.replace(`/vare/${itemId}${qs ? `?${qs}` : ""}`, { scroll: false });
   }
 
   async function copyLink() {

@@ -13,7 +13,7 @@ export default function NotFound() {
       </p>
       <div className="flex flex-wrap justify-center gap-2">
         <Link
-          href="/browse"
+          href="/varer"
           className="rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
         >
           Utforsk varer

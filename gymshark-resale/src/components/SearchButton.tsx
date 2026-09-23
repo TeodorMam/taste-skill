@@ -25,7 +25,7 @@ export function SearchButton() {
     if (!query.trim()) return;
     setOpen(false);
     setQuery("");
-    router.push(`/browse?q=${encodeURIComponent(query.trim())}`);
+    router.push(`/varer?q=${encodeURIComponent(query.trim())}`);
   }
 
   return (

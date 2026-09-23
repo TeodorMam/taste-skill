@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     const buyerTotal = existing.amount_nok + shippingCost + existing.platform_fee_nok;
     // Seller receives full item price + shipping reimbursement (no fee deduction).
     const sellerReceives = existing.amount_nok + shippingCost;
-    const link = `${SITE_URL}/item/${itemId}`;
+    const link = `${SITE_URL}/vare/${itemId}`;
 
     const fmt = (n: number) => new Intl.NumberFormat("nb-NO").format(n) + " kr";
 

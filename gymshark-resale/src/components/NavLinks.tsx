@@ -38,7 +38,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   return (
     <nav className="flex items-center gap-4 text-sm">
-      <Link href="/browse" className={textCls("/browse")}>
+      <Link href="/varer" className={textCls("/varer")}>
         Utforsk
       </Link>
       <Link href={authHref(isLoggedIn, "/varsler")} className={`relative ${textCls("/varsler")}`}>

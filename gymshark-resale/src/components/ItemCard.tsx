@@ -31,7 +31,7 @@ export function ItemCard({
 
   return (
     <Link
-      href={`/item/${item.id}`}
+      href={`/vare/${item.id}`}
       className="group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow-md"
     >
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-stone-100">

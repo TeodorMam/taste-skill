@@ -119,7 +119,7 @@ export default function EditItemPage() {
       setError(upErr.message);
       return;
     }
-    router.push(`/item/${params.id}`);
+    router.push(`/vare/${params.id}`);
   }
 
   if (userId === undefined || (!item && !loadErr)) {
@@ -133,7 +133,7 @@ export default function EditItemPage() {
       <section className="space-y-3 py-10">
         <h1 className="text-2xl font-semibold tracking-tight">Logg inn</h1>
         <Link
-          href={`/logg-inn?next=/item/${params.id}/edit`}
+          href={`/logg-inn?next=/vare/${params.id}/edit`}
           className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50"
         >
           Logg inn
@@ -146,7 +146,7 @@ export default function EditItemPage() {
       <section className="space-y-3 py-10">
         <h1 className="text-2xl font-semibold tracking-tight">Ingen tilgang</h1>
         <p className="text-sm text-stone-600">Du kan bare redigere dine egne annonser.</p>
-        <Link href={`/item/${params.id}`} className="text-sm text-[#5a6b32] underline">
+        <Link href={`/vare/${params.id}`} className="text-sm text-[#5a6b32] underline">
           Tilbake til annonsen
         </Link>
       </section>
@@ -157,7 +157,7 @@ export default function EditItemPage() {
     <section className="space-y-6 pb-28 sm:pb-6">
       <div>
         <Link
-          href={`/item/${params.id}`}
+          href={`/vare/${params.id}`}
           className="text-sm text-stone-500 hover:text-black"
         >
           ← Tilbake til annonsen
@@ -399,7 +399,7 @@ export default function EditItemPage() {
 
         <div className="hidden gap-2 sm:flex">
           <Link
-            href={`/item/${params.id}`}
+            href={`/vare/${params.id}`}
             className="flex-1 rounded-full border border-stone-300 bg-white px-5 py-3 text-center text-sm font-medium text-stone-700 hover:border-stone-500"
           >
             Avbryt
@@ -422,7 +422,7 @@ export default function EditItemPage() {
         )}
         <div className="flex gap-2">
           <Link
-            href={`/item/${params.id}`}
+            href={`/vare/${params.id}`}
             className="flex-1 rounded-full border border-stone-300 bg-white py-3 text-center text-sm font-medium text-stone-700"
           >
             Avbryt

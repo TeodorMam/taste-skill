@@ -96,7 +96,7 @@ export default function SellerPage() {
 
   return (
     <section className="space-y-5">
-      <Link href="/browse" className="text-sm text-stone-500 hover:text-black">
+      <Link href="/varer" className="text-sm text-stone-500 hover:text-black">
         ← Tilbake
       </Link>
 

@@ -102,7 +102,7 @@ export default function FavorittePage() {
             Trykk hjertet på en vare for å lagre den her.
           </p>
           <Link
-            href="/browse"
+            href="/varer"
             className="mt-4 inline-block rounded-full bg-stone-900 px-5 py-2.5 text-xs font-medium text-stone-50 hover:bg-black"
           >
             Utforsk varer

@@ -85,7 +85,7 @@ export async function POST(req: Request) {
 
   const title = item.title ?? "Ny melding";
   const preview = msg.body.length > 200 ? `${msg.body.slice(0, 200)}…` : msg.body;
-  const link = `${SITE_URL}/item/${item.id}`;
+  const link = `${SITE_URL}/vare/${item.id}`;
 
   const subject = senderIsSeller
     ? `Selger svarte på "${title}"`

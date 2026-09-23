@@ -40,7 +40,7 @@ export default async function HomePage() {
         </p>
         <div className="flex flex-wrap gap-3">
           <Link
-            href="/browse"
+            href="/varer"
             className="rounded-full bg-stone-900 px-6 py-3 text-sm font-medium text-stone-50 hover:bg-black"
           >
             Utforsk

@@ -120,7 +120,7 @@ export default async function AdminThreadPage({
         </div>
         {item && (
           <Link
-            href={`/item/${item.id}`}
+            href={`/vare/${item.id}`}
             className="inline-block text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
           >
             Se annonsen
