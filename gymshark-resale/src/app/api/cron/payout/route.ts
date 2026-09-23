@@ -62,7 +62,9 @@ export async function GET(req: NextRequest) {
             subject: `Betaling frigjort automatisk, ${itemTitle}`,
             html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
               <p style="font-size:14px;color:#57534e">Bekreftelsesvinduet for <strong>${itemTitle}</strong> utløp uten at du tok handling. Betalingen er automatisk frigjort til selger.</p>
-              <p style="font-size:14px;color:#57534e">Har du et problem med varen? Kontakt oss på <a href="mailto:${FROM_EMAIL.match(/<(.+)>/)?.[1] ?? "kontakt@aktivbruk.com"}">${FROM_EMAIL.match(/<(.+)>/)?.[1] ?? "kontakt@aktivbruk.com"}</a>.</p>
+              <p style="font-size:14px;color:#57534e">Hvordan var handelen? Det tar et halvt minutt, og det hjelper neste kjøper å tørre å handle her.</p>
+              <a href="${SITE_URL}/orders" style="display:inline-block;background:#5a6b32;color:#ffffff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Legg igjen en vurdering</a>
+              <p style="font-size:14px;color:#57534e;margin-top:20px">Har du et problem med varen? Kontakt oss på <a href="mailto:${FROM_EMAIL.match(/<(.+)>/)?.[1] ?? "kontakt@aktivbruk.com"}">${FROM_EMAIL.match(/<(.+)>/)?.[1] ?? "kontakt@aktivbruk.com"}</a>.</p>
               <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
             </div>`,
           }),
@@ -81,6 +83,8 @@ export async function GET(req: NextRequest) {
               </div>
               <p style="font-size:14px;color:#57534e">Bekreftelsesvinduet utløp, og betalingen er automatisk overført til din Stripe-konto.</p>
               <a href="https://dashboard.stripe.com/express" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Åpne Stripe-dashboard</a>
+              <p style="font-size:14px;color:#57534e;margin-top:20px">Hvordan var kjøperen? En vurdering hjelper andre selgere.</p>
+              <a href="${SITE_URL}/orders" style="display:inline-block;background:#5a6b32;color:#ffffff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Vurder kjøperen</a>
               <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
             </div>`,
           }),

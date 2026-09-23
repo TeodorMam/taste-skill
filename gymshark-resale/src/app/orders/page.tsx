@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { formatPrice } from "@/lib/supabase";
 import { getPackageOption } from "@/lib/shipping";
+import { ReviewForm } from "@/components/ReviewForm";
 import { useToast } from "@/components/ToastProvider";
 
 type OrderStatus =
@@ -132,6 +133,21 @@ function OrderCard({ order, role, onAction }: {
           </span>
         </div>
       </div>
+
+      {/* Once the trade is finished, ask. The form used to live only on the
+          listing page, below the fold, and nothing in this flow pointed at it,
+          so nobody was ever asked. A finished order is the moment people have
+          an opinion, and this is the page they are already on. */}
+      {(order.status === "confirmed" || order.status === "paid_out") && order.item && (
+        <div className="border-t border-stone-100 bg-stone-50/60 px-4 py-3">
+          <ReviewForm
+            itemId={String(order.item.id)}
+            reviewerId={role === "buyer" ? order.buyer_id : order.seller_id}
+            sellerId={role === "buyer" ? order.seller_id : order.buyer_id}
+            label={role === "buyer" ? "Hvordan var selgeren?" : "Hvordan var kjøperen?"}
+          />
+        </div>
+      )}
 
       {order.tracking_info && (
         <div className="border-t border-stone-100 px-4 py-2">
