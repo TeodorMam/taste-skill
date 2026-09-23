@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { type Item, formatPrice, itemImages } from "@/lib/supabase";
+import { getPackageOption } from "@/lib/shipping";
 import ItemPageClient from "./ItemPageClient";
 
 const SITE_URL = "https://aktivbruk.com";
@@ -51,6 +52,41 @@ function buildProductJsonLd(item: Item, id: string) {
     "God":     "https://schema.org/UsedCondition",
     "Brukt":   "https://schema.org/UsedCondition",
   };
+  // Only what this listing genuinely offers. A pickup-only item has no
+  // shipping, and an item whose seller never picked a package size has no
+  // price we can state. Declaring a rate Google can compare against checkout
+  // and find wrong is worse than the missing-field warning it replaces.
+  const pkg = item.shipping === "Kun henting" ? null : getPackageOption(item.package_size);
+  const shipping = pkg
+    ? {
+        "@type": "OfferShippingDetails",
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: pkg.price,
+          currency: "NOK",
+        },
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "NO",
+        },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "DAY",
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 2,
+            maxValue: 4,
+            unitCode: "DAY",
+          },
+        },
+      }
+    : null;
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -69,6 +105,18 @@ function buildProductJsonLd(item: Item, id: string) {
       availability: item.is_sold ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
       itemCondition: condMap[item.condition ?? ""] ?? "https://schema.org/UsedCondition",
       url: `${SITE_URL}/item/${id}`,
+      ...(shipping && { shippingDetails: shipping }),
+      // Aktivbruk brokers sales between private individuals, where the
+      // Norwegian angrerettlov gives no right of withdrawal, and the
+      // kjopbeskyttelse page says plainly that changing your mind is not
+      // covered. Declaring a return window here to clear a Search Console
+      // warning would promise buyers something the platform does not offer.
+      // The 48 hours are a deadline for reporting a problem, not a return.
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "NO",
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+      },
     },
   };
 }
