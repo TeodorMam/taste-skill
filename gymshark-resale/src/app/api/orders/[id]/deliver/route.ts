@@ -68,7 +68,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
             <h2 style="margin:0 0 8px;font-size:18px">Kjøper bekreftet mottak!</h2>
             <p style="font-size:14px;color:#57534e">Kjøper har mottatt <strong>${itemTitle}</strong> og har ${REVIEW_HOURS} timer på å bekrefte at alt er ok eller melde problem. Hvis de ikke gjør noe, utbetales betalingen automatisk til deg.</p>
-            <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
+            <a href="${SITE_URL}/ordre" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
             <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
           </div>`,
         }),

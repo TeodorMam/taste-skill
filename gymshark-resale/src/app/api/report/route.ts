@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const isListing = body.type === "listing";
     const targetUrl = isListing
       ? `${SITE_URL}/item/${body.targetId}`
-      : `${SITE_URL}/seller/${body.targetId}`;
+      : `${SITE_URL}/selger/${body.targetId}`;
 
     await fetch("https://api.resend.com/emails", {
       method: "POST",

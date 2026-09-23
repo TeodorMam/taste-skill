@@ -130,7 +130,7 @@ export function FirstListingSuccess({
           )}
 
           <Link
-            href="/inbox"
+            href="/meldinger"
             onClick={close}
             className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 transition hover:border-[#5a6b32]"
           >

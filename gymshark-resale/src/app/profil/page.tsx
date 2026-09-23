@@ -57,7 +57,7 @@ export default function ProfilPage() {
           Logg inn for å redigere profilen din.
         </p>
         <Link
-          href="/login?next=/profil"
+          href="/logg-inn?next=/profil"
           className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
         >
           Logg inn
@@ -133,7 +133,7 @@ export default function ProfilPage() {
       </div>
 
       <Link
-        href="/orders"
+        href="/ordre"
         className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:border-stone-400"
       >
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg">📦</span>

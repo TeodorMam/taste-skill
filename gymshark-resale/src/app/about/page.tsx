@@ -210,7 +210,7 @@ export default function AboutPage() {
             Utforsk varer
           </Link>
           <Link
-            href="/post"
+            href="/ny-annonse"
             className="rounded-full border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium text-stone-700 hover:border-stone-500"
           >
             Legg ut vare

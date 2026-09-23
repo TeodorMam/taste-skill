@@ -46,7 +46,7 @@ export default async function HomePage() {
             Utforsk
           </Link>
           <Link
-            href="/post"
+            href="/ny-annonse"
             className="rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-medium text-stone-900 hover:border-stone-500"
           >
             Legg ut vare

@@ -59,7 +59,7 @@ export default function PostPage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        router.replace("/login?next=/post");
+        router.replace("/logg-inn?next=/ny-annonse");
         return;
       }
       // Hard gate: sellers must have completed Stripe onboarding before
@@ -70,13 +70,13 @@ export default function PostPage() {
         const res = await fetch("/api/stripe/connect");
         const json = await res.json() as { charges_enabled?: boolean };
         if (!json.charges_enabled) {
-          router.replace("/sell");
+          router.replace("/selg");
           return;
         }
       } catch {
-        // If the check fails, fall back to /sell so we don't accidentally
+        // If the check fails, fall back to /selg so we don't accidentally
         // let a broken listing slip through.
-        router.replace("/sell");
+        router.replace("/selg");
         return;
       }
       setUserId(user.id);
@@ -188,7 +188,7 @@ export default function PostPage() {
     return <p className="py-6 text-sm text-stone-500">Laster…</p>;
   }
   if (userId === null) {
-    router.replace("/login?next=/post");
+    router.replace("/logg-inn?next=/ny-annonse");
     return <p className="py-6 text-sm text-stone-500">Laster…</p>;
   }
 

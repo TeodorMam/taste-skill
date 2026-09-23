@@ -118,7 +118,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <SearchButton />
             {!user && (
               <Link
-                href="/login"
+                href="/logg-inn"
                 className="rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-50 hover:bg-black sm:hidden"
               >
                 Logg inn

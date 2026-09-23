@@ -9,7 +9,7 @@ export function useInboxDot(isLoggedIn: boolean): boolean {
   const [hasDot, setHasDot] = useState(false);
 
   useEffect(() => {
-    if (path === "/inbox") { setHasDot(false); return; }
+    if (path === "/meldinger") { setHasDot(false); return; }
     if (!isLoggedIn) return;
     const supabase = createClient();
     (async () => {

@@ -456,7 +456,7 @@ export default function ChatPage() {
       <section className="space-y-3 py-10">
         <p className="text-sm text-stone-600">Logg inn for å se chatten.</p>
         <Link
-          href={`/login?next=/chat/${itemId}/${buyerId}`}
+          href={`/logg-inn?next=/meldinger/${itemId}/${buyerId}`}
           className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
         >
           Logg inn
@@ -473,7 +473,7 @@ export default function ChatPage() {
       {/* ── Top bar ──────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 items-center gap-3 border-b border-stone-200 px-4 py-3">
         <button
-          onClick={() => router.push("/inbox")}
+          onClick={() => router.push("/meldinger")}
           className="shrink-0 rounded-full p-1 text-stone-600 hover:bg-stone-100 hover:text-stone-900"
           aria-label="Tilbake til innboks"
         >
@@ -483,7 +483,7 @@ export default function ChatPage() {
         </button>
         {otherId ? (
           <Link
-            href={`/seller/${otherId}`}
+            href={`/selger/${otherId}`}
             className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg -mx-1 px-1 py-1 transition hover:bg-stone-100"
             aria-label={`Se profil til ${otherName}`}
           >

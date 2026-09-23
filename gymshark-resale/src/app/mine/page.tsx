@@ -155,7 +155,7 @@ export default function MinePage() {
           Logg inn for å se annonsene dine.
         </p>
         <Link
-          href="/login?next=/mine"
+          href="/logg-inn?next=/mine"
           className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
         >
           Logg inn
@@ -174,7 +174,7 @@ export default function MinePage() {
           </p>
         </div>
         <Link
-          href="/post"
+          href="/ny-annonse"
           className="rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black"
         >
           + Ny annonse
@@ -222,7 +222,7 @@ export default function MinePage() {
           </p>
           <p className="mt-1">Legg ut din første vare, det tar under ett minutt.</p>
           <Link
-            href="/post"
+            href="/ny-annonse"
             className="mt-4 inline-block rounded-full bg-stone-900 px-5 py-2.5 text-xs font-medium text-stone-50 hover:bg-black"
           >
             Legg ut vare

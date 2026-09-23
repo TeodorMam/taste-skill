@@ -10,10 +10,10 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   const items = [
     { href: "/browse", label: "Utforsk", icon: SearchIcon, badge: 0 },
-    { href: isLoggedIn ? "/orders" : `/login?next=${encodeURIComponent("/orders")}`, label: "Ordre", icon: PackageIcon, badge: orders },
-    { href: isLoggedIn ? "/inbox" : `/login?next=${encodeURIComponent("/inbox")}`, label: "Innboks", icon: InboxIcon, badge: inbox },
-    { href: isLoggedIn ? "/sell" : `/login?next=${encodeURIComponent("/sell")}`, label: "Selg", icon: PlusIcon, badge: 0 },
-    { href: isLoggedIn ? "/profil" : `/login?next=${encodeURIComponent("/profil")}`, label: "Profil", icon: UserIcon, badge: varsler },
+    { href: isLoggedIn ? "/ordre" : `/logg-inn?next=${encodeURIComponent("/ordre")}`, label: "Ordre", icon: PackageIcon, badge: orders },
+    { href: isLoggedIn ? "/meldinger" : `/logg-inn?next=${encodeURIComponent("/meldinger")}`, label: "Innboks", icon: InboxIcon, badge: inbox },
+    { href: isLoggedIn ? "/selg" : `/logg-inn?next=${encodeURIComponent("/selg")}`, label: "Selg", icon: PlusIcon, badge: 0 },
+    { href: isLoggedIn ? "/profil" : `/logg-inn?next=${encodeURIComponent("/profil")}`, label: "Profil", icon: UserIcon, badge: varsler },
   ];
 
   return (

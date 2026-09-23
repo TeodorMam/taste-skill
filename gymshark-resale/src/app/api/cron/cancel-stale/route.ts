@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
               <h2 style="margin:0 0 8px;font-size:18px">Ordren er kansellert</h2>
               <p style="margin:0 0 12px;font-size:14px;color:#57534e">Selger sendte ikke <strong>${itemTitle}</strong> innen ${SHIPPING_DEADLINE_DAYS} dager. Ordren er kansellert og du refunderes fullt.</p>
               <p style="margin:0 0 16px;font-size:14px;color:#57534e">Refusjonen vil vises på kontoen din innen 5–10 virkedager avhengig av kortutstederen din.</p>
-              <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
+              <a href="${SITE_URL}/ordre" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
               <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
             </div>`,
           }),

@@ -126,7 +126,7 @@ export default function VarslerPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Varsler</h1>
         <p className="text-sm text-stone-600">Logg inn for å bruke varsler.</p>
         <Link
-          href="/login?next=/varsler"
+          href="/logg-inn?next=/varsler"
           className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
         >
           Logg inn

@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
             html: `<div style="font-family:-apple-system,sans-serif;color:#1c1917;max-width:560px">
               <p style="font-size:14px;color:#57534e">Bekreftelsesvinduet for <strong>${itemTitle}</strong> utløp uten at du tok handling. Betalingen er automatisk frigjort til selger.</p>
               <p style="font-size:14px;color:#57534e">Hvordan var handelen? Det tar et halvt minutt, og det betyr mye for neste kjøper.</p>
-              <a href="${SITE_URL}/orders" style="display:inline-block;background:#5a6b32;color:#ffffff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Legg igjen en vurdering</a>
+              <a href="${SITE_URL}/ordre" style="display:inline-block;background:#5a6b32;color:#ffffff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Legg igjen en vurdering</a>
               <p style="font-size:14px;color:#57534e;margin-top:20px">Har du et problem med varen? Kontakt oss på <a href="mailto:${FROM_EMAIL.match(/<(.+)>/)?.[1] ?? "kontakt@aktivbruk.com"}">${FROM_EMAIL.match(/<(.+)>/)?.[1] ?? "kontakt@aktivbruk.com"}</a>.</p>
               <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
             </div>`,
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
               <p style="font-size:14px;color:#57534e">48-timersvinduet gikk ut. Pengene er på vei til bankkontoen din, vanligvis fremme innen 1-3 virkedager.</p>
               <a href="https://dashboard.stripe.com/express" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Åpne Stripe-dashboard</a>
               <p style="font-size:14px;color:#57534e;margin-top:20px">Hvordan var kjøperen? En vurdering hjelper andre selgere.</p>
-              <a href="${SITE_URL}/orders" style="display:inline-block;background:#5a6b32;color:#ffffff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Vurder kjøperen</a>
+              <a href="${SITE_URL}/ordre" style="display:inline-block;background:#5a6b32;color:#ffffff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Vurder kjøperen</a>
               <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
             </div>`,
           }),
@@ -127,7 +127,7 @@ function reminderHtml(counterpartName: string, itemTitle: string, token: string)
     <p style="font-size:14px;color:#57534e">Hei,</p>
     <p style="font-size:14px;color:#57534e">For to dager siden fullførte du handelen med <strong>${escapeHtml(counterpartName)}</strong> på Aktivbruk. Varen: «${escapeHtml(itemTitle)}».</p>
     <p style="font-size:14px;color:#57534e">Har du 30 sekunder til å legge igjen en anmeldelse? Det betyr mye for andre som vurderer å handle med ${escapeHtml(counterpartName)}.</p>
-    <a href="${SITE_URL}/orders" style="display:inline-block;background:#5a6b32;color:#ffffff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Legg igjen en vurdering</a>
+    <a href="${SITE_URL}/ordre" style="display:inline-block;background:#5a6b32;color:#ffffff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Legg igjen en vurdering</a>
     <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
     <p style="color:#d6d3d1;font-size:11px;margin:8px 0 0"><a href="${unsubscribe}" style="color:#d6d3d1">Slutt å få påminnelser om anmeldelser</a></p>
   </div>`;

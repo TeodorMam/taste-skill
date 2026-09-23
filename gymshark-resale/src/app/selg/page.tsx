@@ -20,7 +20,7 @@ export default function SellPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        router.replace("/login?next=/sell");
+        router.replace("/logg-inn?next=/selg");
         return;
       }
 
@@ -35,7 +35,7 @@ export default function SellPage() {
         if (fromStripe) {
           setStep("success");
         } else {
-          router.replace("/post");
+          router.replace("/ny-annonse");
         }
         return;
       }
@@ -54,7 +54,7 @@ export default function SellPage() {
       const res = await fetch("/api/stripe/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ returnPath: "/sell?stripe=return" }),
+        body: JSON.stringify({ returnPath: "/selg?stripe=return" }),
       });
       const json = await res.json() as { url?: string; error?: string };
       if (json.url) {
@@ -166,7 +166,7 @@ export default function SellPage() {
         </p>
       </div>
       <Link
-        href="/post"
+        href="/ny-annonse"
         className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black"
       >
         Legg ut din første annonse

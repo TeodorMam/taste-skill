@@ -89,7 +89,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         body: JSON.stringify({
           from: FROM_EMAIL, to: ADMIN_EMAIL,
           subject: `[Tvist] Ordre ${orderId}, ${itemTitle}`,
-          html: `<p>Ordre: ${orderId}<br>Vare: ${itemTitle}<br>Beløp: ${fmt(order.amount_nok)}<br>Kjøper: ${buyerEmail ?? order.buyer_id}<br>Selger: ${sellerEmail ?? order.seller_id}<br>Årsak: ${reason || "(ikke oppgitt)"}<br><br><a href="${SITE_URL}/orders">Administrer</a></p>`,
+          html: `<p>Ordre: ${orderId}<br>Vare: ${itemTitle}<br>Beløp: ${fmt(order.amount_nok)}<br>Kjøper: ${buyerEmail ?? order.buyer_id}<br>Selger: ${sellerEmail ?? order.seller_id}<br>Årsak: ${reason || "(ikke oppgitt)"}<br><br><a href="${SITE_URL}/ordre">Administrer</a></p>`,
         }),
       }),
     ]);

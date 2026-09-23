@@ -196,7 +196,7 @@ export default function InboxPage() {
       { user_id: userId, item_id: String(item.id), buyer_id: buyerId, last_read_at: new Date().toISOString() },
       { onConflict: "user_id,item_id,buyer_id" },
     );
-    router.push(`/chat/${item.id}/${buyerId}`);
+    router.push(`/meldinger/${item.id}/${buyerId}`);
   }
 
   if (userId === undefined)
@@ -208,7 +208,7 @@ export default function InboxPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
         <p className="text-sm text-stone-600">Logg inn for å se innboksen din.</p>
         <Link
-          href="/login?next=/inbox"
+          href="/logg-inn?next=/meldinger"
           className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
         >
           Logg inn

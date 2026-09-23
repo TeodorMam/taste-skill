@@ -37,7 +37,7 @@ export default function VurderingerPage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       const userId = data.user?.id;
-      if (!userId) { router.push("/login?next=/profil/vurderinger"); return; }
+      if (!userId) { router.push("/logg-inn?next=/profil/vurderinger"); return; }
       supabase
         .from("reviews")
         .select("*")
