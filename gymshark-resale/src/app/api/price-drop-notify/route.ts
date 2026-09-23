@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   );
   if (!eligible.length) return NextResponse.json({ ok: true, skipped: "no eligible favorites" });
 
-  const link = `${SITE_URL}/item/${newItem.id}`;
+  const link = `${SITE_URL}/vare/${newItem.id}`;
   const oldPrice = new Intl.NumberFormat("nb-NO").format(oldItem.price);
   const newPrice = new Intl.NumberFormat("nb-NO").format(newItem.price);
   const subject = `Prisfall på "${newItem.title}" du har favorittmerket`;

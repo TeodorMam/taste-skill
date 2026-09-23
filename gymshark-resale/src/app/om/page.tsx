@@ -204,7 +204,7 @@ export default function AboutPage() {
         <p className="text-sm text-stone-600">Klar til å komme i gang?</p>
         <div className="mt-3 flex flex-wrap justify-center gap-2">
           <Link
-            href="/browse"
+            href="/varer"
             className="rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black"
           >
             Utforsk varer

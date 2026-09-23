@@ -9,7 +9,7 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   const { inbox, varsler, orders } = useNavCounts(isLoggedIn);
 
   const items = [
-    { href: "/browse", label: "Utforsk", icon: SearchIcon, badge: 0 },
+    { href: "/varer", label: "Utforsk", icon: SearchIcon, badge: 0 },
     { href: isLoggedIn ? "/ordre" : `/logg-inn?next=${encodeURIComponent("/ordre")}`, label: "Ordre", icon: PackageIcon, badge: orders },
     { href: isLoggedIn ? "/meldinger" : `/logg-inn?next=${encodeURIComponent("/meldinger")}`, label: "Innboks", icon: InboxIcon, badge: inbox },
     { href: isLoggedIn ? "/selg" : `/logg-inn?next=${encodeURIComponent("/selg")}`, label: "Selg", icon: PlusIcon, badge: 0 },

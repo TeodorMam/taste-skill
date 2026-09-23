@@ -207,7 +207,12 @@ export default async function AdminPage() {
   // Sessions that reached an item page. This is the step that matters: a visit
   // that never looks at a product was never going to buy anything.
   const itemSessions = new Set(
-    views7d.filter((v) => v.path.startsWith("/item/")).map((v) => v.session_id).filter((x): x is string => !!x),
+    // Rows logged before the /item to /vare rename still carry the old path,
+    // so both count and the funnel has no gap at the cutover.
+    views7d
+      .filter((v) => v.path.startsWith("/vare/") || v.path.startsWith("/item/"))
+      .map((v) => v.session_id)
+      .filter((x): x is string => !!x),
   ).size;
 
   const tally = (rows: string[]) => {
@@ -470,7 +475,7 @@ export default async function AdminPage() {
             {newItems7d.map((item) => (
               <Link
                 key={item.id}
-                href={`/item/${item.id}`}
+                href={`/vare/${item.id}`}
                 className="flex items-center justify-between gap-3 p-4 transition hover:bg-stone-50"
               >
                 <div className="min-w-0 space-y-1">

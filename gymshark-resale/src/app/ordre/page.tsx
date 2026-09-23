@@ -117,7 +117,7 @@ function OrderCard({ order, role, onAction }: {
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium text-stone-900">
             {order.item ? (
-              <Link href={`/item/${order.item.id}`} className="hover:underline">{order.item.title}</Link>
+              <Link href={`/vare/${order.item.id}`} className="hover:underline">{order.item.title}</Link>
             ) : order.item_title ? (
               <span>{order.item_title}</span>
             ) : (
@@ -486,7 +486,7 @@ export default function OrdersPage() {
         <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
           <p className="font-medium text-stone-700">{tab === "buyer" ? "Ingen kjøp enda" : "Ingen salg via Aktivbruk enda"}</p>
           {tab === "buyer" && (
-            <Link href="/browse" className="mt-4 inline-block rounded-full bg-stone-900 px-5 py-2.5 text-xs font-medium text-stone-50 hover:bg-black">
+            <Link href="/varer" className="mt-4 inline-block rounded-full bg-stone-900 px-5 py-2.5 text-xs font-medium text-stone-50 hover:bg-black">
               Utforsk varer
             </Link>
           )}

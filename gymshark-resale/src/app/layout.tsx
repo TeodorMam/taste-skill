@@ -85,7 +85,7 @@ const SITE_JSON_LD = [
     url: "https://aktivbruk.com",
     potentialAction: {
       "@type": "SearchAction",
-      target: "https://aktivbruk.com/browse?q={search_term_string}",
+      target: "https://aktivbruk.com/varer?q={search_term_string}",
       "query-input": "required name=search_term_string",
     },
   },
@@ -147,7 +147,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <a href="mailto:kontakt@aktivbruk.com" className="text-stone-500 hover:text-black">
                 kontakt@aktivbruk.com
               </a>
-              <Link href="/about" className="text-stone-500 underline hover:text-black">
+              <Link href="/om" className="text-stone-500 underline hover:text-black">
                 Om & FAQ
               </Link>
               <Link href="/vilkar" className="text-stone-500 underline hover:text-black">

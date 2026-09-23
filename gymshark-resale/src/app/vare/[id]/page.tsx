@@ -104,7 +104,7 @@ function buildProductJsonLd(item: Item, id: string) {
       priceCurrency: "NOK",
       availability: item.is_sold ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
       itemCondition: condMap[item.condition ?? ""] ?? "https://schema.org/UsedCondition",
-      url: `${SITE_URL}/item/${id}`,
+      url: `${SITE_URL}/vare/${id}`,
       ...(shipping && { shippingDetails: shipping }),
       // Aktivbruk brokers sales between private individuals, where the
       // Norwegian angrerettlov gives no right of withdrawal, and the
@@ -135,7 +135,7 @@ export async function generateMetadata(
   return {
     title,
     description,
-    alternates: { canonical: `${SITE_URL}/item/${id}` },
+    alternates: { canonical: `${SITE_URL}/vare/${id}` },
     openGraph: {
       title,
       description,
@@ -143,7 +143,7 @@ export async function generateMetadata(
       type: "website",
       siteName: "Aktivbruk",
       locale: "nb_NO",
-      url: `${SITE_URL}/item/${id}`,
+      url: `${SITE_URL}/vare/${id}`,
     },
     twitter: {
       card: "summary_large_image",

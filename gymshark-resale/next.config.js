@@ -7,10 +7,17 @@
  * revisits old URLs long after they move, and external links never update:
  * a story shoutout, the Instagram bio, a bookmark, a screenshot somebody
  * sent a friend. A handful of rules costs nothing; a dead link costs a
- * visitor. Query strings are carried across automatically, which matters
- * for /logg-inn?next=... and Stripe's ?stripe=return.
+ * visitor. Query strings carry across automatically, which matters for
+ * /logg-inn?next=..., /varer?brand=... and Stripe's ?stripe=return.
+ *
+ * Order matters: Next takes the first match, so /item/:id/rediger has to sit
+ * above /item/:id or the edit page would land on the listing instead.
  */
 const legacyRoutes = [
+  { source: "/item/:id/edit", destination: "/vare/:id/rediger" },
+  { source: "/item/:id", destination: "/vare/:id" },
+  { source: "/browse", destination: "/varer" },
+  { source: "/about", destination: "/om" },
   { source: "/login", destination: "/logg-inn" },
   { source: "/orders", destination: "/ordre" },
   { source: "/inbox", destination: "/meldinger" },

@@ -11,7 +11,7 @@ export default function KjoperbeskyttelsePage() {
     <section className="space-y-8 max-w-xl">
       <div>
         <p className="text-sm text-stone-500 mb-4">
-          <Link href="/browse" className="hover:text-black">← Tilbake</Link>
+          <Link href="/varer" className="hover:text-black">← Tilbake</Link>
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">Kjøperbeskyttelse</h1>
         <p className="mt-2 text-sm leading-relaxed text-stone-600">

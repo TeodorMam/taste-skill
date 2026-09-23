@@ -99,7 +99,7 @@ function BrowseInner() {
     const next = new URLSearchParams(paramsStrRef.current);
     if (value) next.set("q", value);
     else next.delete("q");
-    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+    router.replace(`/varer${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
   }, [router]);
 
   useEffect(() => {
@@ -140,7 +140,7 @@ function BrowseInner() {
     const next = new URLSearchParams(params.toString());
     if (value) next.set(key, value);
     else next.delete(key);
-    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+    router.replace(`/varer${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
   }
 
   function setMultiParam(updates: Record<string, string>) {
@@ -149,7 +149,7 @@ function BrowseInner() {
       if (value) next.set(key, value);
       else next.delete(key);
     }
-    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+    router.replace(`/varer${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
   }
 
   function setCat(value: string) {
@@ -157,13 +157,13 @@ function BrowseInner() {
     if (value) next.set("cat", value);
     else next.delete("cat");
     next.delete("sub");
-    router.replace(`/browse${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
+    router.replace(`/varer${next.toString() ? `?${next.toString()}` : ""}`, { scroll: false });
   }
 
   function clearAll() {
     setLocalPriceMin(0);
     setLocalPriceMax(PRICE_MAX);
-    router.replace("/browse", { scroll: false });
+    router.replace("/varer", { scroll: false });
   }
 
   function commitPrice() {

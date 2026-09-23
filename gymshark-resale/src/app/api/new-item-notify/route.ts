@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
   if (!searches?.length) return NextResponse.json({ ok: true, skipped: "no searches" });
 
-  const link = `${SITE_URL}/item/${item.id}`;
+  const link = `${SITE_URL}/vare/${item.id}`;
   const price = new Intl.NumberFormat("nb-NO").format(item.price);
 
   // Group by user so each user gets max 1 email per new item event

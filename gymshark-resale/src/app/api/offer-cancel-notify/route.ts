@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     const buyerEmail = buyerRes.data.user?.email;
     const sellerEmail = sellerRes.data.user?.email;
     const price = new Intl.NumberFormat("nb-NO").format(offer.amount);
-    const link = `${SITE_URL}/item/${item.id}`;
+    const link = `${SITE_URL}/vare/${item.id}`;
 
     const actor = cancelled_by === "buyer" ? "Kjøper" : "Selger";
     const stateNote = was_accepted ? "det godkjente budet" : "budet";

@@ -177,7 +177,7 @@ export default function PostPage() {
         .single();
       if (insertErr) throw insertErr;
 
-      router.push(`/item/${data.id}?welcome=1`);
+      router.push(`/vare/${data.id}?welcome=1`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Noe gikk galt");
       setSubmitting(false);

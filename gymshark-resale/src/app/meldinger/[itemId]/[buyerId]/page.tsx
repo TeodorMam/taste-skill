@@ -497,7 +497,7 @@ export default function ChatPage() {
           </div>
         )}
         {item && (
-          <Link href={`/item/${itemId}`} className="shrink-0" aria-label="Gå til annonse">
+          <Link href={`/vare/${itemId}`} className="shrink-0" aria-label="Gå til annonse">
             <div className="h-10 w-10 overflow-hidden rounded-xl bg-stone-100">
               {cover ? (
                 // eslint-disable-next-line @next/next/no-img-element

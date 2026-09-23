@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     || `Kjøper #${String(offer.buyer_id).slice(0, 6)}`;
 
   const price = new Intl.NumberFormat("nb-NO").format(offer.amount);
-  const link = `${SITE_URL}/item/${item.id}`;
+  const link = `${SITE_URL}/vare/${item.id}`;
   const subject = `${buyerName} la inn et bud på "${item.title}"`;
 
   await sendEmail(sellerEmail, subject, `

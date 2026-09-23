@@ -325,7 +325,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
         </div>
       )}
 
-      <Link href="/browse" className="text-sm text-stone-500 hover:text-black">← Tilbake</Link>
+      <Link href="/varer" className="text-sm text-stone-500 hover:text-black">← Tilbake</Link>
 
       <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
         <div className="relative">
@@ -347,7 +347,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                 {!isSeller && <FavoriteButton itemId={item.id} currentPrice={item.price} sellerId={item.seller_id} itemTitle={item.title} variant="inline" />}
                 {shareUrl && <ShareButton url={shareUrl} title={item.title} />}
                 {isSeller && (
-                  <Link href={`/item/${item.id}/edit`} className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500">
+                  <Link href={`/vare/${item.id}/edit`} className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500">
                     ✎ Rediger
                   </Link>
                 )}
@@ -468,7 +468,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           })()}
 
           {userId === null && (
-            <Link href={`/logg-inn?next=/item/${item.id}`} className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black">
+            <Link href={`/logg-inn?next=/vare/${item.id}`} className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black">
               Logg inn for å chatte med selger
             </Link>
           )}
@@ -647,7 +647,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           <div className="flex items-end justify-between">
             <h2 className="text-lg font-semibold tracking-tight">Lignende annonser</h2>
             {(item.brand || item.category) && (
-              <Link href={item.brand ? `/browse?brand=${encodeURIComponent(item.brand)}` : `/browse?sub=${encodeURIComponent(item.category!)}`} className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]">Se alle →</Link>
+              <Link href={item.brand ? `/varer?brand=${encodeURIComponent(item.brand)}` : `/varer?sub=${encodeURIComponent(item.category!)}`} className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]">Se alle →</Link>
             )}
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

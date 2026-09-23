@@ -1,8 +1,8 @@
 User-agent: *
 Allow: /
-Allow: /browse
-Allow: /item/
-Allow: /about
+Allow: /varer
+Allow: /vare/
+Allow: /om
 Allow: /vilkar
 Allow: /personvern
 Allow: /kjoperbeskyttelse
@@ -18,7 +18,7 @@ Disallow: /logg-inn
 Disallow: /logout
 Disallow: /selg
 Disallow: /ny-annonse
-Disallow: /item/*/edit
+Disallow: /vare/*/rediger
 Disallow: /admin
 Disallow: /avmeld
 Disallow: /api

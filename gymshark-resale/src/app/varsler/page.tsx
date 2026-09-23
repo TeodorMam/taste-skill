@@ -33,7 +33,7 @@ function filtersToUrl(filters: Record<string, string>): string {
   const p = new URLSearchParams();
   for (const [k, v] of Object.entries(filters)) if (v) p.set(k, v);
   const qs = p.toString();
-  return `/browse${qs ? `?${qs}` : ""}`;
+  return `/varer${qs ? `?${qs}` : ""}`;
 }
 
 export default function VarslerPage() {
@@ -182,7 +182,7 @@ export default function VarslerPage() {
               <p className="font-medium text-stone-700">Ingen lagrede søk enda</p>
               <p className="text-sm text-stone-500">
                 Sett filtre på{" "}
-                <Link href="/browse" className="text-[#5a6b32] underline underline-offset-2">
+                <Link href="/varer" className="text-[#5a6b32] underline underline-offset-2">
                   Utforsk
                 </Link>{" "}
                 og trykk «Lagre søk».
@@ -247,7 +247,7 @@ export default function VarslerPage() {
                 Trykk hjertet på en vare for å følge med på prisfall og tilgjengelighet.
               </p>
               <Link
-                href="/browse"
+                href="/varer"
                 className="mt-2 inline-block rounded-full bg-stone-900 px-5 py-2.5 text-xs font-medium text-stone-50 hover:bg-black"
               >
                 Utforsk varer
@@ -275,7 +275,7 @@ export default function VarslerPage() {
                   const drop = Math.round((1 - item.price / item.priceWhenFavorited!) * 100);
                   return (
                     <li key={item.id} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3">
-                      <Link href={`/item/${item.id}`} className="shrink-0">
+                      <Link href={`/vare/${item.id}`} className="shrink-0">
                         {cover ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -302,7 +302,7 @@ export default function VarslerPage() {
                         </div>
                       </div>
                       <Link
-                        href={`/item/${item.id}`}
+                        href={`/vare/${item.id}`}
                         className="shrink-0 rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-black"
                       >
                         Se annonse
