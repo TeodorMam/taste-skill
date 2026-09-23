@@ -1,0 +1,22 @@
+-- Migration 0039: close an open door on reviews
+--
+-- pg_policies showed a third INSERT policy on reviews that exists in no
+-- migration file, so it was created by hand at some point:
+--
+--   users_insert_own_reviews | PERMISSIVE | {public} | (auth.uid() = reviewer_id)
+--
+-- Its only condition is that you write under your own user id. It does not
+-- check that the item is sold, that you bought it, that you ever spoke to the
+-- seller, or that seller_id points at anyone involved.
+--
+-- Permissive policies are OR'd together, so this one nullified both
+-- reviews_insert_buyer and reviews_insert_seller. Any account could write
+-- unlimited reviews about anybody, on any listing, at any rating. That is the
+-- same fake-review problem that was just cleaned out of this table by hand.
+--
+-- Dropping it leaves the two policies that actually check the trade happened.
+-- The app's own review form goes through those, so nothing legitimate breaks.
+--
+-- Run in Supabase -> SQL Editor.
+
+drop policy if exists "users_insert_own_reviews" on public.reviews;
