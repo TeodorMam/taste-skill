@@ -21,6 +21,7 @@ Disallow: /sell
 Disallow: /post
 Disallow: /item/*/edit
 Disallow: /admin
+Disallow: /avmeld
 Disallow: /api
 
 Sitemap: https://aktivbruk.com/sitemap.xml
