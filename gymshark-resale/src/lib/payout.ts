@@ -114,6 +114,8 @@ export async function payoutOrder(
     .from("orders")
     .update({
       status: "paid_out",
+      // Recorded so the reminder cron can ask how long ago this finished.
+      paid_out_at: new Date().toISOString(),
       payout_transfer_id: releaseRef,
       payout_amount_nok: Math.round(payoutAmountOre / 100),
       ...extraUpdates,

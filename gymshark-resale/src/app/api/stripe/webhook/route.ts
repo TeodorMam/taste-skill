@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
           <div style="background:#f5f5f4;padding:16px;border-radius:12px;margin-bottom:16px">
             <p style="margin:0 0 4px;font-size:13px;color:#78716c">Du mottar</p>
             <p style="margin:0;font-size:22px;font-weight:700;color:#1c1917">${fmt(sellerReceives)}</p>
-            <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Hele salgsprisen${shippingCost > 0 ? ` + frakt (${fmt(shippingCost)})` : ""}, helt uten avgift for deg som selger 💚</p>
+            <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Hele salgsprisen${shippingCost > 0 ? ` + frakt (${fmt(shippingCost)})` : ""}, helt uten avgift for deg som selger</p>
           </div>
           <p style="margin:0 0 12px;font-size:14px">${sellerInstruction}</p>
           <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
