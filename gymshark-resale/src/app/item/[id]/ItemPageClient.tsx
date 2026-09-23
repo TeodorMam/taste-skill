@@ -222,7 +222,7 @@ export default function ItemPageClient() {
       void supabase.rpc("notify_seller_of_offer", { p_item_id: String(item.id), p_amount: amount }).then(() => null);
       toast("💸 Bud sendt");
       setShowBidModal(false);
-      router.push(`/chat/${item.id}/${userId}`);
+      router.push(`/meldinger/${item.id}/${userId}`);
     } else if (oErr) { toast(`Feil: ${oErr.message}`); }
     setSubmittingOffer(false);
   }
@@ -376,7 +376,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
 
           {item.seller_id && !isSeller && (
             <div className="space-y-2">
-            <Link href={`/seller/${item.seller_id}`} className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 transition hover:border-stone-400">
+            <Link href={`/selger/${item.seller_id}`} className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 transition hover:border-stone-400">
               <Avatar profile={seller} size="md" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{profileDisplayName(seller, item.seller_id)}</p>
@@ -468,7 +468,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           })()}
 
           {userId === null && (
-            <Link href={`/login?next=/item/${item.id}`} className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black">
+            <Link href={`/logg-inn?next=/item/${item.id}`} className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black">
               Logg inn for å chatte med selger
             </Link>
           )}
@@ -572,7 +572,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
 
           {userId && item.seller_id && !isSeller && (
             <Link
-              href={`/chat/${item.id}/${userId}`}
+              href={`/meldinger/${item.id}/${userId}`}
               className="flex w-full items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-800 hover:border-stone-500 hover:bg-stone-50"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

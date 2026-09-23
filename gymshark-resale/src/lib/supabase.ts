@@ -166,7 +166,7 @@ export const BRANDS = [
 // clothes marketplace first. They may return once those categories
 // actually launch. Existing listings that were saved with those older
 // category strings still render fine, they just no longer appear in
-// the filter dropdowns or the /post selector.
+// the filter dropdowns or the /ny-annonse selector.
 export const CATEGORY_TREE = [
   {
     name: "Overdel",

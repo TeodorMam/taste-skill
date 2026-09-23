@@ -70,7 +70,7 @@ export function SellerRating({
 
   if (linkToProfile) {
     return (
-      <Link href={`/seller/${sellerId}`} className="hover:opacity-80">
+      <Link href={`/selger/${sellerId}`} className="hover:opacity-80">
         {content}
       </Link>
     );

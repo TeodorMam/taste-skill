@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
           <h2 style="margin:0 0 8px;font-size:18px">Betaling bekreftet!</h2>
           <p style="margin:0 0 12px;color:#57534e;font-size:14px">Du har kjøpt <strong>${escapeHtml(itemTitle)}</strong> for totalt <strong>${fmt(buyerTotal)}</strong>${shippingCost > 0 ? ` (${fmt(existing.amount_nok)} vare + ${fmt(shippingCost)} frakt + ${fmt(existing.platform_fee_nok)} kjøperbeskyttelse)` : ` (${fmt(existing.amount_nok)} vare + ${fmt(existing.platform_fee_nok)} kjøperbeskyttelse)`}. Pengene holdes trygt hos Aktivbruk til handelen er fullført.</p>
           ${buyerSteps}
-          <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
+          <a href="${SITE_URL}/ordre" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se dine ordre</a>
           <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
         </div>
       `);
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
             <p style="margin:6px 0 0;font-size:12px;color:#a8a29e">Hele salgsprisen${shippingCost > 0 ? ` + frakt (${fmt(shippingCost)})` : ""}, helt uten avgift for deg som selger</p>
           </div>
           <p style="margin:0 0 12px;font-size:14px">${sellerInstruction}</p>
-          <a href="${SITE_URL}/orders" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
+          <a href="${SITE_URL}/ordre" style="display:inline-block;background:#1c1917;color:#fafaf9;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:500;font-size:14px">Se mine ordre</a>
           <p style="color:#a8a29e;font-size:12px;margin:24px 0 0">Aktivbruk, bruktmarked for treningsklær</p>
         </div>
       `);

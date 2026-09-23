@@ -47,7 +47,7 @@ export function FavoriteButton({
     e.preventDefault();
     e.stopPropagation();
     if (!userId) {
-      router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+      router.push(`/logg-inn?next=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
     if (busy || favorited === null) return;

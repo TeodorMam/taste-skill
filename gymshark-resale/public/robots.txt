@@ -8,17 +8,16 @@ Allow: /personvern
 Allow: /kjoperbeskyttelse
 
 Disallow: /profil
-Disallow: /seller
-Disallow: /inbox
-Disallow: /chat
-Disallow: /orders
+Disallow: /selger
+Disallow: /meldinger
+Disallow: /ordre
 Disallow: /varsler
 Disallow: /favoritter
 Disallow: /mine
-Disallow: /login
+Disallow: /logg-inn
 Disallow: /logout
-Disallow: /sell
-Disallow: /post
+Disallow: /selg
+Disallow: /ny-annonse
 Disallow: /item/*/edit
 Disallow: /admin
 Disallow: /avmeld

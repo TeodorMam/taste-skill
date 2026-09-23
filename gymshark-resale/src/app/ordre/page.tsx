@@ -434,7 +434,7 @@ export default function OrdersPage() {
       <section className="space-y-3 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Mine ordre</h1>
         <p className="text-sm text-stone-600">Logg inn for å se dine ordre.</p>
-        <Link href="/login?next=/orders" className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black">
+        <Link href="/logg-inn?next=/ordre" className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black">
           Logg inn
         </Link>
       </section>

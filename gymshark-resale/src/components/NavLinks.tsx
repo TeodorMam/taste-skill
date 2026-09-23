@@ -9,7 +9,7 @@ import { useNavCounts } from "@/hooks/useNavCounts";
 import { Avatar } from "@/components/Avatar";
 
 function authHref(isLoggedIn: boolean, href: string) {
-  return isLoggedIn ? href : `/login?next=${encodeURIComponent(href)}`;
+  return isLoggedIn ? href : `/logg-inn?next=${encodeURIComponent(href)}`;
 }
 
 export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
@@ -45,15 +45,15 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
         Varsler
         {varsler > 0 && <Badge count={varsler} />}
       </Link>
-      <Link href={authHref(isLoggedIn, "/inbox")} className={`relative ${textCls("/inbox")}`}>
+      <Link href={authHref(isLoggedIn, "/meldinger")} className={`relative ${textCls("/meldinger")}`}>
         Innboks
         {inbox > 0 && <Badge count={inbox} />}
       </Link>
-      <Link href={authHref(isLoggedIn, "/orders")} className={`relative ${textCls("/orders")}`}>
+      <Link href={authHref(isLoggedIn, "/ordre")} className={`relative ${textCls("/ordre")}`}>
         Ordre
         {orders > 0 && <Badge count={orders} />}
       </Link>
-      <Link href={authHref(isLoggedIn, "/sell")} className={textCls("/sell")}>
+      <Link href={authHref(isLoggedIn, "/selg")} className={textCls("/selg")}>
         Selg
       </Link>
       {isLoggedIn ? (
@@ -62,7 +62,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
           <Avatar profile={profile} size="sm" />
         </Link>
       ) : (
-        <Link href={`/login?next=${encodeURIComponent("/profil")}`} className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-black">
+        <Link href={`/logg-inn?next=${encodeURIComponent("/profil")}`} className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-black">
           Logg inn
         </Link>
       )}

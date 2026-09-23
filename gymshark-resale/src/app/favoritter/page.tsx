@@ -65,7 +65,7 @@ export default function FavorittePage() {
           Logg inn for å lagre favoritter og følge med på varer du liker.
         </p>
         <Link
-          href="/login?next=/favoritter"
+          href="/logg-inn?next=/favoritter"
           className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
         >
           Logg inn

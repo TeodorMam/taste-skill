@@ -48,7 +48,7 @@ export function useNavCounts(isLoggedIn: boolean): { inbox: number; varsler: num
         }
       }
       let inboxCount = unreadThreadKeys.size;
-      if (path === "/inbox") inboxCount = 0;
+      if (path === "/meldinger") inboxCount = 0;
 
       // --- VARSLER COUNT ---
       let varslerCount = 0;
@@ -88,7 +88,7 @@ export function useNavCounts(isLoggedIn: boolean): { inbox: number; varsler: num
         .neq("status", "cancelled")
         .neq("status", "refunded");
 
-      const ordersCount = path.startsWith("/orders") ? 0 : (activeOrders ?? []).length;
+      const ordersCount = path.startsWith("/ordre") ? 0 : (activeOrders ?? []).length;
 
       setCounts({ inbox: inboxCount, varsler: varslerCount, orders: ordersCount });
     })();

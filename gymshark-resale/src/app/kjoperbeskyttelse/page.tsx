@@ -81,7 +81,7 @@ export default function KjoperbeskyttelsePage() {
         <p className="font-medium text-stone-800">Trenger du hjelp?</p>
         <p className="text-sm text-stone-600">Ta kontakt med oss på <a href="mailto:kontakt@aktivbruk.com" className="font-medium underline underline-offset-2 hover:text-stone-900">kontakt@aktivbruk.com</a>, vi svarer raskt.</p>
         <div className="pt-2">
-          <Link href="/orders" className="inline-block rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black">
+          <Link href="/ordre" className="inline-block rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black">
             Se dine ordre
           </Link>
         </div>
