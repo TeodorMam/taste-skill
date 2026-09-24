@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseServerClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import { escapeHtml, tooLong, MAX_FREE_TEXT } from "@/lib/html";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +21,15 @@ export async function POST(req: NextRequest) {
     if (!body.type || !body.targetId) {
       return NextResponse.json({ error: "Mangler data" }, { status: 400 });
     }
+    if (tooLong(body.reason)) {
+      return NextResponse.json({ error: `Begrunnelsen kan være maks ${MAX_FREE_TEXT} tegn` }, { status: 400 });
+    }
+
+    // targetId lands both in the body of the mail and inside an href, so it is
+    // escaped for the same reason the reason field is.
+    const targetIdHtml = escapeHtml(body.targetId);
+    const reasonHtml = body.reason ? escapeHtml(body.reason) : "";
+    const reporterHtml = user ? escapeHtml(`${user.email} (${user.id})`) : "Ikke innlogget";
 
     const isListing = body.type === "listing";
     const targetUrl = isListing
@@ -36,10 +46,10 @@ export async function POST(req: NextRequest) {
         html: `<div style="font-family:-apple-system,sans-serif;font-size:14px;color:#1c1917">
           <h2 style="font-size:16px;margin:0 0 12px">${isListing ? "Annonse" : "Bruker"} innrapportert</h2>
           <p><strong>Type:</strong> ${isListing ? "Annonse" : "Bruker"}</p>
-          <p><strong>ID:</strong> ${body.targetId}</p>
-          <p><strong>URL:</strong> <a href="${targetUrl}">${targetUrl}</a></p>
-          <p><strong>Rapportert av:</strong> ${user ? `${user.email} (${user.id})` : "Ikke innlogget"}</p>
-          ${body.reason ? `<p><strong>Begrunnelse:</strong> ${body.reason}</p>` : "<p><em>Ingen begrunnelse gitt</em></p>"}
+          <p><strong>ID:</strong> ${targetIdHtml}</p>
+          <p><strong>URL:</strong> <a href="${escapeHtml(targetUrl)}">${escapeHtml(targetUrl)}</a></p>
+          <p><strong>Rapportert av:</strong> ${reporterHtml}</p>
+          ${reasonHtml ? `<p><strong>Begrunnelse:</strong> ${reasonHtml}</p>` : "<p><em>Ingen begrunnelse gitt</em></p>"}
         </div>`,
       }),
     });
