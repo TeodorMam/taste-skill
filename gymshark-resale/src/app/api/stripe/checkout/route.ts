@@ -156,6 +156,16 @@ export async function POST(req: NextRequest) {
   }).select("id").single();
 
   if (orderErr || !order) {
+    // 23505 is the unique index added in 0044: one live order per listing.
+    // Somebody else is in the middle of buying this, which is a queue rather
+    // than a fault, so it must not read as a server error.
+    if (orderErr?.code === "23505") {
+      return NextResponse.json(
+        { error: "Noen andre holder på å kjøpe denne varen nå. Prøv igjen om en halvtime." },
+        { status: 409 },
+      );
+    }
+    console.error("[stripe/checkout] order insert failed:", orderErr?.message);
     return NextResponse.json({ error: "Kunne ikke opprette ordre" }, { status: 500 });
   }
 
@@ -207,6 +217,12 @@ export async function POST(req: NextRequest) {
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
+    // One live order per listing means an abandoned checkout holds the item.
+    // Stripe's own default is 24 hours, which would let anyone lock a listing
+    // for a day by opening the page. 30 minutes is Stripe's floor, and the
+    // expiry fires checkout.session.expired, which cancels the order and frees
+    // the listing without anybody having to notice.
+    expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
     line_items: lineItems,
     payment_intent_data: {
       application_fee_amount: platformFeeNok * 100,

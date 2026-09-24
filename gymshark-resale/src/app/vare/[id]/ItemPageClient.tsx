@@ -200,8 +200,15 @@ export default function ItemPageClient() {
     if (!item) return;
     if (!window.confirm("Er du sikker på at du vil slette denne annonsen? Dette kan ikke angres.")) return;
     setDeleting(true);
-    const { error } = await supabase.from("items").delete().eq("id", item.id);
-    if (error) { setDeleting(false); setError(error.message); return; }
+    // Server side, so the photos go with the row. A plain delete from here
+    // removed the listing and left every image in the bucket, still public.
+    const res = await fetch(`/api/items/${item.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setDeleting(false);
+      setError(body.error ?? "Klarte ikke slette annonsen");
+      return;
+    }
     router.push("/mine");
   }
 
