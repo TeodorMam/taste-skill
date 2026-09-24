@@ -133,7 +133,7 @@ export default function EditItemPage() {
       <section className="space-y-3 py-10">
         <h1 className="text-2xl font-semibold tracking-tight">Logg inn</h1>
         <Link
-          href={`/logg-inn?next=/vare/${params.id}/edit`}
+          href={`/logg-inn?next=/vare/${params.id}/rediger`}
           className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50"
         >
           Logg inn

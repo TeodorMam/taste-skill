@@ -14,6 +14,11 @@
  * above /item/:id or the edit page would land on the listing instead.
  */
 const legacyRoutes = [
+  // The Norwegian move renamed this route to /rediger but left three links in
+  // the app pointing at /edit, so editing a listing 404'd from every entry
+  // point. Those links are fixed; this keeps already-shared or bookmarked
+  // /edit URLs working.
+  { source: "/vare/:id/edit", destination: "/vare/:id/rediger" },
   { source: "/item/:id/edit", destination: "/vare/:id/rediger" },
   { source: "/item/:id", destination: "/vare/:id" },
   { source: "/browse", destination: "/varer" },
