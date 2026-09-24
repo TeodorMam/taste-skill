@@ -300,7 +300,7 @@ export default function MinePage() {
                         {busyId === item.id ? "…" : item.is_sold ? "Gjør aktiv" : "Marker solgt"}
                       </button>
                       <Link
-                        href={`/vare/${item.id}/edit`}
+                        href={`/vare/${item.id}/rediger`}
                         className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
                       >
                         ✎
