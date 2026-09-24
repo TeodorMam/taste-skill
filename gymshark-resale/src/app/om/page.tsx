@@ -221,8 +221,9 @@ export default function AboutPage() {
       {/* ── Ansvarlig for siden ──────────────────────────────────── */}
       <div className="border-t border-stone-200 pt-5">
         <p className="text-sm leading-relaxed text-stone-600">
-          Aktivbruk er laget og drives av Teodor Mamelund. Har du spørsmål om
-          siden, eller om hvordan opplysningene dine behandles, nås jeg på{" "}
+          Aktivbruk er laget og drives av Teodor Mamelund i Oslo. Har du
+          spørsmål om siden, eller om hvordan opplysningene dine behandles,
+          nås jeg på{" "}
           <a
             href="mailto:kontakt@aktivbruk.com"
             className="underline hover:text-stone-900"
