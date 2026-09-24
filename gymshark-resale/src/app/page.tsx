@@ -52,7 +52,7 @@ export default async function HomePage() {
             Legg ut vare
           </Link>
         </div>
-        <p className="text-xs text-stone-400">Gratis å bruke – ingen skjulte gebyrer</p>
+        <p className="text-xs text-stone-500">Gratis å bruke – ingen skjulte gebyrer</p>
       </section>
 
       {/* ── Nytt inne ─────────────────────────────────────────────────────── */}

@@ -83,7 +83,7 @@ export default function ProfilPage() {
             Mine vurderinger
           </p>
           {reviews.length === 0 ? (
-            <p className="mt-3 text-sm text-stone-400">Ingen vurderinger ennå, de vises her etter første salg.</p>
+            <p className="mt-3 text-sm text-stone-500">Ingen vurderinger ennå, de vises her etter første salg.</p>
           ) : rated ? (
             <Link
               href="/profil/vurderinger"
@@ -96,7 +96,7 @@ export default function ProfilPage() {
               <span className="text-sm text-stone-500">
                 {rated.total} vurdering{rated.total !== 1 ? "er" : ""}
               </span>
-              <span className="ml-auto text-xs text-stone-400">Se alle →</span>
+              <span className="ml-auto text-xs text-stone-500">Se alle →</span>
             </Link>
           ) : summary && summary.total > 0 ? (
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">

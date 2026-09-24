@@ -78,7 +78,7 @@ function Stat({
 }) {
   return (
     <div className="rounded-2xl border border-stone-200 bg-white p-4">
-      <p className="text-xs font-medium uppercase tracking-wider text-stone-400">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wider text-stone-500">{label}</p>
       <p
         className={`mt-1.5 text-3xl font-semibold tracking-tight ${
           accent ? "text-[#5a6b32]" : "text-stone-900"
@@ -112,7 +112,7 @@ function Section({
 }
 
 function Quiet({ children }: { children: React.ReactNode }) {
-  return <p className="px-1 text-sm text-stone-400">{children}</p>;
+  return <p className="px-1 text-sm text-stone-500">{children}</p>;
 }
 
 function Rows({ children }: { children: React.ReactNode }) {
@@ -148,7 +148,7 @@ function OrderLine({
           <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${chip.className}`}>
             {chip.label}
           </span>
-          <span className="text-xs text-stone-400">{when}</span>
+          <span className="text-xs text-stone-500">{when}</span>
         </div>
       </div>
       <p className="shrink-0 text-sm font-semibold">{formatPrice(amount)}</p>
@@ -324,7 +324,7 @@ export default async function AdminPage() {
           accent
         />
         <div className="col-span-2 sm:col-span-4">
-          <p className="px-1 text-xs text-stone-400">
+          <p className="px-1 text-xs text-stone-500">
             {users} registrerte brukere, {newUsers30d} nye siste 30 dager. Inntekt er
             kjøperbeskyttelse-gebyret, altså din andel.
           </p>
@@ -343,17 +343,17 @@ export default async function AdminPage() {
           <div className="space-y-3">
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-stone-400">Besøkende</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Besøkende</p>
                 <p className="mt-1.5 text-3xl font-semibold tracking-tight">{sessionsIn(views7d)}</p>
                 <p className="mt-0.5 text-xs text-stone-500">{sessionsIn(views)} siste 30 d</p>
               </div>
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-stone-400">Sidevisninger</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Sidevisninger</p>
                 <p className="mt-1.5 text-3xl font-semibold tracking-tight">{views7d.length}</p>
                 <p className="mt-0.5 text-xs text-stone-500">{views.length} siste 30 d</p>
               </div>
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-stone-400">Så en vare</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Så en vare</p>
                 <p className="mt-1.5 text-3xl font-semibold tracking-tight text-[#5a6b32]">{itemSessions}</p>
                 <p className="mt-0.5 text-xs text-stone-500">av {sessionsIn(views7d)} besøkende</p>
               </div>
@@ -361,23 +361,23 @@ export default async function AdminPage() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-stone-400">Mest besøkt</p>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-stone-500">Mest besøkt</p>
                 <ul className="space-y-1.5">
                   {topPages.map(([path, n]) => (
                     <li key={path} className="flex items-baseline justify-between gap-3 text-sm">
                       <span className="line-clamp-1 text-stone-700">{path}</span>
-                      <span className="shrink-0 text-stone-400">{n}</span>
+                      <span className="shrink-0 text-stone-500">{n}</span>
                     </li>
                   ))}
                 </ul>
               </div>
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-stone-400">Kommer fra</p>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-stone-500">Kommer fra</p>
                 <ul className="space-y-1.5">
                   {topSources.map(([host, n]) => (
                     <li key={host} className="flex items-baseline justify-between gap-3 text-sm">
                       <span className="line-clamp-1 text-stone-700">{host}</span>
-                      <span className="shrink-0 text-stone-400">{n}</span>
+                      <span className="shrink-0 text-stone-500">{n}</span>
                     </li>
                   ))}
                 </ul>
@@ -431,7 +431,7 @@ export default async function AdminPage() {
             either showing it or leaving it out. */}
         {hidden.length > 0 && (
           <details className="group">
-            <summary className="flex cursor-pointer list-none items-center gap-1.5 px-1 text-sm text-stone-400 transition hover:text-stone-600 [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-center gap-1.5 px-1 text-sm text-stone-500 transition hover:text-stone-600 [&::-webkit-details-marker]:hidden">
               <svg
                 width="12"
                 height="12"
@@ -509,7 +509,7 @@ export default async function AdminPage() {
                     <p className="line-clamp-1 text-xs text-stone-500">
                       {name(t.buyerId)} og {name(item?.seller_id ?? null)}
                     </p>
-                    <p className="text-xs text-stone-400">
+                    <p className="text-xs text-stone-500">
                       {t.count} {t.count === 1 ? "melding" : "meldinger"} · {fmtAgo(t.last.created_at)}
                     </p>
                   </div>

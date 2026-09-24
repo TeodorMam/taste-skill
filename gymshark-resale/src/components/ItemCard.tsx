@@ -47,7 +47,7 @@ export function ItemCard({
             }`}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-stone-400">
+          <div className="flex h-full w-full items-center justify-center text-xs text-stone-500">
             Ingen bilde
           </div>
         )}
@@ -79,7 +79,7 @@ export function ItemCard({
       </div>
       <div className="space-y-1 p-3">
         {item.brand && (
-          <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-wider text-stone-400">
+          <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-wider text-stone-500">
             {item.brand}
           </p>
         )}

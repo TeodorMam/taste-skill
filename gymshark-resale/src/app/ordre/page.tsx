@@ -121,12 +121,12 @@ function OrderCard({ order, role, onAction }: {
             ) : order.item_title ? (
               <span>{order.item_title}</span>
             ) : (
-              <span className="text-stone-400">Annonse slettet</span>
+              <span className="text-stone-500">Annonse slettet</span>
             )}
           </p>
           <p className="text-sm text-stone-700">
             {formatPrice(order.amount_nok + (order.shipping_cost_nok ?? 0))}
-            {order.shipping_cost_nok > 0 && <span className="ml-1 text-xs text-stone-400">inkl. frakt</span>}
+            {order.shipping_cost_nok > 0 && <span className="ml-1 text-xs text-stone-500">inkl. frakt</span>}
           </p>
           <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLOR[order.status]}`}>
             {STATUS_LABEL[order.status]}
@@ -200,7 +200,7 @@ function OrderCard({ order, role, onAction }: {
 
             {order.buyer_name && (
               <div className="w-40 shrink-0 rounded-xl border border-stone-200 bg-stone-50 p-3">
-                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400">Mottaker</p>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-500">Mottaker</p>
                 <p className="text-xs font-medium text-stone-900">{order.buyer_name}</p>
                 <p className="text-xs text-stone-700">{order.buyer_address}</p>
                 <p className="text-xs text-stone-700">{order.buyer_postal_code} {order.buyer_city}</p>

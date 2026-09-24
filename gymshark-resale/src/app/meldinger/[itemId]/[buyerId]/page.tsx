@@ -513,7 +513,7 @@ export default function ChatPage() {
       {/* ── Messages ─────────────────────────────────────────────────────── */}
       <div ref={listRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
         {messages.length === 0 && (
-          <p className="py-10 text-center text-xs text-stone-400">
+          <p className="py-10 text-center text-xs text-stone-500">
             {isSeller
               ? "Ingen meldinger fra denne kjøperen enda."
               : "Si hei, spør om størrelse, henting eller tilstand."}
@@ -534,7 +534,7 @@ export default function ChatPage() {
             return (
               <div key={m.id} className="flex flex-col items-center py-3">
                 <EventCard type={type as MessageType} metadata={m.metadata} />
-                <span className="mt-1 text-[10px] text-stone-400">{fmtTime(m.created_at)}</span>
+                <span className="mt-1 text-[10px] text-stone-500">{fmtTime(m.created_at)}</span>
               </div>
             );
           }
@@ -563,7 +563,7 @@ export default function ChatPage() {
                   onCancel={meta?.offer_id ? () => cancelAcceptedOffer(meta.offer_id) : undefined}
                   onWithdraw={meta?.offer_id ? () => withdrawPendingOffer(meta.offer_id) : undefined}
                 />
-                <span className="mt-0.5 px-1 text-[10px] text-stone-400">{fmtTime(m.created_at)}</span>
+                <span className="mt-0.5 px-1 text-[10px] text-stone-500">{fmtTime(m.created_at)}</span>
               </div>
             );
           }
@@ -576,7 +576,7 @@ export default function ChatPage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={m.image_url!} alt="" className="max-h-56 w-full rounded-2xl object-cover" />
                 </a>
-                <span className="mt-0.5 px-1 text-[10px] text-stone-400">
+                <span className="mt-0.5 px-1 text-[10px] text-stone-500">
                   {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
                 </span>
               </div>
@@ -594,6 +594,7 @@ export default function ChatPage() {
               <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
                 <div className="max-w-[85%] w-full sm:w-auto sm:min-w-[240px]">
                   <textarea
+                    aria-label="Rediger meldingen"
                     ref={editTextareaRef}
                     value={editingText}
                     onChange={(e) => setEditingText(e.target.value)}
@@ -641,7 +642,7 @@ export default function ChatPage() {
                 {mine && menuOpen && (
                   <MessageMenu onEdit={() => beginEdit(m)} onDelete={() => deleteMessage(m.id)} />
                 )}
-                <span className="mt-1 px-1 text-[10px] text-stone-400">
+                <span className="mt-1 px-1 text-[10px] text-stone-500">
                   {fmtTime(m.created_at)}{wasEdited ? " · Redigert" : ""}{isSeen ? " · Sett" : ""}
                 </span>
               </div>
@@ -663,7 +664,7 @@ export default function ChatPage() {
               {mine && menuOpen && (
                 <MessageMenu onEdit={() => beginEdit(m)} onDelete={() => deleteMessage(m.id)} />
               )}
-              <span className="mt-0.5 px-1 text-[10px] text-stone-400">
+              <span className="mt-0.5 px-1 text-[10px] text-stone-500">
                 {fmtTime(m.created_at)}{wasEdited ? " · Redigert" : ""}{isSeen ? " · Sett" : ""}
               </span>
             </div>
@@ -678,7 +679,7 @@ export default function ChatPage() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || sending}
-            className="shrink-0 rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-40"
+            className="shrink-0 rounded-full p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-40"
             aria-label="Send bilde"
           >
             {uploading ? (
@@ -718,7 +719,7 @@ export default function ChatPage() {
           <button
             type="button"
             onClick={() => setShowBidModal(true)}
-            className="w-full pb-2 text-center text-xs font-medium text-stone-400 hover:text-stone-700"
+            className="w-full pb-2 text-center text-xs font-medium text-stone-500 hover:text-stone-700"
           >
             💸 Gi bud
           </button>
@@ -796,7 +797,7 @@ function BidCard({
   return (
     <div className="w-56 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 text-sm shadow-sm transition-all">
       <div className="px-4 pt-3 pb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400">Bud</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-500">Bud</p>
         <p className="mt-0.5 text-xl font-semibold text-stone-900">{formatPrice(amount)}</p>
       </div>
 
@@ -823,7 +824,7 @@ function BidCard({
             {onWithdraw && (
               <button
                 onClick={onWithdraw}
-                className="text-[11px] text-stone-400 underline underline-offset-2 hover:text-red-600"
+                className="text-[11px] text-stone-500 underline underline-offset-2 hover:text-red-600"
               >
                 Trekk tilbake
               </button>
@@ -836,7 +837,7 @@ function BidCard({
             {onCancel && (
               <button
                 onClick={onCancel}
-                className="text-[11px] text-stone-400 underline underline-offset-2 hover:text-red-600"
+                className="text-[11px] text-stone-500 underline underline-offset-2 hover:text-red-600"
               >
                 Avbryt bud
               </button>
@@ -844,7 +845,7 @@ function BidCard({
           </div>
         )}
         {status === "declined" && (
-          <p className="text-xs text-stone-400">Avbrutt</p>
+          <p className="text-xs text-stone-500">Avbrutt</p>
         )}
       </div>
     </div>
@@ -883,7 +884,7 @@ function OtherAvatar({ profile, name }: { profile: Profile | null; name: string 
       {initials ? (
         <span className="text-xs font-semibold text-stone-600">{initials}</span>
       ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-400">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>

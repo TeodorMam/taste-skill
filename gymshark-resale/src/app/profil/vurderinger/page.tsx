@@ -60,7 +60,7 @@ export default function VurderingerPage() {
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-full p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+          className="rounded-full p-1.5 text-stone-500 hover:bg-stone-100 hover:text-stone-700"
           aria-label="Tilbake"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -85,7 +85,7 @@ export default function VurderingerPage() {
       )}
 
       {reviews && reviews.length === 0 ? (
-        <p className="text-sm text-stone-400">Ingen vurderinger ennå.</p>
+        <p className="text-sm text-stone-500">Ingen vurderinger ennå.</p>
       ) : (
         <div className="space-y-3">
           {reviews?.map((r) => (
@@ -98,7 +98,7 @@ export default function VurderingerPage() {
                     {r.is_positive ? "Positiv" : "Negativ"}
                   </span>
                 )}
-                <span className="text-xs text-stone-400">{timeAgo(r.created_at)}</span>
+                <span className="text-xs text-stone-500">{timeAgo(r.created_at)}</span>
               </div>
               {r.comment && (
                 <p className="mt-2 text-sm text-stone-700">{r.comment}</p>

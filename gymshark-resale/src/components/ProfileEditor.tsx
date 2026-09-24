@@ -183,7 +183,7 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
             <p className="truncate text-sm font-semibold tracking-tight">{name}</p>
             <p className="truncate text-xs text-stone-500">{currentEmail ?? ""}</p>
           </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-stone-400" aria-hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-stone-500" aria-hidden>
             <path d="M9 18l6-6-6-6" />
           </svg>
         </div>
@@ -358,7 +358,7 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
           placeholder="Litt om deg, hva du selger, hvor du trener, osv."
           className={`${inp} resize-none`}
         />
-        <p className="mt-1 text-[10px] text-stone-400">{bio.length}/280</p>
+        <p className="mt-1 text-[10px] text-stone-500">{bio.length}/280</p>
       </Field>
 
       <div className="border-t border-stone-100 pt-3">
@@ -397,7 +397,7 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
             className={`${inp} tracking-widest`}
           />
         </Field>
-        <p className="mt-1 text-[10px] text-stone-400">Lagres privat, vises ikke på profilen din.</p>
+        <p className="mt-1 text-[10px] text-stone-500">Lagres privat, vises ikke på profilen din.</p>
       </div>
 
       {error && (
@@ -440,7 +440,7 @@ function Avatar({ url, displayName }: { url: string | null; displayName: string 
       {initials ? (
         <span className="text-base font-semibold text-[#5a6b32]">{initials}</span>
       ) : (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-400" aria-hidden>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500" aria-hidden>
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>

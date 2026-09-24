@@ -285,7 +285,7 @@ export default function InboxPage() {
                     </span>
                     <span
                       className={`shrink-0 text-[11px] ${
-                        isUnread ? "font-semibold text-[#5a6b32]" : "text-stone-400"
+                        isUnread ? "font-semibold text-[#5a6b32]" : "text-stone-500"
                       }`}
                     >
                       {fmtTime(lastMessage.created_at)}
@@ -396,7 +396,7 @@ function UserAvatar({ profile, name }: { profile: Profile | null; name: string }
       {initials ? (
         <span className="text-sm font-semibold text-stone-600">{initials}</span>
       ) : (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-400">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>

@@ -238,7 +238,7 @@ export default function MinePage() {
               {soldPickerItemId === item.id ? (
                 <div className="space-y-1.5 rounded-xl border border-stone-200 bg-stone-50 p-3">
                   <p className="text-[11px] font-medium text-stone-600">Hva skjedde?</p>
-                  {pickerLoading && <p className="text-[11px] text-stone-400">Laster…</p>}
+                  {pickerLoading && <p className="text-[11px] text-stone-500">Laster…</p>}
                   {pickerBuyers.map(({ buyerId, name }) => (
                     <button
                       key={buyerId}
@@ -265,7 +265,7 @@ export default function MinePage() {
                   </button>
                   <button
                     onClick={() => setSoldPickerItemId(null)}
-                    className="w-full pt-0.5 text-center text-[11px] text-stone-400 hover:text-stone-600"
+                    className="w-full pt-0.5 text-center text-[11px] text-stone-500 hover:text-stone-600"
                   >
                     Avbryt
                   </button>
