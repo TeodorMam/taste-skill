@@ -31,8 +31,8 @@ export default function VilkarPage() {
       <Block title="1. Hva er Aktivbruk?">
         <p>
           Aktivbruk er en markedsplass for kjøp og salg av brukte treningsklær i
-          Norge. Vi legger til rette for handel mellom kjøper og selger, men er
-          ikke part i kjøpsavtalen mellom dem.
+          Norge. Tjenesten legger til rette for handel mellom kjøper og selger,
+          men er ikke part i kjøpsavtalen mellom dem.
         </p>
         <p>
           Aktivbruk tilbyr tekniske funksjoner for annonsering, kommunikasjon,
@@ -48,7 +48,7 @@ export default function VilkarPage() {
           <li>Du skal ikke dele, låne bort eller overføre kontoen din til andre.</li>
           <li>Informasjonen du oppgir skal være korrekt og oppdatert.</li>
           <li>
-            Vi kan begrense, suspendere eller avslutte kontoer ved brudd på
+            Aktivbruk kan begrense, suspendere eller avslutte kontoer ved brudd på
             disse vilkårene eller ved mistanke om misbruk av tjenesten.
           </li>
         </ul>
@@ -85,8 +85,10 @@ export default function VilkarPage() {
             kanselleres og kjøper refunderes.
           </li>
           <li>
-            For å motta betaling må selger koble til en Stripe-konto og
-            akseptere Stripes relevante vilkår.
+            For å motta betaling må selger være minst 18 år og koble til en
+            Stripe-konto, og akseptere Stripes relevante vilkår. Yngre brukere
+            kan bruke Aktivbruk til alt annet, men kan ikke motta utbetaling
+            før de fyller 18.
           </li>
           <li>
             Selger er ansvarlig for å pakke og sende varen på en forsvarlig
@@ -214,8 +216,8 @@ export default function VilkarPage() {
       <Block title="8. Ansvarsbegrensning">
         <p>
           Aktivbruk er en teknisk markedsplass som legger til rette for handel
-          mellom brukere. Vi er ikke selger eller kjøper av varene som formidles
-          gjennom tjenesten.
+          mellom brukere. Aktivbruk er verken selger eller kjøper av varene som
+          formidles gjennom tjenesten.
         </p>
         <p>
           Aktivbruk er derfor som utgangspunkt ikke ansvarlig for varens
@@ -224,9 +226,9 @@ export default function VilkarPage() {
           kontroll.
         </p>
         <p>
-          Vi er heller ikke ansvarlige for driftsforstyrrelser, forsinkelser
-          eller andre forhold som skyldes tredjeparter eller tekniske forhold
-          utenfor vår rimelige kontroll.
+          Aktivbruk er heller ikke ansvarlig for driftsforstyrrelser,
+          forsinkelser eller andre forhold som skyldes tredjeparter eller
+          tekniske forhold utenfor Aktivbruks rimelige kontroll.
         </p>
         <p>
           Dette begrenser ikke rettigheter eller ansvar som ikke kan fraskrives
@@ -236,11 +238,11 @@ export default function VilkarPage() {
 
       <Block title="9. Endringer i vilkårene">
         <p>
-          Vi kan oppdatere disse vilkårene dersom tjenesten endres, eller dersom
-          det skjer endringer i relevant lovgivning.
+          Aktivbruk kan oppdatere disse vilkårene dersom tjenesten endres,
+          eller dersom det skjer endringer i relevant lovgivning.
         </p>
         <p>
-          Ved vesentlige endringer vil vi informere på en egnet måte, for
+          Ved vesentlige endringer vil Aktivbruk informere på en egnet måte, for
           eksempel via e-post eller en tydelig melding på tjenesten.
         </p>
         <p>
@@ -272,8 +274,8 @@ export default function VilkarPage() {
       </div>
 
       <p className="text-xs text-stone-500">
-        Aktivbruk – bruktmarked for treningsklær. Et uavhengig prosjekt, ikke
-        tilknyttet noen merkevare.
+        Aktivbruk drives av Teodor Mamelund som privatperson. Bruktmarked for
+        treningsklær. Et uavhengig prosjekt, ikke tilknyttet noen merkevare.
       </p>
     </section>
   );
