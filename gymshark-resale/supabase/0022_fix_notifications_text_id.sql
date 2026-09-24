@@ -10,9 +10,29 @@ DROP FUNCTION IF EXISTS public.create_offer_notification();
 DROP FUNCTION IF EXISTS public.create_favorite_notification();
 
 -- ── 2. Recreate the notifications table ──────────────────────────────────────
-DROP TABLE IF EXISTS public.notifications;
+--
+-- Guarded, because this file used to drop the table unconditionally. Every
+-- other migration here can be run twice without consequence, so re-running one
+-- to be sure it was applied looks safe. This one answered "Success" and took
+-- every notification every user had with it.
+--
+-- The drop only happens when item_id is still the old type, which is the one
+-- case where recreating was the point. Once the column is text the table is
+-- left exactly as it is.
+DO $$
+DECLARE col_type text;
+BEGIN
+  SELECT data_type INTO col_type
+  FROM information_schema.columns
+  WHERE table_schema = 'public' AND table_name = 'notifications' AND column_name = 'item_id';
 
-CREATE TABLE public.notifications (
+  IF col_type IS NOT NULL AND col_type <> 'text' THEN
+    DROP TABLE public.notifications;
+    RAISE NOTICE 'notifications dropped for recreation: item_id was %', col_type;
+  END IF;
+END $$;
+
+CREATE TABLE IF NOT EXISTS public.notifications (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id      uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   type         text        NOT NULL CHECK (type IN ('offer', 'favorite')),
@@ -25,12 +45,15 @@ CREATE TABLE public.notifications (
 
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "notifications_select" ON public.notifications;
 CREATE POLICY "notifications_select" ON public.notifications
   FOR SELECT TO authenticated USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "notifications_update" ON public.notifications;
 CREATE POLICY "notifications_update" ON public.notifications
   FOR UPDATE TO authenticated USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "notifications_delete" ON public.notifications;
 CREATE POLICY "notifications_delete" ON public.notifications
   FOR DELETE TO authenticated USING (user_id = auth.uid());
 

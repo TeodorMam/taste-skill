@@ -134,10 +134,12 @@ export default function MinePage() {
     if (confirmTimer.current) clearTimeout(confirmTimer.current);
     setConfirmId(null);
     setBusyId(item.id);
-    const { error } = await supabase.from("items").delete().eq("id", item.id);
+    // Server side, so the photos go with the row. See api/items/[id].
+    const res = await fetch(`/api/items/${item.id}`, { method: "DELETE" });
     setBusyId(null);
-    if (error) {
-      setError(error.message);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(body.error ?? "Klarte ikke slette annonsen");
       return;
     }
     setItems((prev) => (prev ?? []).filter((i) => i.id !== item.id));
