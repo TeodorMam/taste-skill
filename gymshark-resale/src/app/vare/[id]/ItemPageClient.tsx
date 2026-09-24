@@ -22,6 +22,7 @@ import { ShareButton } from "@/components/ShareButton";
 import { SellerRating } from "@/components/SellerRating";
 import { ReviewForm } from "@/components/ReviewForm";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { brandPageFor } from "@/lib/brand-pages";
 import { ItemLikes } from "@/components/ItemLikes";
 import { FirstListingSuccess } from "@/components/FirstListingSuccess";
 import { useToast } from "@/components/ToastProvider";
@@ -361,7 +362,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           )}
 
           <dl className="grid grid-cols-2 gap-y-2 text-sm">
-            {item.brand && (<><dt className="text-stone-500">Merke</dt><dd className="text-right font-medium">{item.brand}</dd></>)}
+            {item.brand && (<><dt className="text-stone-500">Merke</dt><dd className="text-right font-medium">{brandPageFor(item.brand) ? <Link href={`/brukt/${brandPageFor(item.brand)!.slug}`} className="underline underline-offset-2 hover:text-[#5a6b32]">{item.brand}</Link> : item.brand}</dd></>)}
             {item.category && (<><dt className="text-stone-500">Kategori</dt><dd className="text-right">{item.category}</dd></>)}
             <dt className="text-stone-500">Størrelse</dt><dd className="text-right">{item.size}</dd>
             <dt className="text-stone-500">Tilstand</dt><dd className="text-right">{item.condition}</dd>
@@ -647,7 +648,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           <div className="flex items-end justify-between">
             <h2 className="text-lg font-semibold tracking-tight">Lignende annonser</h2>
             {(item.brand || item.category) && (
-              <Link href={item.brand ? `/varer?brand=${encodeURIComponent(item.brand)}` : `/varer?sub=${encodeURIComponent(item.category!)}`} className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]">Se alle →</Link>
+              <Link href={brandPageFor(item.brand) ? `/brukt/${brandPageFor(item.brand)!.slug}` : item.brand ? `/varer?brand=${encodeURIComponent(item.brand)}` : `/varer?sub=${encodeURIComponent(item.category!)}`} className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]">Se alle →</Link>
             )}
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

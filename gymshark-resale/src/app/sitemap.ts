@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { BRAND_PAGES } from "@/lib/brand-pages";
 
 const BASE_URL = "https://aktivbruk.com";
 
@@ -35,7 +36,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-    return [...staticPages, ...itemPages];
+    // Only brands that actually have something for sale. An empty brand page
+    // sets noindex on itself anyway, and submitting a URL we are telling
+    // Google not to index is a contradiction worth avoiding. It appears here
+    // by itself the moment somebody lists that brand.
+    const { data: brandRows } = await supabase
+      .from("items")
+      .select("brand")
+      .eq("is_sold", false)
+      .not("brand", "is", null);
+
+    const stocked = new Set((brandRows ?? []).map((r: { brand: string }) => r.brand));
+    const brandPages: MetadataRoute.Sitemap = BRAND_PAGES.filter((b) => stocked.has(b.brand)).map((b) => ({
+      url: `${BASE_URL}/brukt/${b.slug}`,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+      lastModified: now,
+    }));
+
+    return [...staticPages, ...brandPages, ...itemPages];
   } catch {
     return staticPages;
   }
