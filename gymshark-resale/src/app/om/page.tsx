@@ -18,7 +18,7 @@ export default function AboutPage() {
         <div className="mt-4 space-y-3 text-sm leading-relaxed text-stone-700">
           <p>Aktivbruk er en markedsplass for brukt treningstøy.</p>
           <p>
-            Vi startet med treningstøy fordi det er her vi så et tydelig behov.
+            Jeg startet med treningstøy fordi det er her jeg så et tydelig behov.
             På generelle bruktmarkedsplasser som FINN og Tise kan det være mye
             bra å finne, men treningstøy blir fort en liten del av et mye
             større marked.
@@ -38,7 +38,8 @@ export default function AboutPage() {
         </h2>
         <div className="space-y-3 text-sm leading-relaxed text-stone-700">
           <p>
-            Jeg heter Teodor og er 16 år, og det er jeg som står bak Aktivbruk.
+            Jeg heter Teodor og startet Aktivbruk som 16-åring. Det er jeg som
+            står bak.
           </p>
           <p>
             Jeg har selv brukt mange år på trening, både løping og styrketrening.
@@ -71,7 +72,7 @@ export default function AboutPage() {
             enklere å finne relevante produkter uten å måtte lete gjennom et
             helt generelt bruktmarked.
           </p>
-          <p>Det er også derfor vi starter smalt.</p>
+          <p>Det er også derfor jeg starter smalt.</p>
         </div>
       </div>
 
@@ -87,7 +88,7 @@ export default function AboutPage() {
           </p>
           <p>
             Når Aktivbruk har fått et solid grunnlag med nok aktivitet, kjøpere
-            og selgere, skal vi gradvis utvide med flere kategorier innen
+            og selgere, skal jeg gradvis utvide med flere kategorier innen
             trening og sport.
           </p>
           <p>Det kan blant annet være:</p>
@@ -97,8 +98,8 @@ export default function AboutPage() {
             <li>Annet utstyr for trening og aktivitet</li>
           </ul>
           <p>
-            Vi skal ikke åpne alt på én gang. Først bygger vi en god
-            markedsplass for treningstøy. Deretter utvider vi når tiden er
+            Jeg skal ikke åpne alt på én gang. Først bygger jeg en god
+            markedsplass for treningstøy. Deretter utvider jeg når tiden er
             riktig.
           </p>
           <p className="pt-1 text-xs font-medium uppercase tracking-widest text-stone-500">
@@ -153,15 +154,15 @@ export default function AboutPage() {
 
         <Faq q="Er det trygt å handle på Aktivbruk?">
           Ja. Pengene holdes hos Aktivbruk til du bekrefter at varen stemmer.
-          Vi kaller det kjøperbeskyttelse. Melder du et problem innen 48 timer
-          etter levering, setter vi utbetalingen på vent og ser på saken.
+          Det kaller jeg kjøperbeskyttelse. Melder du et problem innen 48 timer
+          etter levering, setter jeg utbetalingen på vent og ser på saken.
         </Faq>
 
         <Faq q="Hva er kjøperbeskyttelse?">
           Kjøperbeskyttelse betyr at pengene ikke går til selger før du har
           fått varen og bekreftet at den er som beskrevet. Du har 48 timer på
           deg til å melde fra hvis noe ikke stemmer. Er varen skadet, ikke som
-          beskrevet, eller ikke levert, ser vi på saken og refunderer hvis det
+          beskrevet, eller ikke levert, ser jeg på saken og refunderer hvis det
           er nødvendig.{" "}
           <a
             href="/kjoperbeskyttelse"
@@ -177,7 +178,7 @@ export default function AboutPage() {
         </Faq>
 
         <Faq q="Hva kan jeg selge på Aktivbruk?">
-          Akkurat nå kan du selge treningstøy. Etter hvert vil vi utvide til
+          Akkurat nå kan du selge treningstøy. Etter hvert vil jeg utvide til
           flere kategorier innen trening og sport, som løpesko og
           treningsutstyr, men foreløpig er det kun treningstøy.
         </Faq>
