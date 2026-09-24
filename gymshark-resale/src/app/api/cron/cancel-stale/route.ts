@@ -17,7 +17,7 @@ const SHIPPING_DEADLINE_DAYS = 7;
 export async function GET(req: NextRequest) {
   try {
   const secret = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret") ?? "";
-  if (CRON_SECRET && secret !== CRON_SECRET) {
+  if (!CRON_SECRET || secret !== CRON_SECRET) {
     // Always 200 so cron-job.org doesn't auto-disable us; misconfig shows up in body
     return NextResponse.json({ ok: false, error: "unauthorized" });
   }

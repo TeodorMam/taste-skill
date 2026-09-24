@@ -39,6 +39,13 @@ export async function POST(req: NextRequest) {
     if (!offer || offer.buyer_id !== user.id || offer.status !== "accepted") {
       return NextResponse.json({ error: "Tilbudet er ikke gyldig" }, { status: 400 });
     }
+    // Without this the price of any accepted offer can be applied to any other
+    // listing: bid 1 kr on your own item, accept it yourself, then check out
+    // someone else's item with that offer id. offers.item_id is a bigint since
+    // 0017, so compare as numbers rather than against the string from the body.
+    if (Number(offer.item_id) !== Number(item_id)) {
+      return NextResponse.json({ error: "Tilbudet gjelder en annen vare" }, { status: 400 });
+    }
     amountNok = offer.amount;
   }
 
