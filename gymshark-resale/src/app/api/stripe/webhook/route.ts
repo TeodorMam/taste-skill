@@ -40,25 +40,48 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    const { data: existing, error: orderFetchErr } = await admin.from("orders").select("status, buyer_id, seller_id, amount_nok, platform_fee_nok, delivery_method, shipping_cost_nok").eq("id", orderId).maybeSingle();
-    console.log("[webhook] order fetch:", existing?.status, "fetchErr:", orderFetchErr?.message);
-    if (!existing || existing.status === "paid") return NextResponse.json({ received: true });
-
-    const [ordersUpdate, itemsUpdate] = await Promise.all([
-      admin.from("orders").update({
+    // Claim the order and read it back in one statement. Reading first and
+    // then updating let two deliveries of the same event both see "pending"
+    // and both run everything below, which is two of every mail and two
+    // payment messages in the chat. Stripe delivers at least once and retries
+    // a slow response, and this route sends four mails before it answers, so
+    // it is slow enough to be retried. Whichever delivery updates the row
+    // first gets the row back; the others get nothing and stop here.
+    const { data: claimed, error: claimErr } = await admin
+      .from("orders")
+      .update({
         status: "paid",
         paid_at: new Date().toISOString(),
         stripe_payment_intent_id: session.payment_intent as string,
-      }).eq("id", orderId),
+      })
+      .eq("id", orderId)
+      .eq("status", "pending")
+      .select("status, buyer_id, seller_id, amount_nok, platform_fee_nok, delivery_method, shipping_cost_nok");
+
+    if (claimErr) {
+      console.error("[webhook] claim failed:", claimErr.message);
+      return NextResponse.json({ error: "claim failed" }, { status: 500 });
+    }
+    if (!claimed || claimed.length === 0) {
+      console.log("[webhook] order already handled or not pending, skipping:", orderId);
+      return NextResponse.json({ received: true });
+    }
+    const existing = claimed[0];
+
+    // Everything from here is a side effect of a payment that has already been
+    // recorded. None of it may throw: an exception answers 500, Stripe retries,
+    // and the retry stops at the claim above because the order is no longer
+    // pending. A seller would never learn they sold anything because a mail to
+    // the buyer failed first.
+    const [itemsUpdate, offersUpdate] = await Promise.all([
       admin.from("items").update({ is_sold: true }).eq("id", Number(itemId)),
       offerId ? admin.from("offers").update({ status: "accepted" }).eq("id", offerId) : Promise.resolve({ error: null }),
     ]);
-
-    console.log("[webhook] orders update error:", ordersUpdate.error?.message);
-    console.log("[webhook] items update error:", itemsUpdate.error?.message, "itemId used:", Number(itemId));
+    if (itemsUpdate.error) console.error("[webhook] items update error:", itemsUpdate.error.message, "itemId:", Number(itemId));
+    if (offersUpdate.error) console.error("[webhook] offers update error:", offersUpdate.error.message);
 
     // Insert a payment system message so it appears in both parties' chat timeline
-    await admin.from("messages").insert({
+    const { error: messageErr } = await admin.from("messages").insert({
       item_id: itemId,
       buyer_id: existing.buyer_id,
       sender_id: existing.buyer_id,
@@ -66,17 +89,24 @@ export async function POST(req: NextRequest) {
       message_type: "payment",
       metadata: { amount_nok: existing.amount_nok, order_id: orderId, delivery_method: existing.delivery_method },
     });
+    if (messageErr) console.error("[webhook] payment message failed:", messageErr.message);
 
     // Send confirmation emails
-    const [buyerRes, sellerRes, itemRes] = await Promise.all([
-      admin.auth.admin.getUserById(existing.buyer_id),
-      admin.auth.admin.getUserById(existing.seller_id),
-      admin.from("items").select("title").eq("id", Number(itemId)).maybeSingle(),
-    ]);
-
-    const buyerEmail = buyerRes.data.user?.email;
-    const sellerEmail = sellerRes.data.user?.email;
-    const itemTitle = itemRes.data?.title ?? "varen";
+    let buyerEmail: string | undefined;
+    let sellerEmail: string | undefined;
+    let itemTitle = "varen";
+    try {
+      const [buyerRes, sellerRes, itemRes] = await Promise.all([
+        admin.auth.admin.getUserById(existing.buyer_id),
+        admin.auth.admin.getUserById(existing.seller_id),
+        admin.from("items").select("title").eq("id", Number(itemId)).maybeSingle(),
+      ]);
+      buyerEmail = buyerRes.data.user?.email;
+      sellerEmail = sellerRes.data.user?.email;
+      itemTitle = itemRes.data?.title ?? "varen";
+    } catch (err) {
+      console.error("[webhook] could not look up parties for order", orderId, err);
+    }
     const shippingCost = existing.shipping_cost_nok ?? 0;
     // Buyer paid: item + shipping + kjøperbeskyttelse (fee is a separate line).
     const buyerTotal = existing.amount_nok + shippingCost + existing.platform_fee_nok;
@@ -157,12 +187,20 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ received: true });
 }
 
+// Never throws. A payment is already recorded by the time any of these go out,
+// and the retry that an exception would trigger stops at the claim, so one
+// failed mail must not be allowed to cancel the ones after it.
 async function sendEmail(to: string, subject: string, html: string) {
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
-    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
-  });
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+      body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
+    });
+    if (!res.ok) console.error("[webhook] email rejected:", subject, await res.text());
+  } catch (err) {
+    console.error("[webhook] email failed:", subject, err);
+  }
 }
 
 function escapeHtml(s: string) {

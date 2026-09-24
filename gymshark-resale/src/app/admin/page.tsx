@@ -172,6 +172,9 @@ export default async function AdminPage() {
   const since7d = sinceIso(7 * DAY);
   const since30d = sinceIso(30 * DAY);
 
+  // Hitting this means the numbers below cover less than the full window.
+  const VIEW_CAP = 20000;
+
   const [activeRes, itemsRes, ordersRes, usersRes, newUsersRes, messagesRes, viewsRes] = await Promise.all([
     db.from("items").select("id", { count: "exact", head: true }).eq("is_sold", false),
     db.from("items").select("*", { count: "exact" }).gte("created_at", since30d).order("created_at", { ascending: false }),
@@ -184,8 +187,16 @@ export default async function AdminPage() {
     db.from("profiles").select("user_id", { count: "exact", head: true }),
     db.from("profiles").select("user_id", { count: "exact", head: true }).gte("created_at", since30d),
     db.from("messages").select("*").gte("created_at", since30d).order("created_at", { ascending: false }),
-    // Narrow columns, capped: enough to aggregate honestly at this volume.
-    db.from("pageviews").select("path,referrer_host,session_id,created_at").gte("created_at", since30d).limit(20000),
+    // Narrow columns, capped. The order matters as much as the cap: a limit
+    // without one lets Postgres return whichever rows it likes, so the moment
+    // the cap is reached the figures below stop being the last 7 and 30 days
+    // and become an arbitrary sample, with nothing on screen to say so.
+    // Newest first means a truncated read is at least the most recent window.
+    db.from("pageviews")
+      .select("path,referrer_host,session_id,created_at")
+      .gte("created_at", since30d)
+      .order("created_at", { ascending: false })
+      .limit(VIEW_CAP),
   ]);
 
   const activeItems = activeRes.count ?? 0;
@@ -199,6 +210,7 @@ export default async function AdminPage() {
   type View = { path: string; referrer_host: string | null; session_id: string | null; created_at: string };
   const trackingReady = !viewsRes.error;
   const views = (viewsRes.data ?? []) as View[];
+  const viewsTruncated = views.length >= VIEW_CAP;
   const views7d = views.filter((v) => v.created_at >= since7d);
 
   const sessionsIn = (rows: View[]) =>
@@ -332,6 +344,12 @@ export default async function AdminPage() {
       </section>
 
       <Section title="Trafikk" sub="Siste 7 dager, bots holdt utenfor">
+        {viewsTruncated && (
+          <div className="mb-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+            Taket på {VIEW_CAP.toLocaleString("nb-NO")} sidevisninger er nådd. Tallene under
+            dekker de nyeste, ikke hele perioden, og er for lave.
+          </div>
+        )}
         {!trackingReady ? (
           <Quiet>
             Tabellen finnes ikke ennå. Kjør supabase/0037_pageviews.sql i Supabase SQL Editor,
