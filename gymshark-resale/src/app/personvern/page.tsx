@@ -17,10 +17,11 @@ export default function PersonvernPage() {
       </div>
 
       <p className="text-sm leading-relaxed text-stone-600">
-        Aktivbruk («vi», «oss») er behandlingsansvarlig for personopplysningene dine.
-        Denne erklæringen forklarer hvilke opplysninger vi samler inn, hvorfor vi
-        behandler dem, hvordan de brukes, og hvilke rettigheter du har. Vi følger
-        EUs personvernforordning (GDPR) slik den er gjennomført i norsk rett.
+        Aktivbruk er behandlingsansvarlig for personopplysningene dine. Denne
+        erklæringen forklarer hvilke opplysninger Aktivbruk samler inn, hvorfor
+        de behandles, hvordan de brukes, og hvilke rettigheter du har. Aktivbruk
+        følger EUs personvernforordning (GDPR) slik den er gjennomført i norsk
+        rett.
       </p>
 
       <Block title="1. Behandlingsansvarlig">
@@ -36,10 +37,10 @@ export default function PersonvernPage() {
         </p>
       </Block>
 
-      <Block title="2. Hvilke opplysninger samler vi inn?">
+      <Block title="2. Hvilke opplysninger samles inn?">
         <p>
-          Vi samler inn og behandler opplysninger som er nødvendige for å tilby
-          Aktivbruk, gjennomføre kjøp og salg og holde tjenesten trygg.
+          Aktivbruk samler inn og behandler opplysninger som er nødvendige for
+          å tilby tjenesten, gjennomføre kjøp og salg og holde den trygg.
         </p>
         <Table
           cols={["Kategori", "Opplysninger"]}
@@ -70,17 +71,17 @@ export default function PersonvernPage() {
             ],
             [
               "Besøksstatistikk",
-              "Vi teller hvilke sider som blir besøkt og hvilket nettsted du eventuelt kom fra. Vi lagrer ikke IP-adresse, informasjonskapsler eller nettleserinformasjon sammen med dette, og statistikken kan ikke knyttes til deg. Derfor bruker Aktivbruk heller ingen cookie-banner",
+              "Aktivbruk teller hvilke sider som blir besøkt og hvilket nettsted du eventuelt kom fra. IP-adresse, informasjonskapsler og nettleserinformasjon lagres ikke sammen med dette, og statistikken kan ikke knyttes til deg. Derfor bruker Aktivbruk heller ingen cookie-banner",
             ],
           ]}
         />
         <p>
-          Vi samler ikke inn mer personopplysninger enn det som er nødvendig for
-          de formålene som er beskrevet i denne erklæringen.
+          Aktivbruk samler ikke inn mer personopplysninger enn det som er
+          nødvendig for de formålene som er beskrevet i denne erklæringen.
         </p>
       </Block>
 
-      <Block title="3. Hvorfor behandler vi opplysningene?">
+      <Block title="3. Hvorfor behandles opplysningene?">
         <Table
           cols={["Formål", "Beskrivelse", "Rettslig grunnlag"]}
           rows={[
@@ -96,7 +97,7 @@ export default function PersonvernPage() {
             ],
             [
               "Kommunikasjon",
-              "Sende nødvendige e-poster og varsler om blant annet konto, kjøp, salg, betaling, levering, meldinger og tvister. Vi sender ikke markedsførings-e-post uten nødvendig samtykke",
+              "Sende nødvendige e-poster og varsler om blant annet konto, kjøp, salg, betaling, levering, meldinger og tvister. Aktivbruk sender ikke markedsførings-e-post uten nødvendig samtykke",
               "Avtale (GDPR art. 6 nr. 1 bokstav b)",
             ],
             [
@@ -115,9 +116,10 @@ export default function PersonvernPage() {
 
       <Block title="4. Deling med tredjeparter">
         <p>
-          Vi deler kun personopplysninger med tredjeparter når det er nødvendig
-          for å levere Aktivbruk, gjennomføre betalinger og utbetalinger, sende
-          nødvendige e-poster eller oppfylle våre rettslige forpliktelser.
+          Aktivbruk deler kun personopplysninger med tredjeparter når det er
+          nødvendig for å levere tjenesten, gjennomføre betalinger og
+          utbetalinger, sende nødvendige e-poster eller oppfylle rettslige
+          forpliktelser.
         </p>
         <ul className="mt-2 space-y-2">
           <li>
@@ -166,18 +168,19 @@ export default function PersonvernPage() {
           </li>
         </ul>
         <p className="mt-2">
-          Når personopplysninger behandles utenfor EU/EØS, sørger vi for at
+          Når personopplysninger behandles utenfor EU/EØS, sørger Aktivbruk for
+          at
           behandlingen skjer i samsvar med kravene i personvernregelverket og at
           det finnes et gyldig overføringsgrunnlag.
         </p>
-        <p>Vi selger aldri personopplysninger til tredjeparter.</p>
+        <p>Aktivbruk selger aldri personopplysninger til tredjeparter.</p>
       </Block>
 
       <Block title="5. Lagring og sletting">
         <p>
-          Vi lagrer personopplysninger så lenge det er nødvendig for formålet de
-          ble samlet inn for, eller så lenge vi er juridisk forpliktet til å
-          oppbevare dem.
+          Aktivbruk lagrer personopplysninger så lenge det er nødvendig for
+          formålet de ble samlet inn for, eller så lenge loven krever at de
+          oppbevares.
         </p>
         <ul className="mt-2 space-y-1.5">
           <li>Kontoinformasjon lagres så lenge kontoen er aktiv.</li>
@@ -201,42 +204,45 @@ export default function PersonvernPage() {
           Du kan slette kontoen din direkte fra profilsiden på Aktivbruk.
         </p>
         <p>
-          Når du sletter kontoen, sletter vi personopplysninger som ikke lenger
-          er nødvendige å beholde. Opplysninger som vi er juridisk forpliktet
+          Når du sletter kontoen, slettes personopplysninger som ikke lenger er
+          nødvendige å beholde. Opplysninger Aktivbruk er juridisk forpliktet
           til å oppbevare, kan beholdes så lenge loven krever det.
         </p>
-        <p>Vi forsøker å unngå å lagre personopplysninger lenger enn nødvendig.</p>
+        <p>
+          Aktivbruk forsøker å unngå å lagre personopplysninger lenger enn
+          nødvendig.
+        </p>
       </Block>
 
       <Block title="6. Dine rettigheter">
         <p>Etter GDPR har du rett til å:</p>
         <ul className="mt-2 space-y-1.5">
           <li>
-            <strong>Innsyn</strong> – be om en kopi av personopplysningene vi
-            behandler om deg.
+            <strong>Innsyn</strong> – be om en kopi av personopplysningene som
+            behandles om deg.
           </li>
           <li>
-            <strong>Retting</strong> – be oss rette opplysninger som er feil
-            eller ufullstendige.
+            <strong>Retting</strong> – be om at opplysninger som er feil eller
+            ufullstendige blir rettet.
           </li>
           <li>
-            <strong>Sletting</strong> – i enkelte tilfeller be oss slette
-            personopplysningene dine («retten til å bli glemt»). Denne retten
-            gjelder ikke i alle tilfeller, blant annet når vi er juridisk
-            forpliktet til å oppbevare enkelte opplysninger.
+            <strong>Sletting</strong> – i enkelte tilfeller be om at
+            personopplysningene dine slettes («retten til å bli glemt»). Denne
+            retten gjelder ikke i alle tilfeller, blant annet når Aktivbruk er
+            juridisk forpliktet til å oppbevare enkelte opplysninger.
           </li>
           <li>
-            <strong>Begrensning</strong> – i enkelte tilfeller be oss begrense
-            behandlingen av personopplysningene dine.
+            <strong>Begrensning</strong> – i enkelte tilfeller be om at
+            behandlingen av personopplysningene dine begrenses.
           </li>
           <li>
             <strong>Dataportabilitet</strong> – i enkelte tilfeller motta
-            personopplysninger du selv har gitt oss i et strukturert og
+            personopplysninger du selv har oppgitt, i et strukturert og
             maskinlesbart format.
           </li>
           <li>
             <strong>Innsigelse</strong> – i enkelte tilfeller protestere mot
-            behandling som skjer på grunnlag av vår berettigede interesse.
+            behandling som skjer på grunnlag av berettiget interesse.
           </li>
         </ul>
         <p className="mt-2">
@@ -250,20 +256,20 @@ export default function PersonvernPage() {
           .
         </p>
         <p>
-          Vi behandler slike henvendelser uten ugrunnet opphold og normalt
-          senest innen én måned. I enkelte tilfeller kan fristen forlenges i
-          samsvar med personvernregelverket.
+          Slike henvendelser behandles uten ugrunnet opphold og normalt senest
+          innen én måned. I enkelte tilfeller kan fristen forlenges i samsvar
+          med personvernregelverket.
         </p>
       </Block>
 
       <Block title="7. Informasjonskapsler (cookies)">
         <p>
-          Vi bruker kun nødvendige informasjonskapsler for innlogging og
+          Aktivbruk bruker kun nødvendige informasjonskapsler for innlogging og
           sesjonshåndtering.
         </p>
         <p>
-          Vi bruker per i dag ikke Google Analytics, Vercel Analytics, Meta
-          Pixel eller andre sporings- og reklamecookies.
+          Aktivbruk bruker per i dag ikke Google Analytics, Vercel Analytics,
+          Meta Pixel eller andre sporings- og reklamecookies.
         </p>
         <p>
           Nødvendige informasjonskapsler brukes for at Aktivbruk skal fungere
@@ -274,15 +280,15 @@ export default function PersonvernPage() {
 
       <Block title="8. Klage til Datatilsynet">
         <p>
-          Hvis du mener at vi behandler personopplysningene dine i strid med
-          personvernregelverket, kan du først kontakte oss på{" "}
+          Hvis du mener at personopplysningene dine behandles i strid med
+          personvernregelverket, kan du først ta kontakt på{" "}
           <a
             href="mailto:kontakt@aktivbruk.com"
             className="underline underline-offset-2 hover:text-stone-900"
           >
             kontakt@aktivbruk.com
           </a>
-          , slik at vi får mulighet til å undersøke saken.
+          , slik at saken kan undersøkes.
         </p>
         <p>
           Du har også rett til å klage til Datatilsynet dersom du mener at
@@ -301,12 +307,12 @@ export default function PersonvernPage() {
 
       <Block title="9. Endringer">
         <p>
-          Vi kan oppdatere denne personvernerklæringen dersom måten vi behandler
-          personopplysninger på endres, eller dersom det skjer endringer i
-          relevant lovgivning.
+          Aktivbruk kan oppdatere denne personvernerklæringen dersom måten
+          personopplysninger behandles på endres, eller dersom det skjer
+          endringer i relevant lovgivning.
         </p>
         <p>
-          Ved vesentlige endringer vil vi informere deg på en egnet måte, for
+          Ved vesentlige endringer blir du informert på en egnet måte, for
           eksempel via e-post eller på Aktivbruk.
         </p>
         <p>

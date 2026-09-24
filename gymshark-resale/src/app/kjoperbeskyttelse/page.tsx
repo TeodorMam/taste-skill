@@ -3,7 +3,7 @@ import Link from "next/link";
 export const metadata = {
   title: "Kjøperbeskyttelse, Aktivbruk",
   description:
-    "Aktivbruk holder pengene dine trygge til du har bekreftet at varen er som forventet. Les om hvordan vi håndterer tvister og problemer.",
+    "Aktivbruk holder pengene dine trygge til du har bekreftet at varen er som forventet. Les om hvordan tvister og problemer håndteres.",
 };
 
 export default function KjoperbeskyttelsePage() {
@@ -15,7 +15,7 @@ export default function KjoperbeskyttelsePage() {
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">Kjøperbeskyttelse</h1>
         <p className="mt-2 text-sm leading-relaxed text-stone-600">
-          Når du kjøper på Aktivbruk, holdes pengene dine trygt hos oss til du har bekreftet at alt er i orden. Selger får ikke utbetalt før du er fornøyd.
+          Når du kjøper på Aktivbruk, holdes pengene dine trygt hos Aktivbruk til du har bekreftet at alt er i orden. Selger får ikke utbetalt før du er fornøyd.
         </p>
       </div>
 
@@ -25,7 +25,7 @@ export default function KjoperbeskyttelsePage() {
           <li className="flex gap-3"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#5a6b32] text-[11px] font-bold text-white">1</span><span>Du betaler, pengene holdes hos Aktivbruk, ikke selger.</span></li>
           <li className="flex gap-3"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#5a6b32] text-[11px] font-bold text-white">2</span><span>Selger sender varen. Du får varsel når den er levert.</span></li>
           <li className="flex gap-3"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#5a6b32] text-[11px] font-bold text-white">3</span><span>Du har 48 timer på å bekrefte at alt er ok, eller melde et problem.</span></li>
-          <li className="flex gap-3"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#5a6b32] text-[11px] font-bold text-white">4</span><span>Bekrefter du, utbetales pengene til selger. Melder du problem, settes pengene på vent og vi ser på saken.</span></li>
+          <li className="flex gap-3"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#5a6b32] text-[11px] font-bold text-white">4</span><span>Bekrefter du, utbetales pengene til selger. Melder du problem, settes pengene på vent og jeg ser på saken.</span></li>
         </ol>
       </div>
 
@@ -56,8 +56,8 @@ export default function KjoperbeskyttelsePage() {
           <p>Når du trykker <strong>«Meld problem»</strong> i dine ordre:</p>
           <ul className="space-y-2 pl-1">
             <li className="flex gap-2"><span>→</span><span>Betalingen settes på vent. Selger får ikke utbetalt mens saken er åpen.</span></li>
-            <li className="flex gap-2"><span>→</span><span>Vi ser på saken manuelt og tar kontakt med deg og selger om nødvendig.</span></li>
-            <li className="flex gap-2"><span>→</span><span>Vi gjør en vurdering basert på annonsen, kommunikasjonen og eventuell dokumentasjon.</span></li>
+            <li className="flex gap-2"><span>→</span><span>Jeg ser på saken manuelt og tar kontakt med deg og selger om nødvendig.</span></li>
+            <li className="flex gap-2"><span>→</span><span>Jeg gjør en vurdering basert på annonsen, kommunikasjonen og eventuell dokumentasjon.</span></li>
           </ul>
           <p className="text-stone-600">Det er <strong>Aktivbruk</strong> som tar den endelige avgjørelsen i en tvist, ikke kjøper eller selger alene.</p>
         </div>
@@ -79,7 +79,7 @@ export default function KjoperbeskyttelsePage() {
 
       <div className="rounded-2xl border border-stone-200 bg-white p-5 space-y-2">
         <p className="font-medium text-stone-800">Trenger du hjelp?</p>
-        <p className="text-sm text-stone-600">Ta kontakt med oss på <a href="mailto:kontakt@aktivbruk.com" className="font-medium underline underline-offset-2 hover:text-stone-900">kontakt@aktivbruk.com</a>, vi svarer raskt.</p>
+        <p className="text-sm text-stone-600">Ta kontakt på <a href="mailto:kontakt@aktivbruk.com" className="font-medium underline underline-offset-2 hover:text-stone-900">kontakt@aktivbruk.com</a>, jeg svarer raskt.</p>
         <div className="pt-2">
           <Link href="/ordre" className="inline-block rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black">
             Se dine ordre

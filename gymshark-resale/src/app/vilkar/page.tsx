@@ -85,10 +85,19 @@ export default function VilkarPage() {
             kanselleres og kjøper refunderes.
           </li>
           <li>
-            For å motta betaling må selger være minst 18 år og koble til en
-            Stripe-konto, og akseptere Stripes relevante vilkår. Yngre brukere
-            kan bruke Aktivbruk til alt annet, men kan ikke motta utbetaling
-            før de fyller 18.
+            Selger må være minst 15 år. For å motta betaling må selger koble til
+            en Stripe-konto og akseptere Stripes vilkår. Selger over 18 gjør
+            dette selv. Selger under 18 må ha en foresatt som oppretter
+            Stripe-kontoen og mottar utbetalingene på vegne av selger.
+            Utbetalingen går da til foresattes bankkonto, og foresatte er
+            ansvarlig for skatterapportering. Ta kontakt på{" "}
+            <a
+              href="mailto:kontakt@aktivbruk.com"
+              className="underline underline-offset-2 hover:text-stone-900"
+            >
+              kontakt@aktivbruk.com
+            </a>{" "}
+            for å sette dette opp.
           </li>
           <li>
             Selger er ansvarlig for å pakke og sende varen på en forsvarlig
