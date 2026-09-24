@@ -205,7 +205,7 @@ export default function VarslerPage() {
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 text-[11px] text-stone-400">
+                    <p className="mt-0.5 text-[11px] text-stone-500">
                       Sist sjekket{" "}
                       {new Date(s.last_seen_at).toLocaleDateString("no-NO", {
                         day: "numeric",
@@ -290,7 +290,7 @@ export default function VarslerPage() {
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{item.title}</p>
                         <div className="mt-0.5 flex items-center gap-1.5">
-                          <span className="text-xs text-stone-400 line-through">
+                          <span className="text-xs text-stone-500 line-through">
                             {formatPrice(item.priceWhenFavorited!)}
                           </span>
                           <span className="text-xs font-semibold text-[#5a6b32]">
@@ -341,7 +341,7 @@ export default function VarslerPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-stone-500">{item.title}</p>
-                        <p className="text-xs text-stone-400">{formatPrice(item.price)}</p>
+                        <p className="text-xs text-stone-500">{formatPrice(item.price)}</p>
                       </div>
                       <button
                         onClick={() => removeFavorite(item.id)}

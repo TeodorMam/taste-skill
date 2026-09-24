@@ -65,6 +65,13 @@ export default function VilkarPage() {
             villedende.
           </li>
           <li>
+            Bildene du laster opp skal være tatt av deg selv, eller du skal ha
+            tillatelse til å bruke dem. Du kan ikke bruke produktbilder hentet
+            fra nettbutikker eller andre nettsteder. Ved å laste opp et bilde
+            gir du Aktivbruk rett til å vise det i annonsen og i markedsføring
+            av annonsen.
+          </li>
+          <li>
             Du kan per i dag kun selge treningsklær på Aktivbruk. Andre
             kategorier innen trening og sport kan bli tilgjengelige senere.
           </li>
@@ -264,7 +271,7 @@ export default function VilkarPage() {
         </p>
       </div>
 
-      <p className="text-xs text-stone-400">
+      <p className="text-xs text-stone-500">
         Aktivbruk – bruktmarked for treningsklær. Et uavhengig prosjekt, ikke
         tilknyttet noen merkevare.
       </p>

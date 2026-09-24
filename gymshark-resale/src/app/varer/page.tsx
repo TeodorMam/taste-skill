@@ -342,7 +342,7 @@ function BrowseInner() {
               ))}
               <button
                 onClick={clearAll}
-                className="shrink-0 rounded-full px-2 py-1.5 text-xs font-medium text-stone-400 hover:text-stone-700"
+                className="shrink-0 rounded-full px-2 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-700"
               >
                 Nullstill
               </button>
@@ -351,7 +351,7 @@ function BrowseInner() {
         </div>
 
         {total !== null && (
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-stone-500">
             {initialLoading && !isFirstLoad.current && (
               <span className="mr-1.5 inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
             )}
@@ -409,7 +409,7 @@ function BrowseInner() {
               className="mx-auto mb-1 mt-2 h-1 w-10 rounded-full bg-stone-300"
             />
             <div className="px-4 pb-10 pt-1">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-400">Sorter etter</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">Sorter etter</p>
               {SORT_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -521,6 +521,7 @@ function BrowseInner() {
                     <div className="space-y-1">
                       <input
                         type="range" min={0} max={PRICE_MAX} step={50}
+                        aria-label="Laveste pris"
                         value={localPriceMin}
                         onChange={(e) => setLocalPriceMin(Math.min(Number(e.target.value), localPriceMax - 50))}
                         onMouseUp={commitPrice}
@@ -529,6 +530,7 @@ function BrowseInner() {
                       />
                       <input
                         type="range" min={0} max={PRICE_MAX} step={50}
+                        aria-label="Høyeste pris"
                         value={localPriceMax}
                         onChange={(e) => setLocalPriceMax(Math.max(Number(e.target.value), localPriceMin + 50))}
                         onMouseUp={commitPrice}
@@ -650,7 +652,7 @@ function FilterSubPanel({
     <OptionList>
       <OptionRow label="Alle merker" active={!brand} onClick={() => onSelect("brand", "")} />
       {availableBrands.length === 0 && (
-        <p className="py-6 text-sm text-stone-400">Ingen merker tilgjengelig ennå.</p>
+        <p className="py-6 text-sm text-stone-500">Ingen merker tilgjengelig ennå.</p>
       )}
       {availableBrands.map((b) => <OptionRow key={b} label={b} active={brand === b} onClick={() => onSelect("brand", b)} />)}
     </OptionList>

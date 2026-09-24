@@ -23,7 +23,7 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
                 {r.is_positive ? "👍 Bra" : "👎 Dårlig"}
               </span>
             )}
-            <span className="text-[11px] text-stone-400">
+            <span className="text-[11px] text-stone-500">
               {new Date(r.created_at).toLocaleDateString("no-NO")}
             </span>
           </div>

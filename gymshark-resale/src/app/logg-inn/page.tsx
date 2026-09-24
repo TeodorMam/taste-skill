@@ -457,7 +457,7 @@ function PasswordInput({ value, onChange, placeholder, autoComplete, show, onTog
       <input type={show ? "text" : "password"} value={value} onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder} autoComplete={autoComplete} autoFocus={autoFocus} className={`${inp} pr-10`} />
       <button type="button" onClick={onToggle}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-700"
         aria-label={show ? "Skjul passord" : "Vis passord"}>
         {show ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

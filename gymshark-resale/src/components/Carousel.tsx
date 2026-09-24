@@ -44,7 +44,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-[3/4] w-full items-center justify-center bg-stone-100 text-sm text-stone-400">
+      <div className="flex aspect-[3/4] w-full items-center justify-center bg-stone-100 text-sm text-stone-500">
         Ingen bilde
       </div>
     );

@@ -52,7 +52,7 @@ export function BidModal({
           <button
             type="button"
             onClick={onClose}
-            className="ml-3 shrink-0 rounded-full p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+            className="ml-3 shrink-0 rounded-full p-1 text-stone-500 hover:bg-stone-100 hover:text-stone-700"
             aria-label="Lukk"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -105,8 +105,8 @@ export function BidModal({
 
         {/* Trust signals */}
         <div className="mb-5 space-y-1.5">
-          <p className="text-xs text-stone-400">💬 Budet sendes som melding i chat</p>
-          <p className="text-xs text-stone-400">🔒 Ingen betaling før budet er akseptert</p>
+          <p className="text-xs text-stone-500">💬 Budet sendes som melding i chat</p>
+          <p className="text-xs text-stone-500">🔒 Ingen betaling før budet er akseptert</p>
         </div>
 
         <button
@@ -117,7 +117,7 @@ export function BidModal({
         >
           {submitting ? "Sender…" : "Send bud"}
         </button>
-        <p className="mt-3 text-center text-[11px] leading-relaxed text-stone-400">
+        <p className="mt-3 text-center text-[11px] leading-relaxed text-stone-500">
           Bud er ikke bindende – du betaler først hvis du velger å kjøpe etter aksept.
         </p>
       </div>

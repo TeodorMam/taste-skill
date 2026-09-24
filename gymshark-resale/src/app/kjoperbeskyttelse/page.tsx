@@ -72,7 +72,7 @@ export default function KjoperbeskyttelsePage() {
             "Du rapporterte ikke problemet innen 48 timer etter levering.",
             "Kjøp gjort utenfor Aktivbruk (f.eks. Vipps direkte til selger).",
           ].map((t) => (
-            <li key={t} className="flex gap-2"><span className="text-stone-400">✕</span><span>{t}</span></li>
+            <li key={t} className="flex gap-2"><span className="text-stone-500">✕</span><span>{t}</span></li>
           ))}
         </ul>
       </div>

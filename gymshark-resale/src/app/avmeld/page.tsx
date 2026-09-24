@@ -74,7 +74,7 @@ export default async function AvmeldPage({
           Ja, meld meg av
         </button>
       </form>
-      <p className="text-xs text-stone-400">
+      <p className="text-xs text-stone-500">
         Ombestemte du deg? Bare lukk denne siden, ingenting er endret.
       </p>
     </div>

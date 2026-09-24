@@ -104,7 +104,7 @@ export function StripeConnectPanel() {
           >
             {connecting ? "Sender til Stripe…" : "Kom i gang →"}
           </button>
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-stone-500">
             <span className="font-medium text-stone-500">Under 18?</span>{" "}
             Be en foresatt opprette utbetalingskontoen og motta pengene for deg.
           </p>
@@ -143,7 +143,7 @@ export function StripeConnectPanel() {
                 </button>
                 <button
                   onClick={() => setConfirmDisconnect(false)}
-                  className="text-xs text-stone-400 hover:text-stone-700"
+                  className="text-xs text-stone-500 hover:text-stone-700"
                 >
                   Avbryt
                 </button>
@@ -169,7 +169,7 @@ export function StripeConnectPanel() {
             {!confirmDisconnect ? (
               <button
                 onClick={() => setConfirmDisconnect(true)}
-                className="text-xs text-stone-400 underline underline-offset-2 hover:text-stone-600"
+                className="text-xs text-stone-500 underline underline-offset-2 hover:text-stone-600"
               >
                 Koble fra
               </button>
@@ -185,7 +185,7 @@ export function StripeConnectPanel() {
                 </button>
                 <button
                   onClick={() => setConfirmDisconnect(false)}
-                  className="text-xs text-stone-400 hover:text-stone-700"
+                  className="text-xs text-stone-500 hover:text-stone-700"
                 >
                   Avbryt
                 </button>

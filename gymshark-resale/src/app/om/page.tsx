@@ -101,7 +101,7 @@ export default function AboutPage() {
             markedsplass for treningstøy. Deretter utvider vi når tiden er
             riktig.
           </p>
-          <p className="pt-1 text-xs font-medium uppercase tracking-widest text-stone-400">
+          <p className="pt-1 text-xs font-medium uppercase tracking-widest text-stone-500">
             Fra brukt treningstøy til et større bruktmarked for trening og sport.
           </p>
         </div>
@@ -217,6 +217,21 @@ export default function AboutPage() {
           </Link>
         </div>
       </div>
+
+      {/* ── Ansvarlig for siden ──────────────────────────────────── */}
+      <div className="border-t border-stone-200 pt-5">
+        <p className="text-sm leading-relaxed text-stone-600">
+          Aktivbruk er laget og drives av Teodor Mamelund. Har du spørsmål om
+          siden, eller om hvordan opplysningene dine behandles, nås jeg på{" "}
+          <a
+            href="mailto:kontakt@aktivbruk.com"
+            className="underline hover:text-stone-900"
+          >
+            kontakt@aktivbruk.com
+          </a>
+          .
+        </p>
+      </div>
     </section>
   );
 }
@@ -226,7 +241,7 @@ function Faq({ q, children }: { q: string; children: React.ReactNode }) {
     <details className="group rounded-xl border border-stone-200 bg-white p-4">
       <summary className="flex cursor-pointer items-center justify-between text-sm font-medium text-stone-800">
         {q}
-        <span className="text-stone-400 transition group-open:rotate-45">＋</span>
+        <span className="text-stone-500 transition group-open:rotate-45">＋</span>
       </summary>
       <p className="mt-2 text-sm leading-relaxed text-stone-600">{children}</p>
     </details>

@@ -105,7 +105,7 @@ export function FirstListingSuccess({
                 </span>
               </span>
             </span>
-            <span className="text-stone-400">›</span>
+            <span className="text-stone-500">›</span>
           </button>
 
           {!profileComplete && (
@@ -125,7 +125,7 @@ export function FirstListingSuccess({
                   </span>
                 </span>
               </span>
-              <span className="text-stone-400">›</span>
+              <span className="text-stone-500">›</span>
             </Link>
           )}
 
@@ -145,7 +145,7 @@ export function FirstListingSuccess({
                 </span>
               </span>
             </span>
-            <span className="text-stone-400">›</span>
+            <span className="text-stone-500">›</span>
           </Link>
         </div>
 

@@ -179,7 +179,7 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
         className="max-h-72 min-h-32 space-y-2 overflow-y-auto p-3"
       >
         {messages.length === 0 && (
-          <p className="py-6 text-center text-xs text-stone-400">
+          <p className="py-6 text-center text-xs text-stone-500">
             {meId === sellerId
               ? "Ingen meldinger fra denne kjøperen enda."
               : "Si hei, spør om størrelse, henting eller tilstand."}
@@ -211,7 +211,7 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
                   {m.body}
                 </div>
               )}
-              <span className="mt-0.5 px-1 text-[10px] text-stone-400">
+              <span className="mt-0.5 px-1 text-[10px] text-stone-500">
                 {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
               </span>
             </div>
@@ -223,7 +223,7 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || sending}
-          className="shrink-0 rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-40"
+          className="shrink-0 rounded-full p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-40"
           aria-label="Send bilde"
         >
           {uploading ? (

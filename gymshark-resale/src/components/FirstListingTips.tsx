@@ -75,7 +75,7 @@ export function FirstListingTips({ userId }: { userId: string }) {
             Første gang? Se 3 raske tips
           </span>
         </span>
-        <span className="text-stone-400">›</span>
+        <span className="text-stone-500">›</span>
       </button>
     );
   }

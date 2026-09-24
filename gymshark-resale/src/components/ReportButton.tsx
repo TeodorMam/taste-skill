@@ -39,7 +39,7 @@ export function ReportButton({ type, targetId }: { type: ReportType; targetId: s
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-xs text-stone-400 hover:text-red-600 underline underline-offset-2 transition"
+        className="text-xs text-stone-500 hover:text-red-600 underline underline-offset-2 transition"
       >
         {label}
       </button>

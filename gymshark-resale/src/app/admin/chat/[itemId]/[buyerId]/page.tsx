@@ -56,7 +56,7 @@ export default async function AdminThreadPage({
     return (
       <div className="space-y-4 py-10">
         <h1 className="text-2xl font-semibold tracking-tight">Samtale</h1>
-        <p className="rounded-2xl border border-dashed border-stone-200 bg-white px-4 py-8 text-center text-sm text-stone-400">
+        <p className="rounded-2xl border border-dashed border-stone-200 bg-white px-4 py-8 text-center text-sm text-stone-500">
           SUPABASE_SERVICE_ROLE_KEY mangler i miljøet.
         </p>
       </div>
@@ -137,7 +137,7 @@ export default async function AdminThreadPage({
           <span className="h-2.5 w-2.5 rounded-full bg-stone-900" />
           {sellerName} (selger)
         </span>
-        <span className="ml-auto text-stone-400">Kun lesing</span>
+        <span className="ml-auto text-stone-500">Kun lesing</span>
       </div>
 
       <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-4">
@@ -178,7 +178,7 @@ export default async function AdminThreadPage({
                   {m.body}
                 </div>
               )}
-              <span className="mt-0.5 px-1 text-[10px] text-stone-400">
+              <span className="mt-0.5 px-1 text-[10px] text-stone-500">
                 {fromSeller ? sellerName : buyerName} · {fmtWhen(m.created_at)}
                 {m.edited_at ? " · redigert" : ""}
               </span>

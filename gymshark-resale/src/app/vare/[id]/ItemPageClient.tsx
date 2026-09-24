@@ -370,7 +370,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
             {item.shipping && (<><dt className="text-stone-500">Frakt</dt><dd className="text-right font-medium">{item.shipping}</dd></>)}
           </dl>
 
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-stone-500">
             Sist endret {fmtLastEdited(item.updated_at || item.created_at)}
           </p>
 
@@ -435,7 +435,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                     <div>
                       <p className="font-medium text-stone-800">📦 Frakt via Posten</p>
                       <p className="text-xs text-stone-500">{pkg.label} · opp til {pkg.maxWeight}</p>
-                      <p className="mt-1 text-[11px] text-stone-400">Selger dropper pakken på nærmeste Posten-punkt etter betaling.</p>
+                      <p className="mt-1 text-[11px] text-stone-500">Selger dropper pakken på nærmeste Posten-punkt etter betaling.</p>
                     </div>
                     <p className="ml-3 shrink-0 font-semibold text-stone-800">+{pkg.price} kr</p>
                   </div>
@@ -456,7 +456,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                   >
                     {buyingNow ? "Sender til betaling…" : canCheckout ? `Kjøp nå, ${formatPrice(totalPrice)}` : "Kjøp nå"}
                   </button>
-                  <p className="text-center text-[11px] text-stone-400">
+                  <p className="text-center text-[11px] text-stone-500">
                     {!canCheckout
                       ? "Velg leveringsmetode for å fortsette"
                       : <>{formatPrice(item.price)} vare{shippingCost > 0 ? ` + ${formatPrice(shippingCost)} frakt` : ""} + {formatPrice(buyerFee)} <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">kjøperbeskyttelse</Link></>
@@ -492,9 +492,9 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                     <div>
                       <p className="text-xs font-medium text-stone-600">Ditt bud</p>
                       <p className="text-sm font-semibold">{formatPrice(myOffer.amount)}</p>
-                      <p className="text-[11px] text-stone-400">Venter på svar fra selger</p>
+                      <p className="text-[11px] text-stone-500">Venter på svar fra selger</p>
                     </div>
-                    <button onClick={withdrawOffer} className="text-xs text-stone-400 hover:text-red-600 underline underline-offset-2">Trekk tilbake</button>
+                    <button onClick={withdrawOffer} className="text-xs text-stone-500 hover:text-red-600 underline underline-offset-2">Trekk tilbake</button>
                   </div>
                 </div>
               ) : myOffer.status === "accepted" ? (
@@ -546,7 +546,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                         >
                           {payingOffer ? "Sender til betaling…" : canCheckout ? `Betal nå, ${formatPrice(myOffer.amount + shippingCost + buyerFee)}` : "Betal nå"}
                         </button>
-                        <p className="text-center text-[11px] text-stone-400">
+                        <p className="text-center text-[11px] text-stone-500">
                           {!canCheckout
                             ? "Velg leveringsmetode for å fortsette"
                             : <>{formatPrice(myOffer.amount)} bud{shippingCost > 0 ? ` + ${formatPrice(shippingCost)} frakt` : ""} + {formatPrice(buyerFee)} <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">kjøperbeskyttelse</Link></>}
@@ -556,7 +556,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                   })()}
                   <button
                     onClick={cancelAcceptedOffer}
-                    className="mx-auto block text-[11px] text-stone-400 underline underline-offset-2 hover:text-red-600"
+                    className="mx-auto block text-[11px] text-stone-500 underline underline-offset-2 hover:text-red-600"
                   >
                     Avbryt bud
                   </button>
@@ -595,7 +595,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                     ))}
                     <button onClick={() => markSold(null)} disabled={saving} className="w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-left text-sm font-medium text-stone-600 hover:border-stone-500 disabled:opacity-50">Jeg solgte et annet sted</button>
                     <button onClick={() => markSold(null)} disabled={saving} className="w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-left text-sm font-medium text-stone-600 hover:border-stone-500 disabled:opacity-50">Jeg bestemte meg for å ikke selge</button>
-                    <button onClick={() => setShowSoldPicker(false)} className="w-full pt-1 text-center text-xs text-stone-400 hover:text-stone-600">Avbryt</button>
+                    <button onClick={() => setShowSoldPicker(false)} className="w-full pt-1 text-center text-xs text-stone-500 hover:text-stone-600">Avbryt</button>
                   </div>
                 ) : (
                   <button onClick={() => setShowSoldPicker(true)} disabled={saving} className="w-full rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50">{saving ? "Lagrer…" : "Marker som solgt"}</button>

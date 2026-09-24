@@ -59,7 +59,7 @@ function PersonIcon({ size }: { size: number }) {
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-stone-400"
+      className="text-stone-500"
       aria-hidden
     >
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />

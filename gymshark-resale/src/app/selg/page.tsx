@@ -146,7 +146,7 @@ export default function SellPage() {
           {connecting ? "Sender til Stripe…" : "Fortsett →"}
         </button>
 
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-stone-500">
           <span className="font-medium text-stone-500">Under 18?</span>{" "}
           Be en foresatt opprette utbetalingskontoen og motta pengene for deg.
         </p>
