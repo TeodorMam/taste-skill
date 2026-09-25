@@ -40,18 +40,41 @@ export async function GET(req: NextRequest) {
 
   for (const order of stale) {
     try {
+      // Claim the order before touching Stripe. The rows were read a moment
+      // ago, and this cron runs on exactly the day a slow seller finally posts
+      // the parcel: they press Marker som sendt, the order leaves 'paid', and
+      // the old code refunded anyway and then wrote 'refunded' over 'shipped'.
+      // The parcel was in the post, the money was back with the buyer, and the
+      // seller had neither.
+      const { data: claimed } = await admin
+        .from("orders")
+        .update({ status: "refunded" })
+        .eq("id", order.id)
+        .eq("status", "paid")
+        .select("id");
+
+      if (!claimed || claimed.length === 0) {
+        results.push({ id: order.id, cancelled: false, error: "no longer paid" });
+        continue;
+      }
+
       if (order.stripe_payment_intent_id) {
         // For destination-charge orders (new escrow model), reverse the
         // transfer to pull the seller's share back and refund the application
         // fee. For legacy orders these flags are simply ignored by Stripe.
-        await stripe.refunds.create({
-          payment_intent: order.stripe_payment_intent_id,
-          reverse_transfer: true,
-          refund_application_fee: true,
-        });
+        try {
+          await stripe.refunds.create({
+            payment_intent: order.stripe_payment_intent_id,
+            reverse_transfer: true,
+            refund_application_fee: true,
+          });
+        } catch (refundErr) {
+          // The row says refunded but the money never moved, which is the one
+          // state nobody can act on. Put it back and let the next run retry.
+          await admin.from("orders").update({ status: "paid" }).eq("id", order.id);
+          throw refundErr;
+        }
       }
-
-      await admin.from("orders").update({ status: "refunded" }).eq("id", order.id);
 
       const [buyerRes, itemRes] = await Promise.all([
         admin.auth.admin.getUserById(order.buyer_id),
