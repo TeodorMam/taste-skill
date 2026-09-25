@@ -65,11 +65,13 @@ export default function VilkarPage() {
             villedende.
           </li>
           <li>
-            Bildene du laster opp skal være tatt av deg selv, eller du skal ha
-            tillatelse til å bruke dem. Du kan ikke bruke produktbilder hentet
-            fra nettbutikker eller andre nettsteder. Ved å laste opp et bilde
-            gir du Aktivbruk rett til å vise det i annonsen og i markedsføring
-            av annonsen.
+            Du kan bruke egne bilder eller produktbilder fra produsent eller
+            nettbutikk. Produktbilder må vise nøyaktig samme modell og farge
+            som varen du selger. Vi anbefaler minst ett bilde du har tatt selv,
+            som viser varens faktiske tilstand. Du er selv ansvarlig for at du
+            kan bruke bildene du laster opp. Ved å laste opp et bilde gir du
+            Aktivbruk rett til å vise det i annonsen. Bilder du har tatt selv
+            kan i tillegg brukes i markedsføring av annonsen.
           </li>
           <li>
             Du kan per i dag kun selge treningsklær på Aktivbruk. Andre
