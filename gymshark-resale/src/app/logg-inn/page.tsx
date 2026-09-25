@@ -14,12 +14,16 @@ export default function LoginPage() {
 
 type Tab = "signin" | "signup";
 type ForgotStage = "idle" | "sent" | "verified";
-type SignupStage = "email" | "code" | "password" | "dob" | "profile" | "delivery";
+type SignupStage = "dob" | "email" | "code" | "password" | "profile" | "delivery";
 
+// Date of birth comes first, before an account exists. It used to sit after
+// the password, by which point the person was already registered and signed
+// in: the under-15 message stopped nothing, since closing the tab and going to
+// the front page left them logged in with a working account.
 const SIGNUP_STEPS: Record<SignupStage, number> = {
-  email: 1, code: 1,
-  password: 2,
-  dob: 3,
+  dob: 1,
+  email: 2, code: 2,
+  password: 3,
   profile: 4,
   delivery: 5,
 };
@@ -53,7 +57,7 @@ function LoginInner() {
   const [tab, setTab] = useState<Tab>("signin");
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotStage, setForgotStage] = useState<ForgotStage>("idle");
-  const [signupStage, setSignupStage] = useState<SignupStage>("email");
+  const [signupStage, setSignupStage] = useState<SignupStage>("dob");
 
   // Auth fields
   const [email, setEmail] = useState("");
@@ -84,7 +88,7 @@ function LoginInner() {
     setCode(""); setPassword(""); setConfirmPassword(""); setDob("");
     setDisplayName(""); setBio("");
     setFullName(""); setAddress(""); setPostalCode(""); setCity(""); setPhone("");
-    setSignupStage("email");
+    setSignupStage("dob");
   }
 
   function closeForgot() { setForgotOpen(false); setForgotStage("idle"); resetState(); }
@@ -168,21 +172,25 @@ function LoginInner() {
     if (password !== confirmPassword) return setError("Passordene er ikke like");
     setSubmitting(true);
     const sb = createClient();
-    const { error } = await sb.auth.updateUser({ password, data: { has_password: true } });
+    // The date was collected before any of this existed, so it is saved here,
+    // on the first update that has an account to attach it to.
+    const { error } = await sb.auth.updateUser({
+      password,
+      data: { has_password: true, ...(dob ? { date_of_birth: dob } : {}) },
+    });
     setSubmitting(false);
     if (error) return setError(error.message);
-    setSignupStage("dob"); setError(null);
+    setSignupStage("profile"); setError(null);
   }
 
-  async function submitDob(e: React.FormEvent) {
+  // Nothing is written here: there is no account yet, which is the point. The
+  // date is held in state and saved once the password step has created one.
+  function submitDob(e: React.FormEvent) {
     e.preventDefault(); setError(null);
     const age = calcAge(dob);
     if (age === null) return setError("Skriv inn fødselsdato i format DD.MM.ÅÅÅÅ");
     if (age < 15) return setError("Du må være minst 15 år for å bruke Aktivbruk");
-    setSubmitting(true);
-    const sb = createClient();
-    await sb.auth.updateUser({ data: { date_of_birth: dob } });
-    setSubmitting(false); setSignupStage("profile"); setError(null);
+    setSignupStage("email"); setError(null);
   }
 
   async function submitProfile(e: React.FormEvent) {

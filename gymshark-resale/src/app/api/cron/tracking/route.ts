@@ -54,11 +54,24 @@ export async function GET(req: NextRequest) {
       const now = new Date();
       const deadline = new Date(now.getTime() + REVIEW_HOURS * 60 * 60 * 1000);
 
-      await admin.from("orders").update({
-        status: "delivered",
-        delivered_at: now.toISOString(),
-        review_deadline: deadline.toISOString(),
-      }).eq("id", order.id);
+      // Guarded on the status the row was selected with. Without it, a buyer
+      // pressing Mottatt at the same moment gets a second delivery mail and a
+      // fresh 48 hour window written over the one already running.
+      const { data: moved } = await admin
+        .from("orders")
+        .update({
+          status: "delivered",
+          delivered_at: now.toISOString(),
+          review_deadline: deadline.toISOString(),
+        })
+        .eq("id", order.id)
+        .eq("status", "shipped")
+        .select("id");
+
+      if (!moved || moved.length === 0) {
+        results.push({ id: order.id, delivered: false });
+        continue;
+      }
 
       // Notify buyer
       const [buyerRes, itemRes] = await Promise.all([
