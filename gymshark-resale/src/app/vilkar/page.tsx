@@ -67,8 +67,8 @@ export default function VilkarPage() {
           <li>
             Du kan bruke egne bilder eller produktbilder fra produsent eller
             nettbutikk. Produktbilder må vise nøyaktig samme modell og farge
-            som varen du selger. Vi anbefaler minst ett bilde du har tatt selv,
-            som viser varens faktiske tilstand. Du er selv ansvarlig for at du
+            som varen du selger. Aktivbruk anbefaler minst ett bilde du har tatt
+            selv, som viser varens faktiske tilstand. Du er selv ansvarlig for at du
             kan bruke bildene du laster opp. Ved å laste opp et bilde gir du
             Aktivbruk rett til å vise det i annonsen. Bilder du har tatt selv
             kan i tillegg brukes i markedsføring av annonsen.
