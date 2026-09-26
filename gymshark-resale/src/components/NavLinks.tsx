@@ -33,7 +33,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
   // weight. Filled ink is reserved for things the user has chosen.
   function textCls(href: string) {
     const active = path === href || (href !== "/" && path.startsWith(href));
-    return `relative flex items-center text-[15px] transition-colors ${
+    return `relative flex items-center text-sm transition-colors lg:text-[15px] ${
       active
         ? "font-[650] text-ink after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-olive"
         : "font-medium text-ink-2 hover:text-ink"
@@ -41,7 +41,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
   }
 
   return (
-    <nav aria-label="Hovedmeny" className="flex items-stretch gap-7">
+    <nav aria-label="Hovedmeny" className="flex items-stretch gap-4 md:gap-6 lg:gap-7">
       <Link href="/varer" className={textCls("/varer")}>
         Utforsk
       </Link>

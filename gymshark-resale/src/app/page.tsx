@@ -27,42 +27,41 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="space-y-14 py-10 sm:py-16">
+    <div>
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="flex flex-col items-start gap-6">
-        <h1 className="text-5xl font-semibold tracking-tight text-ink sm:text-6xl">
-          Brukte treningsklær, <br className="hidden sm:inline" />
-          <span className="text-olive">bedre priser.</span>
+      {/* Headline, lead and buttons share one left edge, on phones and on
+          desktop. No image: the grid right below is the picture. The phone
+          size is clamped so the longest line ("treningsklær,") never meets
+          the margin, down to 320 px. */}
+      <section className="flex flex-col items-start pb-12 pt-1 sm:pb-20 sm:pt-8">
+        <h1 className="dsp text-[clamp(48px,17vw,64px)] leading-[0.9] tracking-[-0.022em] sm:text-[clamp(64px,11.5vw,120px)] sm:leading-[0.88] sm:tracking-[-0.024em]">
+          Brukte<br className="sm:hidden" /> treningsklær,
+          <br />
+          bedre priser.
         </h1>
-        <p className="max-w-xl text-base text-ink-2 sm:text-lg">
+        <p className="mt-5 max-w-[34ch] text-[17px] leading-[1.5] text-ink-2 sm:mt-8 sm:max-w-[560px] sm:text-lg">
           Kjøp og selg brukte treningsklær fra Gymshark, Nike, YoungLA, Craft,
           DFYNE og mange flere. Ett minutt å legge ut, gratis å bruke.
         </p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/varer"
-            className="rounded-sm bg-ink px-6 py-3 text-sm font-medium text-paper hover:bg-ink"
-          >
+        <div className="mt-6 flex flex-wrap items-center gap-5 sm:mt-7 sm:gap-6">
+          <Link href="/varer" className="btn btn-ink px-9 sm:btn-lg sm:px-10">
             Utforsk
           </Link>
-          <Link
-            href="/ny-annonse"
-            className="rounded-sm border border-line-2 bg-raised px-6 py-3 text-sm font-medium text-ink hover:border-ink"
-          >
+          <Link href="/ny-annonse" className="tbtn tbtn-u">
             Legg ut vare
           </Link>
         </div>
-        <p className="text-xs text-ink-3">Gratis å bruke – ingen skjulte gebyrer</p>
+        <p className="mt-5 text-[13px] text-ink-3 sm:mt-3.5">Gratis å bruke – ingen skjulte gebyrer</p>
       </section>
 
       {/* ── Nytt inne ─────────────────────────────────────────────────────── */}
       {/* Rendered unconditionally. An empty grid is a far smaller failure
           than the whole section vanishing, which is what a guard here did
           when the query silently returned nothing. */}
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">Nytt inne</h2>
-          <p className="mt-0.5 text-sm text-ink-3">Nylig lagt ut treningsklær</p>
+      <section className="border-t border-ink pb-4 sm:pb-10">
+        <div className="pb-5 pt-3.5 sm:flex sm:items-baseline sm:gap-5 sm:pb-7 sm:pt-4">
+          <h2 className="text-[26px] leading-[1.08] sm:text-[32px]">Nytt inne</h2>
+          <p className="mt-1 text-[13px] text-ink-3 sm:mt-0 sm:text-[15px]">Nylig lagt ut treningsklær</p>
         </div>
         <ItemsWithLoadMore
           initialItems={items}

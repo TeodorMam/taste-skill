@@ -118,7 +118,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ClientProviders>
         <Analytics />
         <header className="sticky top-0 z-10 border-b border-line bg-paper">
-          <div className="mx-auto flex h-14 max-w-[1280px] items-center gap-8 pl-4 pr-2 sm:h-16 sm:pr-4 lg:px-10">
+          <div className="mx-auto flex h-14 max-w-[1280px] items-center gap-4 pl-4 lg:gap-8 pr-2 sm:h-16 sm:pr-4 lg:px-10">
             <Link href="/" className="text-[22px] font-[760] leading-none tracking-[-0.01em] [font-stretch:76%] sm:text-[26px]">
               aktivbruk
               <span className="text-olive">.</span>
