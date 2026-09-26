@@ -55,18 +55,18 @@ export default function FavorittePage() {
   }, [userId, supabase]);
 
   if (userId === undefined) {
-    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+    return <p className="py-6 text-sm text-ink-3">Laster…</p>;
   }
   if (userId === null) {
     return (
       <section className="space-y-3 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Favoritter</h1>
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-ink-2">
           Logg inn for å lagre favoritter og følge med på varer du liker.
         </p>
         <Link
           href="/logg-inn?next=/favoritter"
-          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+          className="inline-block rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
         >
           Logg inn
         </Link>
@@ -78,13 +78,13 @@ export default function FavorittePage() {
     <section className="space-y-5">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Favoritter</h1>
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-1 text-sm text-ink-3">
           Varer du har lagret, trykk hjertet for å fjerne.
         </p>
       </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>
       )}
 
       {items === null && !error && (
@@ -96,14 +96,14 @@ export default function FavorittePage() {
       )}
 
       {items && items.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
-          <p className="font-medium text-stone-700">Ingen favoritter enda</p>
+        <div className="rounded-sm border border-dashed border-line-2 p-10 text-center text-sm text-ink-3">
+          <p className="font-medium text-ink-2">Ingen favoritter enda</p>
           <p className="mt-1">
             Trykk hjertet på en vare for å lagre den her.
           </p>
           <Link
             href="/varer"
-            className="mt-4 inline-block rounded-full bg-stone-900 px-5 py-2.5 text-xs font-medium text-stone-50 hover:bg-black"
+            className="mt-4 inline-block rounded-sm bg-ink px-5 py-2.5 text-xs font-medium text-paper hover:bg-ink"
           >
             Utforsk varer
           </Link>

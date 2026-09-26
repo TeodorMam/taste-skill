@@ -56,7 +56,7 @@ export default async function AdminThreadPage({
     return (
       <div className="space-y-4 py-10">
         <h1 className="text-2xl font-semibold tracking-tight">Samtale</h1>
-        <p className="rounded-2xl border border-dashed border-stone-200 bg-white px-4 py-8 text-center text-sm text-stone-500">
+        <p className="rounded-sm border border-dashed border-line bg-raised px-4 py-8 text-center text-sm text-ink-3">
           SUPABASE_SERVICE_ROLE_KEY mangler i miljøet.
         </p>
       </div>
@@ -95,59 +95,59 @@ export default async function AdminThreadPage({
   return (
     <div className="space-y-6 py-8 sm:py-10">
       <div>
-        <Link href="/admin" className="text-xs text-stone-500 hover:text-black">
+        <Link href="/admin" className="text-xs text-ink-3 hover:text-ink">
           ← Tilbake til admin
         </Link>
       </div>
 
       <header className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">
           {item?.title ?? "Slettet vare"}
         </h1>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-3">
           <span>
-            <span className="font-medium text-stone-700">{buyerName}</span> og{" "}
-            <span className="font-medium text-stone-700">{sellerName}</span>
+            <span className="font-medium text-ink-2">{buyerName}</span> og{" "}
+            <span className="font-medium text-ink-2">{sellerName}</span>
           </span>
-          {item && <span className="text-stone-300">·</span>}
+          {item && <span className="text-ink-3">·</span>}
           {item && <span>{formatPrice(item.price)}</span>}
-          <span className="text-stone-300">·</span>
+          <span className="text-ink-3">·</span>
           <span>
             {messages.length} {messages.length === 1 ? "melding" : "meldinger"}
           </span>
-          <span className="text-stone-300">·</span>
+          <span className="text-ink-3">·</span>
           <span>siste {fmtAgo(last.created_at)}</span>
         </div>
         {item && (
           <Link
             href={`/vare/${item.id}`}
-            className="inline-block text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+            className="inline-block text-xs font-medium text-olive underline underline-offset-2 hover:text-olive-press"
           >
             Se annonsen
           </Link>
         )}
       </header>
 
-      <div className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white px-4 py-2.5 text-xs text-stone-500">
+      <div className="flex items-center gap-4 rounded-sm border border-line bg-raised px-4 py-2.5 text-xs text-ink-3">
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-stone-200" />
+          <span className="h-2.5 w-2.5 rounded-circle bg-line" />
           {buyerName} (kjøper)
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-stone-900" />
+          <span className="h-2.5 w-2.5 rounded-circle bg-ink" />
           {sellerName} (selger)
         </span>
-        <span className="ml-auto text-stone-500">Kun lesing</span>
+        <span className="ml-auto text-ink-3">Kun lesing</span>
       </div>
 
-      <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-4">
+      <div className="space-y-3 rounded-sm border border-line bg-raised p-4">
         {messages.map((m) => {
           const type = m.message_type ?? "text";
 
           if (SYSTEM_LABELS[type]) {
             return (
               <div key={m.id} className="flex justify-center py-1">
-                <span className="rounded-full bg-[#5a6b32]/10 px-3 py-1 text-[11px] font-medium text-[#435022]">
+                <span className="rounded-sm bg-olive/10 px-3 py-1 text-[11px] font-medium text-olive-press">
                   {systemText(m)} · {fmtWhen(m.created_at)}
                 </span>
               </div>
@@ -167,18 +167,18 @@ export default async function AdminThreadPage({
                   className="max-w-[75%]"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.image_url} alt="" className="max-h-56 w-full rounded-2xl object-cover" />
+                  <img src={m.image_url} alt="" className="max-h-56 w-full rounded-sm object-cover" />
                 </a>
               ) : (
                 <div
-                  className={`max-w-[75%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm ${
-                    fromSeller ? "bg-stone-900 text-stone-50" : "bg-stone-100 text-stone-900"
+                  className={`max-w-[75%] whitespace-pre-wrap rounded-sm px-3 py-2 text-sm ${
+                    fromSeller ? "bg-ink text-paper" : "bg-sunk text-ink"
                   }`}
                 >
                   {m.body}
                 </div>
               )}
-              <span className="mt-0.5 px-1 text-[10px] text-stone-500">
+              <span className="mt-0.5 px-1 text-[10px] text-ink-3">
                 {fromSeller ? sellerName : buyerName} · {fmtWhen(m.created_at)}
                 {m.edited_at ? " · redigert" : ""}
               </span>

@@ -91,14 +91,14 @@ export function ItemsWithLoadMore({
         ))}
       </div>
 
-      {error && <p className="pt-3 text-center text-sm text-stone-500">{error}</p>}
+      {error && <p className="pt-3 text-center text-sm text-ink-3">{error}</p>}
 
       {hasMore && (
         <div className="flex justify-center pt-4">
           <button
             onClick={loadMore}
             disabled={loading}
-            className="rounded-full bg-[#5a6b32] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#435022] disabled:opacity-50"
+            className="rounded-sm bg-olive px-6 py-2.5 text-sm font-semibold text-raised transition hover:bg-olive-press disabled:opacity-50"
           >
             {loading ? "Laster…" : "Se flere"}
           </button>

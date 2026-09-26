@@ -200,16 +200,16 @@ export default function InboxPage() {
   }
 
   if (userId === undefined)
-    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+    return <p className="py-6 text-sm text-ink-3">Laster…</p>;
 
   if (userId === null) {
     return (
       <section className="space-y-3 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
-        <p className="text-sm text-stone-600">Logg inn for å se innboksen din.</p>
+        <p className="text-sm text-ink-2">Logg inn for å se innboksen din.</p>
         <Link
           href="/logg-inn?next=/meldinger"
-          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+          className="inline-block rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
         >
           Logg inn
         </Link>
@@ -233,7 +233,7 @@ export default function InboxPage() {
     <section className="space-y-4">
       <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
 
-      <div className="flex gap-1 rounded-full bg-stone-100 p-1">
+      <div className="flex gap-1 rounded-sm bg-sunk p-1">
         <TabButton active={tab === "alle"} onClick={() => setTab("alle")}>
           Alle {counts.alle > 0 && <span className="opacity-60">({counts.alle})</span>}
         </TabButton>
@@ -246,7 +246,7 @@ export default function InboxPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
+        <div className="rounded-sm border border-dashed border-line-2 p-10 text-center text-sm text-ink-3">
           {tab === "alle"
             ? "Ingen samtaler ennå. Når du sender eller mottar en melding, dukker den opp her."
             : tab === "kjop"
@@ -254,7 +254,7 @@ export default function InboxPage() {
               : "Ingen salgssamtaler ennå."}
         </div>
       ) : (
-        <ul className="divide-y divide-stone-100 overflow-hidden rounded-2xl border border-stone-200 bg-white">
+        <ul className="divide-y divide-line overflow-hidden rounded-sm border border-line bg-raised">
           {filtered.map(({ key, item, otherId, lastMessage, unread }) => {
             const profile = profilesMap[otherId] ?? null;
             const name = profileDisplayName(profile, otherId);
@@ -266,7 +266,7 @@ export default function InboxPage() {
               <li
                 key={key}
                 onClick={() => openThread(item, lastMessage.buyer_id, key)}
-                className="flex cursor-pointer items-center gap-3 px-4 py-3 transition hover:bg-stone-50 active:bg-stone-100"
+                className="flex cursor-pointer items-center gap-3 px-4 py-3 transition hover:bg-paper active:bg-sunk"
               >
                 {/* User avatar */}
                 <div className="shrink-0">
@@ -278,14 +278,14 @@ export default function InboxPage() {
                   <div className="flex items-baseline justify-between gap-2">
                     <span
                       className={`truncate text-sm ${
-                        isUnread ? "font-bold text-stone-900" : "font-medium text-stone-700"
+                        isUnread ? "font-bold text-ink" : "font-medium text-ink-2"
                       }`}
                     >
                       {name}
                     </span>
                     <span
                       className={`shrink-0 text-[11px] ${
-                        isUnread ? "font-semibold text-[#5a6b32]" : "text-stone-500"
+                        isUnread ? "font-semibold text-olive" : "text-ink-3"
                       }`}
                     >
                       {fmtTime(lastMessage.created_at)}
@@ -293,7 +293,7 @@ export default function InboxPage() {
                   </div>
                   <p
                     className={`truncate text-xs ${
-                      isUnread ? "font-semibold text-stone-800" : "text-stone-500"
+                      isUnread ? "font-semibold text-ink" : "text-ink-3"
                     }`}
                   >
                     {preview}
@@ -303,19 +303,19 @@ export default function InboxPage() {
                 {/* Unread badge OR item thumbnail */}
                 {isUnread ? (
                   <div className="flex shrink-0 items-center gap-2">
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#5a6b32] px-1.5 text-[11px] font-semibold leading-none text-white">
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-sm bg-olive px-1.5 text-[11px] font-semibold leading-none text-raised">
                       {unread > 9 ? "9+" : unread}
                     </span>
-                    <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-stone-100">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-sm bg-sunk">
                       {cover ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       ) : (
-                        <div className="h-full w-full bg-stone-200" />
+                        <div className="h-full w-full bg-line" />
                       )}
                       {item.is_sold && (
                         <div className="absolute inset-0 flex items-end justify-center pb-0.5">
-                          <span className="rounded bg-stone-900/75 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-white">
+                          <span className="rounded-sm bg-ink/75 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-raised">
                             Solgt
                           </span>
                         </div>
@@ -323,16 +323,16 @@ export default function InboxPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-sunk">
                     {cover ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : (
-                      <div className="h-full w-full bg-stone-200" />
+                      <div className="h-full w-full bg-line" />
                     )}
                     {item.is_sold && (
                       <div className="absolute inset-0 flex items-end justify-center pb-0.5">
-                        <span className="rounded bg-stone-900/75 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-white">
+                        <span className="rounded-sm bg-ink/75 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-raised">
                           Solgt
                         </span>
                       </div>
@@ -361,10 +361,10 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition ${
+      className={`flex-1 rounded-sm px-4 py-2 text-sm font-medium transition ${
         active
-          ? "bg-white text-stone-900 shadow-sm"
-          : "text-stone-500 hover:text-stone-800"
+          ? "bg-raised text-ink"
+          : "text-ink-3 hover:text-ink"
       }`}
     >
       {children}
@@ -379,7 +379,7 @@ function UserAvatar({ profile, name }: { profile: Profile | null; name: string }
       <img
         src={profile.avatar_url}
         alt=""
-        className="h-11 w-11 rounded-full object-cover"
+        className="h-11 w-11 rounded-circle object-cover"
       />
     );
   }
@@ -392,11 +392,11 @@ function UserAvatar({ profile, name }: { profile: Profile | null; name: string }
     .join("")
     .toUpperCase();
   return (
-    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-stone-200">
+    <div className="flex h-11 w-11 items-center justify-center rounded-circle bg-line">
       {initials ? (
-        <span className="text-sm font-semibold text-stone-600">{initials}</span>
+        <span className="text-sm font-semibold text-ink-2">{initials}</span>
       ) : (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-ink-3">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>

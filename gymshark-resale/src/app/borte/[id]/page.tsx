@@ -67,9 +67,9 @@ export default async function BortePage({ params }: { params: Promise<{ id: stri
   return (
     <section className="space-y-8 py-10">
       <div className="space-y-4 text-center">
-        <p className="text-sm font-medium uppercase tracking-widest text-[#5a6b32]">Borte</p>
+        <p className="text-sm font-medium uppercase tracking-widest text-olive">Borte</p>
         <h1 className="text-3xl font-semibold tracking-tight">Denne varen er borte</h1>
-        <p className="mx-auto max-w-md text-sm leading-relaxed text-stone-600">
+        <p className="mx-auto max-w-md text-sm leading-relaxed text-ink-2">
           {tomb?.title
             ? `«${tomb.title}» er slettet av selgeren og finnes ikke lenger.`
             : "Varen er slettet av selgeren og finnes ikke lenger."}{" "}
@@ -78,14 +78,14 @@ export default async function BortePage({ params }: { params: Promise<{ id: stri
         <div className="flex flex-wrap justify-center gap-2 pt-1">
           <Link
             href="/varer"
-            className="rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+            className="rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
           >
             Utforsk varer
           </Link>
           {seeAll !== "/varer" && (
             <Link
               href={seeAll}
-              className="rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-700 hover:border-stone-500"
+              className="rounded-sm border border-line-2 bg-raised px-5 py-3 text-sm font-medium text-ink-2 hover:border-ink"
             >
               {tomb?.brand ? `Alt fra ${tomb.brand}` : "Samme kategori"}
             </Link>

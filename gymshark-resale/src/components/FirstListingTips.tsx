@@ -67,15 +67,15 @@ export function FirstListingTips({ userId }: { userId: string }) {
           setStep(0);
           setOpen(true);
         }}
-        className="flex w-full items-center justify-between rounded-xl border border-[#5a6b32]/30 bg-[#5a6b32]/5 px-4 py-3 text-left text-sm text-stone-700 transition hover:border-[#5a6b32]/60"
+        className="flex w-full items-center justify-between rounded-sm border border-olive/30 bg-olive/5 px-4 py-3 text-left text-sm text-ink-2 transition hover:border-olive/60"
       >
         <span className="flex items-center gap-2">
           <span className="text-lg">✨</span>
-          <span className="font-medium text-[#3d4720]">
+          <span className="font-medium text-olive-press">
             Første gang? Se 3 raske tips
           </span>
         </span>
-        <span className="text-stone-500">›</span>
+        <span className="text-ink-3">›</span>
       </button>
     );
   }
@@ -85,16 +85,16 @@ export function FirstListingTips({ userId }: { userId: string }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       onClick={dismiss}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl"
+        className="w-full max-w-md overflow-hidden rounded-t-sheet bg-raised sm:rounded-sm"
       >
-        <div className="bg-gradient-to-br from-[#5a6b32] to-[#3d4720] px-5 py-3 text-white">
+        <div className="bg-olive px-5 py-3 text-raised">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium uppercase tracking-wider opacity-80">
               Steg {step + 1} av {STEPS.length}
@@ -103,7 +103,7 @@ export function FirstListingTips({ userId }: { userId: string }) {
               type="button"
               onClick={dismiss}
               aria-label="Lukk"
-              className="text-lg text-white/70 transition hover:text-white"
+              className="text-lg text-raised/70 transition hover:text-raised"
             >
               ✕
             </button>
@@ -112,8 +112,8 @@ export function FirstListingTips({ userId }: { userId: string }) {
             {STEPS.map((_, i) => (
               <div
                 key={i}
-                className={`h-1 flex-1 rounded-full transition ${
-                  i <= step ? "bg-white" : "bg-white/30"
+                className={`h-1 flex-1 rounded-sm transition ${
+                  i <= step ? "bg-raised" : "bg-raised/30"
                 }`}
               />
             ))}
@@ -122,21 +122,21 @@ export function FirstListingTips({ userId }: { userId: string }) {
 
         <div className="space-y-3 px-5 py-6">
           <div className="text-4xl">{current.emoji}</div>
-          <h3 className="text-xl font-semibold tracking-tight text-stone-900">
+          <h3 className="text-xl font-semibold tracking-tight text-ink">
             {current.title}
           </h3>
-          <p className="text-sm leading-relaxed text-stone-600">{current.body}</p>
-          <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <p className="text-sm leading-relaxed text-ink-2">{current.body}</p>
+          <p className="rounded-sm bg-ochre-soft px-3 py-2 text-xs text-ochre">
             {current.tip}
           </p>
         </div>
 
-        <div className="flex gap-2 border-t border-stone-100 bg-stone-50 px-5 py-3">
+        <div className="flex gap-2 border-t border-line bg-paper px-5 py-3">
           {step > 0 && (
             <button
               type="button"
               onClick={() => setStep((s) => s - 1)}
-              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:border-stone-500"
+              className="rounded-sm border border-line-2 bg-raised px-4 py-2 text-sm font-medium text-ink-2 hover:border-ink"
             >
               Tilbake
             </button>
@@ -144,7 +144,7 @@ export function FirstListingTips({ userId }: { userId: string }) {
           <button
             type="button"
             onClick={dismiss}
-            className="rounded-full px-4 py-2 text-sm text-stone-500 hover:text-stone-800"
+            className="rounded-sm px-4 py-2 text-sm text-ink-3 hover:text-ink"
           >
             Hopp over
           </button>
@@ -152,7 +152,7 @@ export function FirstListingTips({ userId }: { userId: string }) {
           <button
             type="button"
             onClick={() => (isLast ? dismiss() : setStep((s) => s + 1))}
-            className="rounded-full bg-stone-900 px-5 py-2 text-sm font-medium text-white hover:bg-black"
+            className="rounded-sm bg-ink px-5 py-2 text-sm font-medium text-raised hover:bg-ink"
           >
             {isLast ? "La oss starte" : "Neste"}
           </button>

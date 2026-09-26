@@ -185,18 +185,18 @@ export default function PostPage() {
   }
 
   if (userId === undefined) {
-    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+    return <p className="py-6 text-sm text-ink-3">Laster…</p>;
   }
   if (userId === null) {
     router.replace("/logg-inn?next=/ny-annonse");
-    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+    return <p className="py-6 text-sm text-ink-3">Laster…</p>;
   }
 
   return (
     <section className="space-y-6 pb-28 sm:pb-6">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Legg ut vare</h1>
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-1 text-sm text-ink-3">
           Bare treningsklær. Fyll inn under ett minutt.
         </p>
       </div>
@@ -209,12 +209,12 @@ export default function PostPage() {
             {slots.map((s, i) => (
               <div
                 key={s.id}
-                className="group relative aspect-square overflow-hidden rounded-lg border border-stone-200 bg-stone-100"
+                className="group relative aspect-square overflow-hidden rounded-sm border border-line bg-sunk"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={s.preview} alt="" className="h-full w-full object-cover" />
                 {i === 0 && (
-                  <span className="absolute left-1 top-1 rounded-full bg-[#5a6b32] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-white">
+                  <span className="absolute left-1 top-1 rounded-sm bg-olive px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-raised">
                     Cover
                   </span>
                 )}
@@ -222,7 +222,7 @@ export default function PostPage() {
                   type="button"
                   onClick={() => removeSlot(s.id)}
                   aria-label="Fjern"
-                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-xs text-white transition hover:bg-black"
+                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-sm bg-ink/70 text-xs text-raised transition hover:bg-ink"
                 >
                   ✕
                 </button>
@@ -232,7 +232,7 @@ export default function PostPage() {
                     onClick={() => moveSlot(s.id, -1)}
                     disabled={i === 0}
                     aria-label="Flytt venstre"
-                    className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-xs text-stone-800 shadow-sm disabled:opacity-30"
+                    className="flex h-6 w-6 items-center justify-center rounded-sm bg-raised/90 text-xs text-ink disabled:opacity-30"
                   >
                     ‹
                   </button>
@@ -241,7 +241,7 @@ export default function PostPage() {
                     onClick={() => moveSlot(s.id, 1)}
                     disabled={i === slots.length - 1}
                     aria-label="Flytt høyre"
-                    className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-xs text-stone-800 shadow-sm disabled:opacity-30"
+                    className="flex h-6 w-6 items-center justify-center rounded-sm bg-raised/90 text-xs text-ink disabled:opacity-30"
                   >
                     ›
                   </button>
@@ -249,7 +249,7 @@ export default function PostPage() {
               </div>
             ))}
             {remaining > 0 && (
-              <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-stone-300 bg-stone-50 text-stone-500 transition hover:border-[#5a6b32] hover:text-[#5a6b32]">
+              <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-sm border-2 border-dashed border-line-2 bg-paper text-ink-3 transition hover:border-olive hover:text-olive">
                 <span className="text-2xl leading-none">＋</span>
                 <span className="text-[10px] font-medium">
                   {slots.length === 0 ? "Legg til bilder" : `${remaining} igjen`}
@@ -265,7 +265,7 @@ export default function PostPage() {
             )}
           </div>
           {slots.length > 1 && (
-            <p className="mt-1.5 text-xs text-stone-500">
+            <p className="mt-1.5 text-xs text-ink-3">
               Første bilde blir coverbildet. Bruk piltastene for å sortere.
             </p>
           )}
@@ -298,7 +298,7 @@ export default function PostPage() {
         </Field>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-stone-800">Kategori</span>
+          <span className="block text-sm font-medium text-ink">Kategori</span>
           <div className="flex flex-wrap gap-2">
             {CATEGORY_PARENTS.map((p) => (
               <button
@@ -313,10 +313,10 @@ export default function PostPage() {
                     setCategory("");
                   }
                 }}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                   categoryParent === p
-                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                    ? "border-olive bg-olive text-raised"
+                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
                 }`}
               >
                 {p}
@@ -331,10 +331,10 @@ export default function PostPage() {
                     key={c}
                     type="button"
                     onClick={() => setCategory(category === c ? "" : c)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                    className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                       category === c
-                        ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                        : "border-stone-300 bg-stone-50 text-stone-700 hover:border-stone-500"
+                        ? "border-olive bg-olive text-raised"
+                        : "border-line-2 bg-paper text-ink-2 hover:border-ink"
                     }`}
                   >
                     {c}
@@ -346,17 +346,17 @@ export default function PostPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-stone-800">Kjønn</span>
+          <span className="block text-sm font-medium text-ink">Kjønn</span>
           <div className="flex flex-wrap gap-2">
             {GENDERS.map((g) => (
               <button
                 key={g}
                 type="button"
                 onClick={() => setGender(gender === g ? "" : g)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                   gender === g
-                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                    ? "border-olive bg-olive text-raised"
+                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
                 }`}
               >
                 {g}
@@ -366,17 +366,17 @@ export default function PostPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-stone-800">Farge (valgfritt)</span>
+          <span className="block text-sm font-medium text-ink">Farge (valgfritt)</span>
           <div className="flex flex-wrap gap-2">
             {COLORS.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(color === c ? "" : c)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                   color === c
-                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                    ? "border-olive bg-olive text-raised"
+                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
                 }`}
               >
                 {c}
@@ -386,17 +386,17 @@ export default function PostPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-stone-800">Passform (valgfritt)</span>
+          <span className="block text-sm font-medium text-ink">Passform (valgfritt)</span>
           <div className="flex flex-wrap gap-2">
             {FITS.map((f) => (
               <button
                 key={f}
                 type="button"
                 onClick={() => setFit(fit === f ? "" : f)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                   fit === f
-                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                    ? "border-olive bg-olive text-raised"
+                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
                 }`}
               >
                 {f}
@@ -459,21 +459,21 @@ export default function PostPage() {
         </Field>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-stone-800">Frakt</span>
+          <span className="block text-sm font-medium text-ink">Frakt</span>
           <div className="grid grid-cols-3 gap-2">
             {SHIPPING_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => setShipping(opt.value)}
-                className={`rounded-xl border p-3 text-left transition ${
+                className={`rounded-sm border p-3 text-left transition ${
                   shipping === opt.value
-                    ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]"
-                    : "border-stone-200 bg-white hover:border-stone-400"
+                    ? "border-olive bg-olive/5 ring-1 ring-olive"
+                    : "border-line bg-raised hover:border-ink"
                 }`}
               >
                 <p className="text-sm font-medium">{opt.label}</p>
-                <p className="mt-0.5 text-[11px] text-stone-500">{opt.hint}</p>
+                <p className="mt-0.5 text-[11px] text-ink-3">{opt.hint}</p>
               </button>
             ))}
           </div>
@@ -481,22 +481,22 @@ export default function PostPage() {
 
         {shipping !== "Kun henting" && (
           <div className="space-y-1.5">
-            <span className="block text-sm font-medium text-stone-800">Pakkestørrelse (Posten)</span>
-            <p className="text-xs text-stone-500">Velg den størrelsen som passer varen din. Kjøper betaler frakten.</p>
+            <span className="block text-sm font-medium text-ink">Pakkestørrelse (Posten)</span>
+            <p className="text-xs text-ink-3">Velg den størrelsen som passer varen din. Kjøper betaler frakten.</p>
             <div className="space-y-2">
               {POSTEN_PACKAGES.map((pkg) => (
                 <button
                   key={pkg.id}
                   type="button"
                   onClick={() => setPackageSize(pkg.id)}
-                  className={`w-full rounded-xl border p-3 text-left transition ${
+                  className={`w-full rounded-sm border p-3 text-left transition ${
                     packageSize === pkg.id
-                      ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]"
-                      : "border-stone-200 bg-white hover:border-stone-400"
+                      ? "border-olive bg-olive/5 ring-1 ring-olive"
+                      : "border-line bg-raised hover:border-ink"
                   }`}
                 >
                   <p className="text-sm font-medium">{pkg.label}</p>
-                  <p className="mt-0.5 text-[11px] text-stone-500">{pkg.weightLabel} · {pkg.dimensions}</p>
+                  <p className="mt-0.5 text-[11px] text-ink-3">{pkg.weightLabel} · {pkg.dimensions}</p>
                 </button>
               ))}
             </div>
@@ -506,16 +506,16 @@ export default function PostPage() {
       </form>
 
       {/* Sticky submit bar, mobile only, sits above the bottom nav */}
-      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-stone-100 bg-white/95 px-4 py-3 backdrop-blur sm:hidden">
+      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-line bg-raised/95 px-4 py-3 sm:hidden">
         {error && (
-          <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>
+          <p className="mb-2 rounded-sm bg-clay-soft px-3 py-2 text-xs text-clay">{error}</p>
         )}
         {submitting && slots.length > 0 && (
           <div className="mb-2 space-y-1">
-            <p className="text-xs text-stone-500">Laster opp bilde {uploadIdx + 1} av {slots.length}…</p>
-            <div className="h-1 overflow-hidden rounded-full bg-stone-200">
+            <p className="text-xs text-ink-3">Laster opp bilde {uploadIdx + 1} av {slots.length}…</p>
+            <div className="h-1 overflow-hidden rounded-sm bg-line">
               <div
-                className="h-full rounded-full bg-[#5a6b32] transition-all duration-300"
+                className="h-full rounded-sm bg-olive transition-all duration-300"
                 style={{ width: `${((uploadIdx + 1) / slots.length) * 100}%` }}
               />
             </div>
@@ -525,7 +525,7 @@ export default function PostPage() {
           type="submit"
           form="post-form"
           disabled={submitting}
-          className="w-full rounded-full bg-stone-900 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+          className="w-full rounded-sm bg-ink py-3 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
         >
           {submitting ? "Legger ut…" : "Legg ut"}
         </button>
@@ -534,14 +534,14 @@ export default function PostPage() {
       {/* Inline submit for desktop */}
       <div className="hidden sm:block -mt-2">
         {error && (
-          <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+          <p className="mb-3 rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>
         )}
         {submitting && slots.length > 0 && (
           <div className="mb-3 space-y-1.5">
-            <p className="text-xs text-stone-500">Laster opp bilde {uploadIdx + 1} av {slots.length}…</p>
-            <div className="h-1.5 overflow-hidden rounded-full bg-stone-200">
+            <p className="text-xs text-ink-3">Laster opp bilde {uploadIdx + 1} av {slots.length}…</p>
+            <div className="h-1.5 overflow-hidden rounded-sm bg-line">
               <div
-                className="h-full rounded-full bg-stone-900 transition-all duration-300"
+                className="h-full rounded-sm bg-ink transition-all duration-300"
                 style={{ width: `${((uploadIdx + 1) / slots.length) * 100}%` }}
               />
             </div>
@@ -551,7 +551,7 @@ export default function PostPage() {
           type="submit"
           form="post-form"
           disabled={submitting}
-          className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+          className="w-full rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
         >
           {submitting ? "Legger ut…" : "Legg ut"}
         </button>
@@ -563,11 +563,11 @@ export default function PostPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block space-y-1.5">
-      <span className="block text-sm font-medium text-stone-800">{label}</span>
+      <span className="block text-sm font-medium text-ink">{label}</span>
       {children}
     </label>
   );
 }
 
 const input =
-  "block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30";
+  "block w-full rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30";

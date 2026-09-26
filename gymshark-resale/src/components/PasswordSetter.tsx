@@ -53,7 +53,7 @@ export function PasswordSetter() {
 
   if (done) {
     return (
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+      <div className="rounded-sm border border-olive/30 bg-olive-soft p-4 text-sm text-olive">
         ✓ Passord lagret. Neste gang kan du logge inn med e-post og passord.
       </div>
     );
@@ -64,10 +64,10 @@ export function PasswordSetter() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-xl border border-stone-200 bg-white p-3 text-left text-sm text-stone-700 hover:border-stone-400 w-full"
+        className="rounded-sm border border-line bg-raised p-3 text-left text-sm text-ink-2 hover:border-ink w-full"
       >
         <p className="font-medium">Sett et passord</p>
-        <p className="mt-0.5 text-xs text-stone-500">
+        <p className="mt-0.5 text-xs text-ink-3">
           For raskere innlogging neste gang, slipper koden på e-post.
         </p>
       </button>
@@ -77,9 +77,9 @@ export function PasswordSetter() {
   return (
     <form
       onSubmit={submit}
-      className="space-y-2 rounded-xl border border-stone-200 bg-white p-4"
+      className="space-y-2 rounded-sm border border-line bg-raised p-4"
     >
-      <p className="text-sm font-medium text-stone-800">Sett et passord</p>
+      <p className="text-sm font-medium text-ink">Sett et passord</p>
       <input
         type="password"
         value={password}
@@ -100,20 +100,20 @@ export function PasswordSetter() {
         className={input}
       />
       {error && (
-        <p className="rounded-lg bg-red-50 p-2 text-xs text-red-700">{error}</p>
+        <p className="rounded-sm bg-clay-soft p-2 text-xs text-clay">{error}</p>
       )}
       <div className="flex gap-2">
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="flex-1 rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-medium text-stone-700 hover:border-stone-500"
+          className="flex-1 rounded-sm border border-line-2 bg-raised px-4 py-2 text-xs font-medium text-ink-2 hover:border-ink"
         >
           Avbryt
         </button>
         <button
           type="submit"
           disabled={saving}
-          className="flex-1 rounded-full bg-stone-900 px-4 py-2 text-xs font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+          className="flex-1 rounded-sm bg-ink px-4 py-2 text-xs font-medium text-paper hover:bg-ink disabled:opacity-50"
         >
           {saving ? "Lagrer…" : "Lagre passord"}
         </button>
@@ -123,4 +123,4 @@ export function PasswordSetter() {
 }
 
 const input =
-  "block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30";
+  "block w-full rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30";

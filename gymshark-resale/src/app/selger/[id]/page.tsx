@@ -96,18 +96,18 @@ export default function SellerPage() {
 
   return (
     <section className="space-y-5">
-      <Link href="/varer" className="text-sm text-stone-500 hover:text-black">
+      <Link href="/varer" className="text-sm text-ink-3 hover:text-ink">
         ← Tilbake
       </Link>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6">
+      <div className="rounded-sm border border-line bg-raised p-5 sm:p-6">
         <div className="flex items-center gap-3">
           <Avatar profile={profile} size="lg" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-lg font-semibold tracking-tight">
               {displayName}
             </p>
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-ink-3">
               {firstDate
                 ? `Medlem siden ${firstDate.toLocaleDateString("no-NO", {
                     month: "short",
@@ -123,15 +123,15 @@ export default function SellerPage() {
               <p
                 className={`text-lg font-semibold ${
                   summary.pct >= 80
-                    ? "text-emerald-700"
+                    ? "text-olive"
                     : summary.pct >= 50
-                      ? "text-amber-700"
-                      : "text-red-700"
+                      ? "text-ochre"
+                      : "text-clay"
                 }`}
               >
                 {summary.pct}%
               </p>
-              <p className="text-[10px] text-stone-500">
+              <p className="text-[10px] text-ink-3">
                 {summary.total} vurdering{summary.total === 1 ? "" : "er"}
               </p>
             </div>
@@ -139,7 +139,7 @@ export default function SellerPage() {
         </div>
 
         {profile?.bio && (
-          <p className="mt-3 whitespace-pre-line text-sm text-stone-700">
+          <p className="mt-3 whitespace-pre-line text-sm text-ink-2">
             {profile.bio}
           </p>
         )}
@@ -150,7 +150,7 @@ export default function SellerPage() {
           <Stat label="Omsetning" value={formatPrice(counts.revenue)} />
         </div>
 
-        <div className="mt-3 border-t border-stone-100 pt-3">
+        <div className="mt-3 border-t border-line pt-3">
           <ReportButton type="user" targetId={params.id} />
         </div>
       </div>
@@ -168,12 +168,12 @@ export default function SellerPage() {
       </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>
       )}
 
       {tab === "reviews" ? (
         reviews === null ? (
-          <p className="text-sm text-stone-500">Laster…</p>
+          <p className="text-sm text-ink-3">Laster…</p>
         ) : (
           <ReviewList reviews={reviews} />
         )
@@ -184,7 +184,7 @@ export default function SellerPage() {
           ))}
         </div>
       ) : filteredItems && filteredItems.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
+        <div className="rounded-sm border border-dashed border-line-2 p-10 text-center text-sm text-ink-3">
           {tab === "active"
             ? "Ingen aktive annonser."
             : "Ingen solgte annonser enda."}
@@ -204,8 +204,8 @@ export default function SellerPage() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-xl bg-stone-50 p-3">
-      <p className="text-[10px] font-medium uppercase tracking-wider text-stone-500">
+    <div className="rounded-sm bg-paper p-3">
+      <p className="text-[10px] font-medium uppercase tracking-wider text-ink-3">
         {label}
       </p>
       <p className="mt-0.5 text-base font-semibold tracking-tight sm:text-lg">
@@ -227,10 +227,10 @@ function TabChip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full border px-4 py-1.5 text-xs font-medium transition ${
+      className={`rounded-sm border px-4 py-1.5 text-xs font-medium transition ${
         active
-          ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-          : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+          ? "border-olive bg-olive text-raised"
+          : "border-line-2 bg-raised text-ink-2 hover:border-ink"
       }`}
     >
       {children}

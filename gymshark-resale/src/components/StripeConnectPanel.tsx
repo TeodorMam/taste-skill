@@ -71,12 +71,12 @@ export function StripeConnectPanel() {
   if (status === "loading") return null;
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4">
-      <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Selgerkonto</p>
+    <div className="rounded-sm border border-line bg-raised p-4">
+      <p className="text-xs font-medium uppercase tracking-wider text-ink-3">Selgerkonto</p>
 
       {status === "none" && (
         <div className="mt-3 space-y-4">
-          <p className="text-sm text-stone-700">
+          <p className="text-sm text-ink-2">
             Sett opp selgerkonto for å motta betaling. Ett skjema med
             personlig info, ett med IBAN. Under 2 min.
           </p>
@@ -86,26 +86,26 @@ export function StripeConnectPanel() {
               { n: "2", label: <>Legg inn <strong>IBAN</strong> (starter med NO)</> },
               { n: "3", label: "Ferdig, du er klar til å selge" },
             ].map(({ n, label }) => (
-              <li key={n} className="flex items-start gap-2.5 text-sm text-stone-600">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-stone-100 text-[11px] font-semibold text-stone-500">
+              <li key={n} className="flex items-start gap-2.5 text-sm text-ink-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-sunk text-[11px] font-semibold text-ink-3">
                   {n}
                 </span>
                 <span>{label}</span>
               </li>
             ))}
           </ol>
-          <p className="rounded-xl bg-[#5a6b32]/5 px-3 py-2 text-xs text-stone-600">
+          <p className="rounded-sm bg-olive/5 px-3 py-2 text-xs text-ink-2">
             💡 Bedriftsinfo har vi fylt ut for deg. Du skriver kun personlig info og IBAN.
           </p>
           <button
             onClick={handleConnect}
             disabled={connecting}
-            className="rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+            className="rounded-sm bg-olive px-4 py-2 text-sm font-medium text-raised hover:bg-olive-press disabled:opacity-50"
           >
             {connecting ? "Sender til Stripe…" : "Kom i gang →"}
           </button>
-          <p className="text-xs text-stone-500">
-            <span className="font-medium text-stone-500">Under 18?</span>{" "}
+          <p className="text-xs text-ink-3">
+            <span className="font-medium text-ink-3">Under 18?</span>{" "}
             Be en foresatt opprette utbetalingskontoen og motta pengene for deg.
           </p>
         </div>
@@ -113,37 +113,37 @@ export function StripeConnectPanel() {
 
       {status === "pending" && (
         <div className="mt-3 space-y-3">
-          <p className="text-sm text-stone-700">
+          <p className="text-sm text-ink-2">
             Stripe behandler informasjonen din. Fullfør verifiseringen for å aktivere betaling.
           </p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={handleConnect}
               disabled={connecting}
-              className="rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+              className="rounded-sm bg-ochre px-4 py-2 text-sm font-medium text-raised hover:bg-ochre disabled:opacity-50"
             >
               {connecting ? "Sender til Stripe…" : "Fortsett verifisering →"}
             </button>
             {!confirmDisconnect ? (
               <button
                 onClick={() => setConfirmDisconnect(true)}
-                className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500"
+                className="rounded-sm border border-line-2 bg-raised px-4 py-2 text-sm font-medium text-ink-2 hover:border-ink"
               >
                 Koble fra
               </button>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-stone-600">Er du sikker?</span>
+                <span className="text-sm text-ink-2">Er du sikker?</span>
                 <button
                   onClick={() => { void handleDisconnect(); setConfirmDisconnect(false); }}
                   disabled={disconnecting}
-                  className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                  className="rounded-sm bg-clay px-3 py-1.5 text-xs font-medium text-raised hover:bg-clay disabled:opacity-50"
                 >
                   {disconnecting ? "Kobler fra…" : "Ja, koble fra"}
                 </button>
                 <button
                   onClick={() => setConfirmDisconnect(false)}
-                  className="text-xs text-stone-500 hover:text-stone-700"
+                  className="text-xs text-ink-3 hover:text-ink-2"
                 >
                   Avbryt
                 </button>
@@ -155,37 +155,37 @@ export function StripeConnectPanel() {
 
       {status === "active" && (
         <div className="mt-3 space-y-1">
-          <p className="text-sm font-medium text-emerald-700">✓ Selgerkonto aktivert</p>
-          <p className="text-xs text-stone-500">Betalinger er aktivert. Utbetalinger skjer automatisk via Stripe Express-dashbordet ditt.</p>
+          <p className="text-sm font-medium text-olive">✓ Selgerkonto aktivert</p>
+          <p className="text-xs text-ink-3">Betalinger er aktivert. Utbetalinger skjer automatisk via Stripe Express-dashbordet ditt.</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <a
               href="https://dashboard.stripe.com/express"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+              className="text-xs font-medium text-olive underline underline-offset-2 hover:text-olive-press"
             >
               Åpne Stripe-dashboard ↗
             </a>
             {!confirmDisconnect ? (
               <button
                 onClick={() => setConfirmDisconnect(true)}
-                className="text-xs text-stone-500 underline underline-offset-2 hover:text-stone-600"
+                className="text-xs text-ink-3 underline underline-offset-2 hover:text-ink-2"
               >
                 Koble fra
               </button>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-stone-600">Er du sikker?</span>
+                <span className="text-xs text-ink-2">Er du sikker?</span>
                 <button
                   onClick={() => { void handleDisconnect(); setConfirmDisconnect(false); }}
                   disabled={disconnecting}
-                  className="text-xs font-medium text-red-500 hover:text-red-700 disabled:opacity-50"
+                  className="text-xs font-medium text-clay hover:text-clay disabled:opacity-50"
                 >
                   {disconnecting ? "Kobler fra…" : "Ja, koble fra"}
                 </button>
                 <button
                   onClick={() => setConfirmDisconnect(false)}
-                  className="text-xs text-stone-500 hover:text-stone-700"
+                  className="text-xs text-ink-3 hover:text-ink-2"
                 >
                   Avbryt
                 </button>

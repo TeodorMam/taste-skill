@@ -46,8 +46,8 @@ export function ItemLikes({ itemId }: { itemId: string | number }) {
   }
 
   return (
-    <p className="flex items-center gap-1.5 text-xs text-stone-500">
-      <span className="text-rose-400">♥</span>
+    <p className="flex items-center gap-1.5 text-xs text-ink-3">
+      <span className="text-clay">♥</span>
       <span>{label}</span>
     </p>
   );

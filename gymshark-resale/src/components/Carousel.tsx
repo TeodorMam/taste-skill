@@ -44,7 +44,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-[3/4] w-full items-center justify-center bg-stone-100 text-sm text-stone-500">
+      <div className="flex aspect-[3/4] w-full items-center justify-center bg-sunk text-sm text-ink-3">
         Ingen bilde
       </div>
     );
@@ -56,7 +56,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
         <button
           type="button"
           onClick={() => setLightbox(0)}
-          className="block w-full cursor-zoom-in bg-stone-100"
+          className="block w-full cursor-zoom-in bg-sunk"
           aria-label="Forstørr bilde"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -76,7 +76,7 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
       <div className="relative">
         <div
           ref={ref}
-          className="flex w-full snap-x snap-mandatory items-center overflow-x-auto scroll-smooth bg-stone-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex w-full snap-x snap-mandatory items-center overflow-x-auto scroll-smooth bg-sunk [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {images.map((src, i) => (
             <button
@@ -98,18 +98,18 @@ export function Carousel({ images, alt }: { images: string[]; alt: string }) {
         </div>
 
         <button type="button" onClick={() => scrollTo(Math.max(0, active - 1))} disabled={active === 0} aria-label="Forrige bilde"
-          className="absolute left-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-stone-800 shadow-sm backdrop-blur transition hover:bg-white disabled:opacity-0 sm:flex">‹</button>
+          className="absolute left-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-sm bg-raised/85 text-ink transition hover:bg-raised disabled:opacity-0 sm:flex">‹</button>
         <button type="button" onClick={() => scrollTo(Math.min(images.length - 1, active + 1))} disabled={active === images.length - 1} aria-label="Neste bilde"
-          className="absolute right-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-stone-800 shadow-sm backdrop-blur transition hover:bg-white disabled:opacity-0 sm:flex">›</button>
+          className="absolute right-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-sm bg-raised/85 text-ink transition hover:bg-raised disabled:opacity-0 sm:flex">›</button>
 
-        <div className="pointer-events-none absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
+        <div className="pointer-events-none absolute right-3 top-3 rounded-sm bg-ink/60 px-2.5 py-1 text-[11px] font-medium text-raised">
           {active + 1} / {images.length}
         </div>
 
         <div className="pointer-events-none absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5">
           {images.map((_, i) => (
             <button key={i} type="button" onClick={() => scrollTo(i)} aria-label={`Bilde ${i + 1}`}
-              className={`pointer-events-auto h-1.5 rounded-full bg-white/70 transition-all ${active === i ? "w-5 bg-white" : "w-1.5 hover:bg-white"}`} />
+              className={`pointer-events-auto h-1.5 rounded-sm bg-raised/70 transition-all ${active === i ? "w-5 bg-raised" : "w-1.5 hover:bg-raised"}`} />
           ))}
         </div>
       </div>
@@ -127,11 +127,11 @@ function Lightbox({ images, index, alt, onClose, onChange }: {
   onChange: (i: number) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black/95" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex flex-col bg-ink/95" onClick={onClose}>
       {/* Top bar */}
       <div className="flex shrink-0 items-center justify-between px-4 py-3" onClick={(e) => e.stopPropagation()}>
-        <span className="text-sm text-white/60">{index + 1} / {images.length}</span>
-        <button onClick={onClose} aria-label="Lukk" className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+        <span className="text-sm text-raised/60">{index + 1} / {images.length}</span>
+        <button onClick={onClose} aria-label="Lukk" className="flex h-9 w-9 items-center justify-center rounded-sm bg-raised/10 text-raised hover:bg-raised/20">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
@@ -157,15 +157,15 @@ function Lightbox({ images, index, alt, onClose, onChange }: {
       {images.length > 1 && (
         <div className="flex shrink-0 items-center justify-center gap-6 py-4" onClick={(e) => e.stopPropagation()}>
           <button onClick={() => onChange(Math.max(0, index - 1))} disabled={index === 0}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white text-xl hover:bg-white/20 disabled:opacity-30">‹</button>
+            className="flex h-10 w-10 items-center justify-center rounded-sm bg-raised/10 text-raised text-xl hover:bg-raised/20 disabled:opacity-30">‹</button>
           <div className="flex gap-1.5">
             {images.map((_, i) => (
               <button key={i} onClick={() => onChange(i)}
-                className={`h-1.5 rounded-full transition-all ${i === index ? "w-5 bg-white" : "w-1.5 bg-white/40 hover:bg-white/70"}`} />
+                className={`h-1.5 rounded-sm transition-all ${i === index ? "w-5 bg-raised" : "w-1.5 bg-raised/40 hover:bg-raised/70"}`} />
             ))}
           </div>
           <button onClick={() => onChange(Math.min(images.length - 1, index + 1))} disabled={index === images.length - 1}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white text-xl hover:bg-white/20 disabled:opacity-30">›</button>
+            className="flex h-10 w-10 items-center justify-center rounded-sm bg-raised/10 text-raised text-xl hover:bg-raised/20 disabled:opacity-30">›</button>
         </div>
       )}
     </div>

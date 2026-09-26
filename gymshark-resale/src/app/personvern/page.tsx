@@ -9,14 +9,14 @@ export default function PersonvernPage() {
   return (
     <section className="max-w-xl space-y-8">
       <div>
-        <p className="mb-4 text-sm text-stone-500">
-          <Link href="/varer" className="hover:text-black">← Tilbake</Link>
+        <p className="mb-4 text-sm text-ink-3">
+          <Link href="/varer" className="hover:text-ink">← Tilbake</Link>
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">Personvernerklæring</h1>
-        <p className="mt-2 text-sm text-stone-500">Sist oppdatert: september 2026</p>
+        <p className="mt-2 text-sm text-ink-3">Sist oppdatert: september 2026</p>
       </div>
 
-      <p className="text-sm leading-relaxed text-stone-600">
+      <p className="text-sm leading-relaxed text-ink-2">
         Aktivbruk er behandlingsansvarlig for personopplysningene dine. Denne
         erklæringen forklarer hvilke opplysninger Aktivbruk samler inn, hvorfor
         de behandles, hvordan de brukes, og hvilke rettigheter du har. Aktivbruk
@@ -30,7 +30,7 @@ export default function PersonvernPage() {
           Kontakt:{" "}
           <a
             href="mailto:kontakt@aktivbruk.com"
-            className="underline underline-offset-2 hover:text-stone-900"
+            className="underline underline-offset-2 hover:text-ink"
           >
             kontakt@aktivbruk.com
           </a>
@@ -132,7 +132,7 @@ export default function PersonvernPage() {
               href="https://stripe.com/en-no/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-stone-900"
+              className="underline underline-offset-2 hover:text-ink"
             >
               Stripes personvernpolicy ↗
             </a>
@@ -146,7 +146,7 @@ export default function PersonvernPage() {
               href="https://supabase.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-stone-900"
+              className="underline underline-offset-2 hover:text-ink"
             >
               Supabase personvernpolicy ↗
             </a>
@@ -161,7 +161,7 @@ export default function PersonvernPage() {
               href="https://resend.com/legal/privacy-policy"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-stone-900"
+              className="underline underline-offset-2 hover:text-ink"
             >
               Resends personvernpolicy ↗
             </a>
@@ -249,7 +249,7 @@ export default function PersonvernPage() {
           Send henvendelser om personvern til{" "}
           <a
             href="mailto:kontakt@aktivbruk.com"
-            className="underline underline-offset-2 hover:text-stone-900"
+            className="underline underline-offset-2 hover:text-ink"
           >
             kontakt@aktivbruk.com
           </a>
@@ -284,7 +284,7 @@ export default function PersonvernPage() {
           personvernregelverket, kan du først ta kontakt på{" "}
           <a
             href="mailto:kontakt@aktivbruk.com"
-            className="underline underline-offset-2 hover:text-stone-900"
+            className="underline underline-offset-2 hover:text-ink"
           >
             kontakt@aktivbruk.com
           </a>
@@ -298,7 +298,7 @@ export default function PersonvernPage() {
             href="https://www.datatilsynet.no"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline underline-offset-2 hover:text-stone-900"
+            className="underline underline-offset-2 hover:text-ink"
           >
             Datatilsynet ↗
           </a>
@@ -321,13 +321,13 @@ export default function PersonvernPage() {
         </p>
       </Block>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5">
-        <p className="text-sm font-medium text-stone-800">Spørsmål om personvern?</p>
-        <p className="mt-1 text-sm text-stone-600">
+      <div className="rounded-sm border border-line bg-raised p-5">
+        <p className="text-sm font-medium text-ink">Spørsmål om personvern?</p>
+        <p className="mt-1 text-sm text-ink-2">
           Ta kontakt på{" "}
           <a
             href="mailto:kontakt@aktivbruk.com"
-            className="font-medium underline underline-offset-2 hover:text-stone-900"
+            className="font-medium underline underline-offset-2 hover:text-ink"
           >
             kontakt@aktivbruk.com
           </a>
@@ -341,7 +341,7 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
   return (
     <div className="space-y-2">
       <h2 className="text-base font-semibold tracking-tight">{title}</h2>
-      <div className="space-y-2 text-sm leading-relaxed text-stone-600">{children}</div>
+      <div className="space-y-2 text-sm leading-relaxed text-ink-2">{children}</div>
     </div>
   );
 }
@@ -354,22 +354,22 @@ function Table({
   cols?: string[];
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-stone-200">
+    <div className="overflow-x-auto rounded-sm border border-line">
       <table className="w-full text-xs">
         {cols && (
-          <thead className="bg-stone-50">
+          <thead className="bg-paper">
             <tr>
               {cols.map((c) => (
-                <th key={c} className="px-3 py-2 text-left font-medium text-stone-700">{c}</th>
+                <th key={c} className="px-3 py-2 text-left font-medium text-ink-2">{c}</th>
               ))}
             </tr>
           </thead>
         )}
-        <tbody className="divide-y divide-stone-100">
+        <tbody className="divide-y divide-line">
           {rows.map((row, i) => (
-            <tr key={i} className="bg-white">
+            <tr key={i} className="bg-raised">
               {row.map((cell, j) => (
-                <td key={j} className={`px-3 py-2 text-stone-600 align-top ${j === 0 ? "font-medium text-stone-800 whitespace-nowrap" : ""}`}>
+                <td key={j} className={`px-3 py-2 text-ink-2 align-top ${j === 0 ? "font-medium text-ink whitespace-nowrap" : ""}`}>
                   {cell}
                 </td>
               ))}

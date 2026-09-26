@@ -37,32 +37,32 @@ export function SellerRating({
   if (star) {
     const color =
       star.avg >= 4
-        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+        ? "border-olive/30 bg-olive-soft text-olive"
         : star.avg >= 3
-          ? "border-amber-200 bg-amber-50 text-amber-700"
-          : "border-red-200 bg-red-50 text-red-700";
+          ? "border-ochre/30 bg-ochre-soft text-ochre"
+          : "border-clay/40 bg-clay-soft text-clay";
     content = (
-      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium ${color} ${textSize}`}>
-        <span className="text-amber-400">★</span>
+      <span className={`inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 font-medium ${color} ${textSize}`}>
+        <span className="text-ochre">★</span>
         {star.avg.toFixed(1)} ({star.total})
       </span>
     );
   } else if (total > 0) {
     const color =
       pct >= 80
-        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+        ? "border-olive/30 bg-olive-soft text-olive"
         : pct >= 50
-          ? "border-amber-200 bg-amber-50 text-amber-700"
-          : "border-red-200 bg-red-50 text-red-700";
+          ? "border-ochre/30 bg-ochre-soft text-ochre"
+          : "border-clay/40 bg-clay-soft text-clay";
     content = (
-      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium ${color} ${textSize}`}>
+      <span className={`inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 font-medium ${color} ${textSize}`}>
         <span aria-hidden>{pct >= 80 ? "👍" : pct >= 50 ? "⚠️" : "👎"}</span>
         {pct}% ({total})
       </span>
     );
   } else {
     content = (
-      <span className={`inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 font-medium text-stone-500 ${textSize}`}>
+      <span className={`inline-flex items-center gap-1 rounded-sm border border-line bg-paper px-2 py-0.5 font-medium text-ink-3 ${textSize}`}>
         Ny selger
       </span>
     );

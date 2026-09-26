@@ -96,22 +96,22 @@ export default async function BrandPage(
       )}
 
       <div className="space-y-3">
-        <p className="text-sm text-stone-500">
-          <Link href="/varer" className="hover:text-black">← Alle varer</Link>
+        <p className="text-sm text-ink-3">
+          <Link href="/varer" className="hover:text-ink">← Alle varer</Link>
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">Brukt {page.brand}</h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-stone-600">{page.intro}</p>
+        <p className="max-w-2xl text-sm leading-relaxed text-ink-2">{page.intro}</p>
       </div>
 
       {items.length > 0 ? (
         <>
           <div className="flex items-end justify-between">
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-ink-3">
               {items.length} plagg ute nå
             </p>
             <Link
               href={`/varer?brand=${encodeURIComponent(page.brand)}`}
-              className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]"
+              className="text-xs font-medium text-olive hover:text-olive-press"
             >
               Filtrer videre →
             </Link>
@@ -123,20 +123,20 @@ export default async function BrandPage(
           </div>
         </>
       ) : (
-        <div className="rounded-2xl border border-stone-200 bg-white p-6 text-center">
-          <p className="text-sm text-stone-600">
+        <div className="rounded-sm border border-line bg-raised p-6 text-center">
+          <p className="text-sm text-ink-2">
             Ingen {page.brand}-plagg er ute akkurat nå.
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <Link
               href="/ny-annonse"
-              className="rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+              className="rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
             >
               Legg ut {page.brand}
             </Link>
             <Link
               href="/varer"
-              className="rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-700 hover:border-stone-500"
+              className="rounded-sm border border-line-2 bg-raised px-5 py-3 text-sm font-medium text-ink-2 hover:border-ink"
             >
               Se alt annet
             </Link>
@@ -144,14 +144,14 @@ export default async function BrandPage(
         </div>
       )}
 
-      <div className="border-t border-stone-200 pt-5">
-        <p className="text-xs uppercase tracking-widest text-stone-500">Andre merker</p>
+      <div className="border-t border-line pt-5">
+        <p className="text-xs uppercase tracking-widest text-ink-3">Andre merker</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {BRAND_PAGES.filter((b) => b.slug !== page.slug).map((b) => (
             <Link
               key={b.slug}
               href={`/brukt/${b.slug}`}
-              className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500"
+              className="rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-xs font-medium text-ink-2 hover:border-ink"
             >
               Brukt {b.brand}
             </Link>

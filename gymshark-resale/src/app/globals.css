@@ -8,9 +8,10 @@
 
 html,
 body {
-  background: #fafafa;
-  color: #0a0a0a;
+  background: #F3F2EC;
+  color: #1C1E18;
   -webkit-font-smoothing: antialiased;
+  font-kerning: normal;
 }
 
 /* Prevent iOS Safari from auto-zooming on input focus (requires !important to override Tailwind text-sm) */
@@ -18,7 +19,90 @@ input, textarea, select {
   font-size: 16px !important;
 }
 
+@layer base {
+  /* Narrow Archivo gives headings their character; body text stays at full width. */
+  h1 {
+    font-stretch: 74%;
+    font-weight: 720;
+    letter-spacing: -0.012em;
+    line-height: 1;
+  }
+  h2 {
+    font-stretch: 80%;
+    font-weight: 680;
+    letter-spacing: -0.006em;
+  }
+  :focus-visible {
+    outline: 2px solid #4B5A28;
+    outline-offset: 2px;
+  }
+  ::placeholder {
+    color: #6B675C;
+  }
+}
+
+@layer components {
+  /* Display headline: the home hero and page titles. */
+  .dsp {
+    font-stretch: 72%;
+    font-weight: 720;
+    letter-spacing: -0.012em;
+    line-height: 1;
+  }
+  /* Prices and every other figure that lines up. */
+  .num {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .price {
+    font-stretch: 82%;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.004em;
+  }
+
+  /* Buttons. One filled main action per screen (olive or ink), one secondary
+     (line), everything else is a text button. */
+  .btn {
+    @apply inline-flex h-12 shrink-0 items-center justify-center gap-2.5 whitespace-nowrap rounded-sm px-5 text-[15px] font-semibold leading-none transition-colors duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-45;
+  }
+  .btn-olive { @apply bg-olive text-raised hover:bg-olive-press; }
+  .btn-ink { @apply bg-ink text-paper hover:bg-ink/90; }
+  .btn-line { @apply text-ink shadow-[inset_0_0_0_1.5px_#1C1E18] hover:bg-ink/5; }
+  .btn-clay { @apply text-clay shadow-[inset_0_0_0_1.5px_#9A3F24] hover:bg-clay/5; }
+  .btn-sm { @apply h-9 gap-2 px-3 text-sm; }
+  .btn-lg { @apply h-[52px] text-base; }
+  .tbtn {
+    @apply inline-flex min-h-[44px] shrink-0 items-center gap-2 whitespace-nowrap text-[15px] font-semibold text-ink;
+  }
+  .tbtn-u {
+    @apply underline decoration-1 underline-offset-4;
+  }
+
+  /* Choice chips: selected is an ink fill. */
+  .chip {
+    @apply inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm bg-raised px-3 text-sm font-medium text-ink shadow-[inset_0_0_0_1px_#CFCBBE] transition-colors duration-150;
+  }
+  .chip-on {
+    @apply bg-ink text-paper shadow-none;
+  }
+
+  /* Small ink square used for unread counts. */
+  .count {
+    @apply inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-sm bg-ink px-[5px] text-[11px] font-semibold leading-none text-paper;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

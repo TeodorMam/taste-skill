@@ -314,35 +314,35 @@ export default function ItemPageClient() {
   }
 
 
-if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>;
-  if (!item) return <p className="text-sm text-stone-500">Laster…</p>;
+if (error) return <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>;
+  if (!item) return <p className="text-sm text-ink-3">Laster…</p>;
 
   return (
     <article className="space-y-8">
       <FirstListingSuccess itemId={item.id} itemTitle={item.title} shareUrl={shareUrl} isSeller={isSeller} />
 
       {paymentStatus === "success" && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-          <p className="font-semibold text-emerald-800">✓ Betaling gjennomført!</p>
-          <p className="mt-1 text-sm text-emerald-700">Du vil motta en bekreftelse på e-post. Kontakt selger i chatten for å avtale levering.</p>
+        <div className="rounded-sm border border-olive/30 bg-olive-soft p-4">
+          <p className="font-semibold text-olive">✓ Betaling gjennomført!</p>
+          <p className="mt-1 text-sm text-olive">Du vil motta en bekreftelse på e-post. Kontakt selger i chatten for å avtale levering.</p>
         </div>
       )}
       {paymentStatus === "cancelled" && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+        <div className="rounded-sm border border-ochre/30 bg-ochre-soft p-3 text-sm text-ochre">
           Betalingen ble avbrutt, varen er fortsatt tilgjengelig.
         </div>
       )}
 
-      <Link href="/varer" className="text-sm text-stone-500 hover:text-black">← Tilbake</Link>
+      <Link href="/varer" className="text-sm text-ink-3 hover:text-ink">← Tilbake</Link>
 
-      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
+      <div className="overflow-hidden rounded-sm border border-line bg-raised">
         <div className="relative">
           <Carousel images={itemImages(item)} alt={item.title} />
           {item.brand && (
-            <div className="pointer-events-none absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-[#5a6b32] backdrop-blur">{item.brand}</div>
+            <div className="pointer-events-none absolute left-3 top-3 rounded-sm bg-raised/90 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-olive">{item.brand}</div>
           )}
           {item.is_sold && (
-            <div className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-stone-900 px-3 py-1 text-xs font-medium text-stone-50">Solgt</div>
+            <div className="pointer-events-none absolute bottom-3 left-3 rounded-sm bg-ink px-3 py-1 text-xs font-medium text-paper">Solgt</div>
           )}
         </div>
 
@@ -355,7 +355,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                 {!isSeller && <FavoriteButton itemId={item.id} currentPrice={item.price} sellerId={item.seller_id} itemTitle={item.title} variant="inline" />}
                 {shareUrl && <ShareButton url={shareUrl} title={item.title} />}
                 {isSeller && (
-                  <Link href={`/vare/${item.id}/rediger`} className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500">
+                  <Link href={`/vare/${item.id}/rediger`} className="inline-flex items-center gap-1.5 rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-xs font-medium text-ink-2 hover:border-ink">
                     ✎ Rediger
                   </Link>
                 )}
@@ -365,30 +365,30 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           </div>
 
           {item.description && (
-            <p className="whitespace-pre-line text-sm leading-relaxed text-stone-700">{item.description}</p>
+            <p className="whitespace-pre-line text-sm leading-relaxed text-ink-2">{item.description}</p>
           )}
 
           <dl className="grid grid-cols-2 gap-y-2 text-sm">
-            {item.brand && (<><dt className="text-stone-500">Merke</dt><dd className="text-right font-medium">{brandPageFor(item.brand) ? <Link href={`/brukt/${brandPageFor(item.brand)!.slug}`} className="underline underline-offset-2 hover:text-[#5a6b32]">{item.brand}</Link> : item.brand}</dd></>)}
-            {item.category && (<><dt className="text-stone-500">Kategori</dt><dd className="text-right">{item.category}</dd></>)}
-            <dt className="text-stone-500">Størrelse</dt><dd className="text-right">{item.size}</dd>
-            <dt className="text-stone-500">Tilstand</dt><dd className="text-right">{item.condition}</dd>
-            {item.gender && (<><dt className="text-stone-500">Kjønn</dt><dd className="text-right">{item.gender}</dd></>)}
-            <dt className="text-stone-500">Sted</dt><dd className="text-right">{item.location}</dd>
-            {item.shipping && (<><dt className="text-stone-500">Frakt</dt><dd className="text-right font-medium">{item.shipping}</dd></>)}
+            {item.brand && (<><dt className="text-ink-3">Merke</dt><dd className="text-right font-medium">{brandPageFor(item.brand) ? <Link href={`/brukt/${brandPageFor(item.brand)!.slug}`} className="underline underline-offset-2 hover:text-olive">{item.brand}</Link> : item.brand}</dd></>)}
+            {item.category && (<><dt className="text-ink-3">Kategori</dt><dd className="text-right">{item.category}</dd></>)}
+            <dt className="text-ink-3">Størrelse</dt><dd className="text-right">{item.size}</dd>
+            <dt className="text-ink-3">Tilstand</dt><dd className="text-right">{item.condition}</dd>
+            {item.gender && (<><dt className="text-ink-3">Kjønn</dt><dd className="text-right">{item.gender}</dd></>)}
+            <dt className="text-ink-3">Sted</dt><dd className="text-right">{item.location}</dd>
+            {item.shipping && (<><dt className="text-ink-3">Frakt</dt><dd className="text-right font-medium">{item.shipping}</dd></>)}
           </dl>
 
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-ink-3">
             Sist endret {fmtLastEdited(item.updated_at || item.created_at)}
           </p>
 
           {item.seller_id && !isSeller && (
             <div className="space-y-2">
-            <Link href={`/selger/${item.seller_id}`} className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 transition hover:border-stone-400">
+            <Link href={`/selger/${item.seller_id}`} className="flex items-center gap-3 rounded-sm border border-line bg-paper p-3 transition hover:border-ink">
               <Avatar profile={seller} size="md" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{profileDisplayName(seller, item.seller_id)}</p>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-ink-3">
                   {fmtLastSeen(seller?.last_seen_at) ?? "Se profil og flere annonser →"}
                 </p>
               </div>
@@ -422,7 +422,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                     <button
                       type="button"
                       onClick={() => setDeliveryMethod("shipping")}
-                      className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "shipping" ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]" : "border-stone-200 hover:border-stone-400"}`}
+                      className={`flex flex-col items-center gap-1 rounded-sm border py-3 transition ${deliveryMethod === "shipping" ? "border-olive bg-olive/5 ring-1 ring-olive" : "border-line hover:border-ink"}`}
                     >
                       <span className="text-xl">📦</span>
                       <span className="text-sm font-medium">Frakt</span>
@@ -430,7 +430,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                     <button
                       type="button"
                       onClick={() => setDeliveryMethod("meetup")}
-                      className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "meetup" ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]" : "border-stone-200 hover:border-stone-400"}`}
+                      className={`flex flex-col items-center gap-1 rounded-sm border py-3 transition ${deliveryMethod === "meetup" ? "border-olive bg-olive/5 ring-1 ring-olive" : "border-line hover:border-ink"}`}
                     >
                       <span className="text-xl">🤝</span>
                       <span className="text-sm font-medium">Møt selger</span>
@@ -439,20 +439,20 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                 )}
 
                 {(effectiveDm === "shipping" || (!showToggle && canShip)) && pkg && (
-                  <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm">
+                  <div className="flex items-center justify-between rounded-sm border border-line bg-paper px-4 py-3 text-sm">
                     <div>
-                      <p className="font-medium text-stone-800">📦 Frakt via Posten</p>
-                      <p className="text-xs text-stone-500">{pkg.label} · opp til {pkg.maxWeight}</p>
-                      <p className="mt-1 text-[11px] text-stone-500">Selger dropper pakken på nærmeste Posten-punkt etter betaling.</p>
+                      <p className="font-medium text-ink">📦 Frakt via Posten</p>
+                      <p className="text-xs text-ink-3">{pkg.label} · opp til {pkg.maxWeight}</p>
+                      <p className="mt-1 text-[11px] text-ink-3">Selger dropper pakken på nærmeste Posten-punkt etter betaling.</p>
                     </div>
-                    <p className="ml-3 shrink-0 font-semibold text-stone-800">+{pkg.price} kr</p>
+                    <p className="ml-3 shrink-0 font-semibold text-ink">+{pkg.price} kr</p>
                   </div>
                 )}
 
                 {(effectiveDm === "meetup" || item.shipping === "Kun henting") && (
-                  <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm">
-                    <p className="font-medium text-stone-800">🤝 Møt selger</p>
-                    <p className="mt-0.5 text-xs text-stone-500">Avtal tid og sted i chatten etter betaling. Pengene holdes trygt hos Aktivbruk til handelen er fullført.</p>
+                  <div className="rounded-sm border border-line bg-paper px-4 py-3 text-sm">
+                    <p className="font-medium text-ink">🤝 Møt selger</p>
+                    <p className="mt-0.5 text-xs text-ink-3">Avtal tid og sted i chatten etter betaling. Pengene holdes trygt hos Aktivbruk til handelen er fullført.</p>
                   </div>
                 )}
 
@@ -460,14 +460,14 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                   <button
                     onClick={() => { if (canCheckout) handleCheckout(); }}
                     disabled={!canCheckout || buyingNow}
-                    className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="w-full rounded-sm bg-olive px-5 py-3 text-sm font-medium text-raised hover:bg-olive-press disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {buyingNow ? "Sender til betaling…" : canCheckout ? `Kjøp nå, ${formatPrice(totalPrice)}` : "Kjøp nå"}
                   </button>
-                  <p className="text-center text-[11px] text-stone-500">
+                  <p className="text-center text-[11px] text-ink-3">
                     {!canCheckout
                       ? "Velg leveringsmetode for å fortsette"
-                      : <>{formatPrice(item.price)} vare{shippingCost > 0 ? ` + ${formatPrice(shippingCost)} frakt` : ""} + {formatPrice(buyerFee)} <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">kjøperbeskyttelse</Link></>
+                      : <>{formatPrice(item.price)} vare{shippingCost > 0 ? ` + ${formatPrice(shippingCost)} frakt` : ""} + {formatPrice(buyerFee)} <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-ink-2">kjøperbeskyttelse</Link></>
                     }
                   </p>
                 </div>
@@ -476,13 +476,13 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           })()}
 
           {userId === null && (
-            <Link href={`/logg-inn?next=/vare/${item.id}`} className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black">
+            <Link href={`/logg-inn?next=/vare/${item.id}`} className="block w-full rounded-sm bg-ink px-5 py-3 text-center text-sm font-medium text-paper hover:bg-ink">
               Logg inn for å chatte med selger
             </Link>
           )}
 
           {userId && !item.seller_id && (
-            <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-800">Denne annonsen ble lagt ut før brukerkontoer, så chat er ikke tilgjengelig. Bruk kontaktinfo nedenfor i stedet.</p>
+            <p className="rounded-sm bg-ochre-soft p-3 text-xs text-ochre">Denne annonsen ble lagt ut før brukerkontoer, så chat er ikke tilgjengelig. Bruk kontaktinfo nedenfor i stedet.</p>
           )}
 
           {userId && item.seller_id && !isSeller && !item.is_sold && myOffer !== undefined && (
@@ -490,28 +490,28 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
               {myOffer === null ? (
                 <button
                   onClick={() => setShowBidModal(true)}
-                  className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+                  className="w-full rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
                 >
                   💸 Gi bud
                 </button>
               ) : myOffer.status === "pending" ? (
-                <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+                <div className="rounded-sm border border-line bg-paper p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-medium text-stone-600">Ditt bud</p>
+                      <p className="text-xs font-medium text-ink-2">Ditt bud</p>
                       <p className="text-sm font-semibold">{formatPrice(myOffer.amount)}</p>
-                      <p className="text-[11px] text-stone-500">Venter på svar fra selger</p>
+                      <p className="text-[11px] text-ink-3">Venter på svar fra selger</p>
                     </div>
-                    <button onClick={withdrawOffer} className="text-xs text-stone-500 hover:text-red-600 underline underline-offset-2">Trekk tilbake</button>
+                    <button onClick={withdrawOffer} className="text-xs text-ink-3 hover:text-clay underline underline-offset-2">Trekk tilbake</button>
                   </div>
                 </div>
               ) : myOffer.status === "accepted" ? (
-                <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 space-y-3">
-                  <div className="flex items-center gap-2 text-emerald-700">
+                <div className="rounded-sm border border-olive/30 bg-olive-soft p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-olive">
                     <span className="text-lg">✓</span>
                     <div>
                       <p className="text-sm font-semibold">Bud godtatt!</p>
-                      <p className="text-xs text-emerald-600">Selger godtok {formatPrice(myOffer.amount)}</p>
+                      <p className="text-xs text-olive">Selger godtok {formatPrice(myOffer.amount)}</p>
                     </div>
                   </div>
                   {sellerChargesEnabled && (() => {
@@ -532,7 +532,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                             <button
                               type="button"
                               onClick={() => setDeliveryMethod("shipping")}
-                              className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "shipping" ? "border-[#5a6b32] bg-white ring-1 ring-[#5a6b32]" : "border-emerald-200 bg-white/60 hover:border-stone-400"}`}
+                              className={`flex flex-col items-center gap-1 rounded-sm border py-3 transition ${deliveryMethod === "shipping" ? "border-olive bg-raised ring-1 ring-olive" : "border-olive/30 bg-raised/60 hover:border-ink"}`}
                             >
                               <span className="text-xl">📦</span>
                               <span className="text-sm font-medium">Frakt {pkg ? `(+${pkg.price} kr)` : ""}</span>
@@ -540,7 +540,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                             <button
                               type="button"
                               onClick={() => setDeliveryMethod("meetup")}
-                              className={`flex flex-col items-center gap-1 rounded-xl border py-3 transition ${deliveryMethod === "meetup" ? "border-[#5a6b32] bg-white ring-1 ring-[#5a6b32]" : "border-emerald-200 bg-white/60 hover:border-stone-400"}`}
+                              className={`flex flex-col items-center gap-1 rounded-sm border py-3 transition ${deliveryMethod === "meetup" ? "border-olive bg-raised ring-1 ring-olive" : "border-olive/30 bg-raised/60 hover:border-ink"}`}
                             >
                               <span className="text-xl">🤝</span>
                               <span className="text-sm font-medium">Møt selger</span>
@@ -550,29 +550,29 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
                         <button
                           onClick={() => { if (canCheckout) handleCheckout(myOffer.id); }}
                           disabled={!canCheckout || payingOffer}
-                          className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:cursor-not-allowed disabled:opacity-40"
+                          className="w-full rounded-sm bg-olive px-5 py-3 text-sm font-medium text-raised hover:bg-olive-press disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           {payingOffer ? "Sender til betaling…" : canCheckout ? `Betal nå, ${formatPrice(myOffer.amount + shippingCost + buyerFee)}` : "Betal nå"}
                         </button>
-                        <p className="text-center text-[11px] text-stone-500">
+                        <p className="text-center text-[11px] text-ink-3">
                           {!canCheckout
                             ? "Velg leveringsmetode for å fortsette"
-                            : <>{formatPrice(myOffer.amount)} bud{shippingCost > 0 ? ` + ${formatPrice(shippingCost)} frakt` : ""} + {formatPrice(buyerFee)} <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-stone-600">kjøperbeskyttelse</Link></>}
+                            : <>{formatPrice(myOffer.amount)} bud{shippingCost > 0 ? ` + ${formatPrice(shippingCost)} frakt` : ""} + {formatPrice(buyerFee)} <Link href="/kjoperbeskyttelse" className="underline underline-offset-2 hover:text-ink-2">kjøperbeskyttelse</Link></>}
                         </p>
                       </>
                     );
                   })()}
                   <button
                     onClick={cancelAcceptedOffer}
-                    className="mx-auto block text-[11px] text-stone-500 underline underline-offset-2 hover:text-red-600"
+                    className="mx-auto block text-[11px] text-ink-3 underline underline-offset-2 hover:text-clay"
                   >
                     Avbryt bud
                   </button>
                 </div>
               ) : (
-                <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
-                  <p className="text-sm text-stone-600">Budet på {formatPrice(myOffer.amount)} er ikke lenger aktivt.</p>
-                  <button onClick={() => { setMyOffer(null); setShowBidModal(true); }} className="mt-1 text-xs font-medium text-[#5a6b32] underline underline-offset-2">Gi nytt bud</button>
+                <div className="rounded-sm border border-line bg-paper p-4">
+                  <p className="text-sm text-ink-2">Budet på {formatPrice(myOffer.amount)} er ikke lenger aktivt.</p>
+                  <button onClick={() => { setMyOffer(null); setShowBidModal(true); }} className="mt-1 text-xs font-medium text-olive underline underline-offset-2">Gi nytt bud</button>
                 </div>
               )}
             </>
@@ -581,7 +581,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           {userId && item.seller_id && !isSeller && (
             <Link
               href={`/meldinger/${item.id}/${userId}`}
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-800 hover:border-stone-500 hover:bg-stone-50"
+              className="flex w-full items-center justify-center gap-2 rounded-sm border border-line-2 bg-raised px-5 py-3 text-sm font-medium text-ink hover:border-ink hover:bg-paper"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z" />
@@ -594,25 +594,25 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
             <div className="space-y-3">
               {!item.is_sold && (
                 showSoldPicker ? (
-                  <div className="space-y-2 rounded-xl border border-stone-200 bg-stone-50 p-3">
-                    <p className="text-xs font-medium text-stone-700">Hva skjedde?</p>
+                  <div className="space-y-2 rounded-sm border border-line bg-paper p-3">
+                    <p className="text-xs font-medium text-ink-2">Hva skjedde?</p>
                     {buyerThreads.map((b) => (
-                      <button key={b} onClick={() => markSold(b)} disabled={saving} className="w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-left text-sm font-medium text-stone-800 hover:border-[#5a6b32] hover:bg-[#5a6b32]/5 disabled:opacity-50">
+                      <button key={b} onClick={() => markSold(b)} disabled={saving} className="w-full rounded-sm border border-line-2 bg-raised px-4 py-2 text-left text-sm font-medium text-ink hover:border-olive hover:bg-olive/5 disabled:opacity-50">
                         Solgt til {profileDisplayName(buyerProfiles[b], b)}
                       </button>
                     ))}
-                    <button onClick={() => markSold(null)} disabled={saving} className="w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-left text-sm font-medium text-stone-600 hover:border-stone-500 disabled:opacity-50">Jeg solgte et annet sted</button>
-                    <button onClick={() => markSold(null)} disabled={saving} className="w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-left text-sm font-medium text-stone-600 hover:border-stone-500 disabled:opacity-50">Jeg bestemte meg for å ikke selge</button>
-                    <button onClick={() => setShowSoldPicker(false)} className="w-full pt-1 text-center text-xs text-stone-500 hover:text-stone-600">Avbryt</button>
+                    <button onClick={() => markSold(null)} disabled={saving} className="w-full rounded-sm border border-line-2 bg-raised px-4 py-2 text-left text-sm font-medium text-ink-2 hover:border-ink disabled:opacity-50">Jeg solgte et annet sted</button>
+                    <button onClick={() => markSold(null)} disabled={saving} className="w-full rounded-sm border border-line-2 bg-raised px-4 py-2 text-left text-sm font-medium text-ink-2 hover:border-ink disabled:opacity-50">Jeg bestemte meg for å ikke selge</button>
+                    <button onClick={() => setShowSoldPicker(false)} className="w-full pt-1 text-center text-xs text-ink-3 hover:text-ink-2">Avbryt</button>
                   </div>
                 ) : (
-                  <button onClick={() => setShowSoldPicker(true)} disabled={saving} className="w-full rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50">{saving ? "Lagrer…" : "Marker som solgt"}</button>
+                  <button onClick={() => setShowSoldPicker(true)} disabled={saving} className="w-full rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50">{saving ? "Lagrer…" : "Marker som solgt"}</button>
                 )
               )}
               {item.is_sold && soldToBuyer && userId && (
-                <div className="space-y-2 border-t border-stone-100 pt-3">
-                  <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Vurder kjøperen</p>
-                  <p className="text-xs font-medium text-stone-700">{profileDisplayName(buyerProfiles[soldToBuyer], soldToBuyer)}</p>
+                <div className="space-y-2 border-t border-line pt-3">
+                  <p className="text-xs font-medium uppercase tracking-wider text-ink-3">Vurder kjøperen</p>
+                  <p className="text-xs font-medium text-ink-2">{profileDisplayName(buyerProfiles[soldToBuyer], soldToBuyer)}</p>
                   <ReviewForm itemId={item.id} reviewerId={userId} sellerId={soldToBuyer} label="Hvordan var kjøperen?" />
                 </div>
               )}
@@ -624,8 +624,8 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           )}
 
           {item.contact && (
-            <details className="rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm">
-              <summary className="cursor-pointer text-stone-600">Kontakt utenfor Aktivbruk (eldre annonse)</summary>
+            <details className="rounded-sm border border-line bg-paper p-3 text-sm">
+              <summary className="cursor-pointer text-ink-2">Kontakt utenfor Aktivbruk (eldre annonse)</summary>
               <p className="mt-2 break-all font-medium">{item.contact}</p>
             </details>
           )}
@@ -633,9 +633,9 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           {isSeller && (
             <div className="space-y-2">
               {item.is_sold && (
-                <button onClick={toggleSold} disabled={saving || deleting} className="w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium hover:border-stone-500 disabled:opacity-50">{saving ? "Lagrer…" : "Marker som tilgjengelig"}</button>
+                <button onClick={toggleSold} disabled={saving || deleting} className="w-full rounded-sm border border-line-2 bg-raised px-5 py-3 text-sm font-medium hover:border-ink disabled:opacity-50">{saving ? "Lagrer…" : "Marker som tilgjengelig"}</button>
               )}
-              <button onClick={onDelete} disabled={saving || deleting} className="w-full rounded-full border border-red-200 bg-white px-5 py-3 text-sm font-medium text-red-700 hover:border-red-400 hover:bg-red-50 disabled:opacity-50">{deleting ? "Sletter…" : "Slett annonsen"}</button>
+              <button onClick={onDelete} disabled={saving || deleting} className="w-full rounded-sm border border-clay/40 bg-raised px-5 py-3 text-sm font-medium text-clay hover:border-clay/40 hover:bg-clay-soft disabled:opacity-50">{deleting ? "Sletter…" : "Slett annonsen"}</button>
             </div>
           )}
         </div>
@@ -655,7 +655,7 @@ if (error) return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{
           <div className="flex items-end justify-between">
             <h2 className="text-lg font-semibold tracking-tight">Lignende annonser</h2>
             {(item.brand || item.category) && (
-              <Link href={brandPageFor(item.brand) ? `/brukt/${brandPageFor(item.brand)!.slug}` : item.brand ? `/varer?brand=${encodeURIComponent(item.brand)}` : `/varer?sub=${encodeURIComponent(item.category!)}`} className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]">Se alle →</Link>
+              <Link href={brandPageFor(item.brand) ? `/brukt/${brandPageFor(item.brand)!.slug}` : item.brand ? `/varer?brand=${encodeURIComponent(item.brand)}` : `/varer?sub=${encodeURIComponent(item.category!)}`} className="text-xs font-medium text-olive hover:text-olive-press">Se alle →</Link>
             )}
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

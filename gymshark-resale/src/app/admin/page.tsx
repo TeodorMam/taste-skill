@@ -43,25 +43,25 @@ type OrderRow = {
 };
 
 const STATUS: Record<string, { label: string; className: string }> = {
-  pending:   { label: "Venter",     className: "bg-stone-100 text-stone-600" },
-  paid:      { label: "Betalt",     className: "bg-[#5a6b32]/10 text-[#435022]" },
-  shipped:   { label: "Sendt",      className: "bg-[#5a6b32]/10 text-[#435022]" },
-  delivered: { label: "Levert",     className: "bg-[#5a6b32]/10 text-[#435022]" },
-  confirmed: { label: "Bekreftet",  className: "bg-[#5a6b32]/15 text-[#435022]" },
-  paid_out:  { label: "Utbetalt",   className: "bg-[#5a6b32] text-white" },
-  disputed:  { label: "Tvist",      className: "bg-red-100 text-red-700" },
-  cancelled: { label: "Kansellert", className: "bg-stone-100 text-stone-500" },
-  refunded:  { label: "Refundert",  className: "bg-amber-100 text-amber-800" },
+  pending:   { label: "Venter",     className: "bg-sunk text-ink-2" },
+  paid:      { label: "Betalt",     className: "bg-olive/10 text-olive-press" },
+  shipped:   { label: "Sendt",      className: "bg-olive/10 text-olive-press" },
+  delivered: { label: "Levert",     className: "bg-olive/10 text-olive-press" },
+  confirmed: { label: "Bekreftet",  className: "bg-olive/15 text-olive-press" },
+  paid_out:  { label: "Utbetalt",   className: "bg-olive text-raised" },
+  disputed:  { label: "Tvist",      className: "bg-clay-soft text-clay" },
+  cancelled: { label: "Kansellert", className: "bg-sunk text-ink-3" },
+  refunded:  { label: "Refundert",  className: "bg-ochre-soft text-ochre" },
 };
 
 /** What is wrong with this order, if anything, in the order it matters. */
 function needsAction(o: OrderRow): { label: string; className: string } | null {
   if (o.status === "disputed")
-    return { label: "Tvist, må løses", className: "bg-red-100 text-red-700" };
+    return { label: "Tvist, må løses", className: "bg-clay-soft text-clay" };
   if (o.status === "paid" && !o.shipped_at && Date.now() - new Date(o.created_at).getTime() > 2 * DAY)
-    return { label: "Betalt, ikke sendt", className: "bg-amber-100 text-amber-800" };
+    return { label: "Betalt, ikke sendt", className: "bg-ochre-soft text-ochre" };
   if (o.status === "pending" && Date.now() - new Date(o.created_at).getTime() > DAY)
-    return { label: "Betaling ikke fullført", className: "bg-stone-100 text-stone-600" };
+    return { label: "Betaling ikke fullført", className: "bg-sunk text-ink-2" };
   return null;
 }
 
@@ -77,16 +77,16 @@ function Stat({
   accent?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4">
-      <p className="text-xs font-medium uppercase tracking-wider text-stone-500">{label}</p>
+    <div className="rounded-sm border border-line bg-raised p-4">
+      <p className="text-xs font-medium uppercase tracking-wider text-ink-3">{label}</p>
       <p
         className={`mt-1.5 text-3xl font-semibold tracking-tight ${
-          accent ? "text-[#5a6b32]" : "text-stone-900"
+          accent ? "text-olive" : "text-ink"
         }`}
       >
         {value}
       </p>
-      <p className="mt-0.5 text-xs text-stone-500">{sub}</p>
+      <p className="mt-0.5 text-xs text-ink-3">{sub}</p>
     </div>
   );
 }
@@ -104,7 +104,7 @@ function Section({
     <section className="space-y-3">
       <div>
         <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-        {sub && <p className="mt-0.5 text-sm text-stone-500">{sub}</p>}
+        {sub && <p className="mt-0.5 text-sm text-ink-3">{sub}</p>}
       </div>
       {children}
     </section>
@@ -112,12 +112,12 @@ function Section({
 }
 
 function Quiet({ children }: { children: React.ReactNode }) {
-  return <p className="px-1 text-sm text-stone-500">{children}</p>;
+  return <p className="px-1 text-sm text-ink-3">{children}</p>;
 }
 
 function Rows({ children }: { children: React.ReactNode }) {
   return (
-    <div className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
+    <div className="divide-y divide-line overflow-hidden rounded-sm border border-line bg-raised">
       {children}
     </div>
   );
@@ -143,12 +143,12 @@ function OrderLine({
     <div className={`flex items-start justify-between gap-3 p-4 ${dim ? "opacity-60" : ""}`}>
       <div className="min-w-0 space-y-1">
         <p className="line-clamp-1 text-sm font-medium">{title}</p>
-        <p className="line-clamp-1 text-xs text-stone-500">{who}</p>
+        <p className="line-clamp-1 text-xs text-ink-3">{who}</p>
         <div className="flex items-center gap-2 pt-0.5">
-          <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${chip.className}`}>
+          <span className={`rounded-sm px-2 py-0.5 text-[11px] font-medium ${chip.className}`}>
             {chip.label}
           </span>
-          <span className="text-xs text-stone-500">{when}</span>
+          <span className="text-xs text-ink-3">{when}</span>
         </div>
       </div>
       <p className="shrink-0 text-sm font-semibold">{formatPrice(amount)}</p>
@@ -307,10 +307,10 @@ export default async function AdminPage() {
   return (
     <div className="space-y-10 py-8 sm:py-10">
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-stone-900">
-          Admin<span className="text-[#5a6b32]">.</span>
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">
+          Admin<span className="text-olive">.</span>
         </h1>
-        <p className="mt-1 text-sm text-stone-500">Oppdatert {fmtAgo(new Date().toISOString())}</p>
+        <p className="mt-1 text-sm text-ink-3">Oppdatert {fmtAgo(new Date().toISOString())}</p>
       </header>
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -336,7 +336,7 @@ export default async function AdminPage() {
           accent
         />
         <div className="col-span-2 sm:col-span-4">
-          <p className="px-1 text-xs text-stone-500">
+          <p className="px-1 text-xs text-ink-3">
             {users} registrerte brukere, {newUsers30d} nye siste 30 dager. Inntekt er
             kjøperbeskyttelse-gebyret, altså din andel.
           </p>
@@ -345,7 +345,7 @@ export default async function AdminPage() {
 
       <Section title="Trafikk" sub="Siste 7 dager, bots holdt utenfor">
         {viewsTruncated && (
-          <div className="mb-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+          <div className="mb-3 rounded-sm border border-ochre/30 bg-ochre-soft p-3 text-xs text-ochre">
             Taket på {VIEW_CAP.toLocaleString("nb-NO")} sidevisninger er nådd. Tallene under
             dekker de nyeste, ikke hele perioden, og er for lave.
           </div>
@@ -360,42 +360,42 @@ export default async function AdminPage() {
         ) : (
           <div className="space-y-3">
             <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Besøkende</p>
+              <div className="rounded-sm border border-line bg-raised p-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-ink-3">Besøkende</p>
                 <p className="mt-1.5 text-3xl font-semibold tracking-tight">{sessionsIn(views7d)}</p>
-                <p className="mt-0.5 text-xs text-stone-500">{sessionsIn(views)} siste 30 d</p>
+                <p className="mt-0.5 text-xs text-ink-3">{sessionsIn(views)} siste 30 d</p>
               </div>
-              <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Sidevisninger</p>
+              <div className="rounded-sm border border-line bg-raised p-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-ink-3">Sidevisninger</p>
                 <p className="mt-1.5 text-3xl font-semibold tracking-tight">{views7d.length}</p>
-                <p className="mt-0.5 text-xs text-stone-500">{views.length} siste 30 d</p>
+                <p className="mt-0.5 text-xs text-ink-3">{views.length} siste 30 d</p>
               </div>
-              <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-stone-500">Så en vare</p>
-                <p className="mt-1.5 text-3xl font-semibold tracking-tight text-[#5a6b32]">{itemSessions}</p>
-                <p className="mt-0.5 text-xs text-stone-500">av {sessionsIn(views7d)} besøkende</p>
+              <div className="rounded-sm border border-line bg-raised p-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-ink-3">Så en vare</p>
+                <p className="mt-1.5 text-3xl font-semibold tracking-tight text-olive">{itemSessions}</p>
+                <p className="mt-0.5 text-xs text-ink-3">av {sessionsIn(views7d)} besøkende</p>
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-stone-500">Mest besøkt</p>
+              <div className="rounded-sm border border-line bg-raised p-4">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-3">Mest besøkt</p>
                 <ul className="space-y-1.5">
                   {topPages.map(([path, n]) => (
                     <li key={path} className="flex items-baseline justify-between gap-3 text-sm">
-                      <span className="line-clamp-1 text-stone-700">{path}</span>
-                      <span className="shrink-0 text-stone-500">{n}</span>
+                      <span className="line-clamp-1 text-ink-2">{path}</span>
+                      <span className="shrink-0 text-ink-3">{n}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-stone-500">Kommer fra</p>
+              <div className="rounded-sm border border-line bg-raised p-4">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-3">Kommer fra</p>
                 <ul className="space-y-1.5">
                   {topSources.map(([host, n]) => (
                     <li key={host} className="flex items-baseline justify-between gap-3 text-sm">
-                      <span className="line-clamp-1 text-stone-700">{host}</span>
-                      <span className="shrink-0 text-stone-500">{n}</span>
+                      <span className="line-clamp-1 text-ink-2">{host}</span>
+                      <span className="shrink-0 text-ink-3">{n}</span>
                     </li>
                   ))}
                 </ul>
@@ -435,7 +435,7 @@ export default async function AdminPage() {
                 key={o.id}
                 title={title(o.item_id)}
                 who={`${name(o.buyer_id)} kjøpte av ${name(o.seller_id)}`}
-                chip={STATUS[o.status] ?? { label: o.status, className: "bg-stone-100 text-stone-600" }}
+                chip={STATUS[o.status] ?? { label: o.status, className: "bg-sunk text-ink-2" }}
                 when={fmtAgo(o.paid_at ?? o.created_at)}
                 amount={o.amount_nok}
               />
@@ -449,7 +449,7 @@ export default async function AdminPage() {
             either showing it or leaving it out. */}
         {hidden.length > 0 && (
           <details className="group">
-            <summary className="flex cursor-pointer list-none items-center gap-1.5 px-1 text-sm text-stone-500 transition hover:text-stone-600 [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-center gap-1.5 px-1 text-sm text-ink-3 transition hover:text-ink-2 [&::-webkit-details-marker]:hidden">
               <svg
                 width="12"
                 height="12"
@@ -473,7 +473,7 @@ export default async function AdminPage() {
                     key={o.id}
                     title={title(o.item_id)}
                     who={`${name(o.buyer_id)} kjøpte av ${name(o.seller_id)}`}
-                    chip={STATUS[o.status] ?? { label: o.status, className: "bg-stone-100 text-stone-600" }}
+                    chip={STATUS[o.status] ?? { label: o.status, className: "bg-sunk text-ink-2" }}
                     when={fmtAgo(o.created_at)}
                     amount={o.amount_nok}
                     dim
@@ -494,11 +494,11 @@ export default async function AdminPage() {
               <Link
                 key={item.id}
                 href={`/vare/${item.id}`}
-                className="flex items-center justify-between gap-3 p-4 transition hover:bg-stone-50"
+                className="flex items-center justify-between gap-3 p-4 transition hover:bg-paper"
               >
                 <div className="min-w-0 space-y-1">
                   <p className="line-clamp-1 text-sm font-medium">{item.title}</p>
-                  <p className="line-clamp-1 text-xs text-stone-500">
+                  <p className="line-clamp-1 text-xs text-ink-3">
                     {name(item.seller_id)} · {fmtAgo(item.created_at)}
                   </p>
                 </div>
@@ -520,18 +520,18 @@ export default async function AdminPage() {
                 <Link
                   key={`${t.itemId}:${t.buyerId}`}
                   href={`/admin/chat/${t.itemId}/${t.buyerId}`}
-                  className="flex items-start justify-between gap-3 p-4 transition hover:bg-stone-50"
+                  className="flex items-start justify-between gap-3 p-4 transition hover:bg-paper"
                 >
                   <div className="min-w-0 space-y-1">
                     <p className="line-clamp-1 text-sm font-medium">{title(t.itemId)}</p>
-                    <p className="line-clamp-1 text-xs text-stone-500">
+                    <p className="line-clamp-1 text-xs text-ink-3">
                       {name(t.buyerId)} og {name(item?.seller_id ?? null)}
                     </p>
-                    <p className="text-xs text-stone-500">
+                    <p className="text-xs text-ink-3">
                       {t.count} {t.count === 1 ? "melding" : "meldinger"} · {fmtAgo(t.last.created_at)}
                     </p>
                   </div>
-                  <span className="shrink-0 text-xs font-medium text-[#5a6b32]">Åpne</span>
+                  <span className="shrink-0 text-xs font-medium text-olive">Åpne</span>
                 </Link>
               );
             })}

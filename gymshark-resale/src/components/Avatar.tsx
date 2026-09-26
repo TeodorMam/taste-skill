@@ -28,7 +28,7 @@ export function Avatar({
         alt=""
         loading="lazy"
         decoding="async"
-        className={`${container} shrink-0 rounded-full object-cover`}
+        className={`${container} shrink-0 rounded-circle object-cover`}
       />
     );
   }
@@ -36,9 +36,9 @@ export function Avatar({
   const hasName = !!profile?.display_name?.trim();
 
   return (
-    <div className={`flex ${container} shrink-0 items-center justify-center rounded-full bg-[#5a6b32]/10`}>
+    <div className={`flex ${container} shrink-0 items-center justify-center rounded-circle bg-[#DCD8CC]`}>
       {hasName ? (
-        <span className={`${text} font-semibold text-[#5a6b32]`}>
+        <span className={`${text} font-semibold tracking-[0.01em] text-ink-2`}>
           {profileInitials(profile, null)}
         </span>
       ) : (
@@ -59,7 +59,7 @@ function PersonIcon({ size }: { size: number }) {
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-stone-500"
+      className="text-ink-3"
       aria-hidden
     >
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />

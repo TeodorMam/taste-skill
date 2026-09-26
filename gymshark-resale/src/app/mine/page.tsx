@@ -147,18 +147,18 @@ export default function MinePage() {
   }
 
   if (userId === undefined) {
-    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+    return <p className="py-6 text-sm text-ink-3">Laster…</p>;
   }
   if (userId === null) {
     return (
       <section className="space-y-3 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Mine annonser</h1>
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-ink-2">
           Logg inn for å se annonsene dine.
         </p>
         <Link
           href="/logg-inn?next=/mine"
-          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+          className="inline-block rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
         >
           Logg inn
         </Link>
@@ -171,13 +171,13 @@ export default function MinePage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Mine annonser</h1>
-          <p className="mt-1 text-sm text-stone-500">
+          <p className="mt-1 text-sm text-ink-3">
             Alt du har lagt ut, på ett sted.
           </p>
         </div>
         <Link
           href="/ny-annonse"
-          className="rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 hover:bg-black"
+          className="rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink"
         >
           + Ny annonse
         </Link>
@@ -202,7 +202,7 @@ export default function MinePage() {
       </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>
       )}
 
       {filtered === null && !error && (
@@ -214,8 +214,8 @@ export default function MinePage() {
       )}
 
       {filtered && filtered.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
-          <p className="font-medium text-stone-700">
+        <div className="rounded-sm border border-dashed border-line-2 p-10 text-center text-sm text-ink-3">
+          <p className="font-medium text-ink-2">
             {tab === "active"
               ? "Ingen aktive annonser"
               : tab === "sold"
@@ -225,7 +225,7 @@ export default function MinePage() {
           <p className="mt-1">Legg ut din første vare, det tar under ett minutt.</p>
           <Link
             href="/ny-annonse"
-            className="mt-4 inline-block rounded-full bg-stone-900 px-5 py-2.5 text-xs font-medium text-stone-50 hover:bg-black"
+            className="mt-4 inline-block rounded-sm bg-ink px-5 py-2.5 text-xs font-medium text-paper hover:bg-ink"
           >
             Legg ut vare
           </Link>
@@ -238,15 +238,15 @@ export default function MinePage() {
             <div key={item.id} className="space-y-2">
               <ItemCard item={item} hideSeller />
               {soldPickerItemId === item.id ? (
-                <div className="space-y-1.5 rounded-xl border border-stone-200 bg-stone-50 p-3">
-                  <p className="text-[11px] font-medium text-stone-600">Hva skjedde?</p>
-                  {pickerLoading && <p className="text-[11px] text-stone-500">Laster…</p>}
+                <div className="space-y-1.5 rounded-sm border border-line bg-paper p-3">
+                  <p className="text-[11px] font-medium text-ink-2">Hva skjedde?</p>
+                  {pickerLoading && <p className="text-[11px] text-ink-3">Laster…</p>}
                   {pickerBuyers.map(({ buyerId, name }) => (
                     <button
                       key={buyerId}
                       onClick={() => markSoldWithBuyer(item, buyerId)}
                       disabled={busyId === item.id}
-                      className="w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-left text-[11px] font-medium text-stone-800 hover:border-[#5a6b32] hover:bg-[#5a6b32]/5 disabled:opacity-50"
+                      className="w-full rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-left text-[11px] font-medium text-ink hover:border-olive hover:bg-olive/5 disabled:opacity-50"
                     >
                       Solgt til {name}
                     </button>
@@ -254,20 +254,20 @@ export default function MinePage() {
                   <button
                     onClick={() => markSoldWithBuyer(item, null)}
                     disabled={busyId === item.id}
-                    className="w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-left text-[11px] text-stone-600 hover:border-stone-500 disabled:opacity-50"
+                    className="w-full rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-left text-[11px] text-ink-2 hover:border-ink disabled:opacity-50"
                   >
                     Solgte et annet sted
                   </button>
                   <button
                     onClick={() => markSoldWithBuyer(item, null)}
                     disabled={busyId === item.id}
-                    className="w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-left text-[11px] text-stone-600 hover:border-stone-500 disabled:opacity-50"
+                    className="w-full rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-left text-[11px] text-ink-2 hover:border-ink disabled:opacity-50"
                   >
                     Bestemte meg for å ikke selge
                   </button>
                   <button
                     onClick={() => setSoldPickerItemId(null)}
-                    className="w-full pt-0.5 text-center text-[11px] text-stone-500 hover:text-stone-600"
+                    className="w-full pt-0.5 text-center text-[11px] text-ink-3 hover:text-ink-2"
                   >
                     Avbryt
                   </button>
@@ -276,18 +276,18 @@ export default function MinePage() {
                 <div className="flex gap-1.5">
                   {confirmId === item.id ? (
                     <>
-                      <span className="flex-1 rounded-full border border-red-200 bg-red-50 px-2 py-1.5 text-center text-[11px] font-medium text-red-700">
+                      <span className="flex-1 rounded-sm border border-clay/40 bg-clay-soft px-2 py-1.5 text-center text-[11px] font-medium text-clay">
                         Sikker?
                       </span>
                       <button
                         onClick={() => deleteItem(item)}
-                        className="flex-1 rounded-full border border-red-500 bg-red-600 px-2 py-1.5 text-[11px] font-medium text-white hover:bg-red-700"
+                        className="flex-1 rounded-sm border border-clay bg-clay px-2 py-1.5 text-[11px] font-medium text-raised hover:bg-clay"
                       >
                         Slett
                       </button>
                       <button
                         onClick={() => setConfirmId(null)}
-                        className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
+                        className="rounded-sm border border-line-2 bg-raised px-2.5 py-1.5 text-[11px] font-medium text-ink-2 hover:border-ink"
                       >
                         Avbryt
                       </button>
@@ -297,20 +297,20 @@ export default function MinePage() {
                       <button
                         onClick={() => item.is_sold ? reactivate(item) : openSoldPicker(item)}
                         disabled={busyId === item.id}
-                        className="flex-1 rounded-full border border-stone-300 bg-white px-2 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500 disabled:opacity-50"
+                        className="flex-1 rounded-sm border border-line-2 bg-raised px-2 py-1.5 text-[11px] font-medium text-ink-2 hover:border-ink disabled:opacity-50"
                       >
                         {busyId === item.id ? "…" : item.is_sold ? "Gjør aktiv" : "Marker solgt"}
                       </button>
                       <Link
                         href={`/vare/${item.id}/rediger`}
-                        className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:border-stone-500"
+                        className="rounded-sm border border-line-2 bg-raised px-2.5 py-1.5 text-[11px] font-medium text-ink-2 hover:border-ink"
                       >
                         ✎
                       </Link>
                       <button
                         onClick={() => askDelete(item.id)}
                         disabled={busyId === item.id}
-                        className="rounded-full border border-red-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-red-700 hover:border-red-400 hover:bg-red-50 disabled:opacity-50"
+                        className="rounded-sm border border-clay/40 bg-raised px-2.5 py-1.5 text-[11px] font-medium text-clay hover:border-clay/40 hover:bg-clay-soft disabled:opacity-50"
                         aria-label="Slett"
                       >
                         🗑
@@ -329,8 +329,8 @@ export default function MinePage() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-3 sm:p-4">
-      <p className="text-[10px] font-medium uppercase tracking-wider text-stone-500">
+    <div className="rounded-sm border border-line bg-raised p-3 sm:p-4">
+      <p className="text-[10px] font-medium uppercase tracking-wider text-ink-3">
         {label}
       </p>
       <p className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">
@@ -352,10 +352,10 @@ function TabChip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full border px-4 py-1.5 text-xs font-medium transition ${
+      className={`rounded-sm border px-4 py-1.5 text-xs font-medium transition ${
         active
-          ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-          : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+          ? "border-olive bg-olive text-raised"
+          : "border-line-2 bg-raised text-ink-2 hover:border-ink"
       }`}
     >
       {children}

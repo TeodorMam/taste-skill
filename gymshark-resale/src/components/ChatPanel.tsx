@@ -173,13 +173,13 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
   const lastSentIdx = messages.reduce((acc, m, i) => (m.sender_id === meId ? i : acc), -1);
 
   return (
-    <div className="flex flex-col rounded-2xl border border-stone-200 bg-white">
+    <div className="flex flex-col rounded-sm border border-line bg-raised">
       <div
         ref={listRef}
         className="max-h-72 min-h-32 space-y-2 overflow-y-auto p-3"
       >
         {messages.length === 0 && (
-          <p className="py-6 text-center text-xs text-stone-500">
+          <p className="py-6 text-center text-xs text-ink-3">
             {meId === sellerId
               ? "Ingen meldinger fra denne kjøperen enda."
               : "Si hei, spør om størrelse, henting eller tilstand."}
@@ -200,30 +200,30 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
               {m.image_url ? (
                 <a href={m.image_url} target="_blank" rel="noopener noreferrer" className="max-w-[75%]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.image_url} alt="" className="rounded-2xl object-cover max-h-56 w-full" />
+                  <img src={m.image_url} alt="" className="rounded-sm object-cover max-h-56 w-full" />
                 </a>
               ) : (
                 <div
-                  className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
-                    mine ? "bg-stone-900 text-stone-50" : "bg-stone-100 text-stone-900"
+                  className={`max-w-[75%] rounded-sm px-3 py-2 text-sm ${
+                    mine ? "bg-ink text-paper" : "bg-sunk text-ink"
                   }`}
                 >
                   {m.body}
                 </div>
               )}
-              <span className="mt-0.5 px-1 text-[10px] text-stone-500">
+              <span className="mt-0.5 px-1 text-[10px] text-ink-3">
                 {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
               </span>
             </div>
           );
         })}
       </div>
-      <form onSubmit={send} className="flex items-center gap-2 border-t border-stone-200 p-2">
+      <form onSubmit={send} className="flex items-center gap-2 border-t border-line p-2">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || sending}
-          className="shrink-0 rounded-full p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-40"
+          className="shrink-0 rounded-sm p-2 text-ink-3 hover:bg-sunk hover:text-ink-2 disabled:opacity-40"
           aria-label="Send bilde"
         >
           {uploading ? (
@@ -247,18 +247,18 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="Skriv en melding…"
-          className="min-w-0 flex-1 rounded-full border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32]"
+          className="min-w-0 flex-1 rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm outline-none focus:border-olive"
         />
         <button
           type="submit"
           disabled={sending || !body.trim()}
-          className="shrink-0 rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-40"
+          className="shrink-0 rounded-sm bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-ink disabled:opacity-40"
         >
           Send
         </button>
       </form>
       {error && (
-        <p className="border-t border-stone-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+        <p className="border-t border-line bg-clay-soft px-3 py-2 text-xs text-clay">
           {error}
         </p>
       )}

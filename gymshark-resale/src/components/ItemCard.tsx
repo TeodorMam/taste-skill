@@ -32,9 +32,9 @@ export function ItemCard({
   return (
     <Link
       href={`/vare/${item.id}`}
-      className="group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow-md"
+      className="group block overflow-hidden rounded-sm border border-line bg-raised transition hover:-translate-y-0.5 hover:border-ink"
     >
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-stone-100">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-sunk">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -47,13 +47,13 @@ export function ItemCard({
             }`}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-stone-500">
+          <div className="flex h-full w-full items-center justify-center text-xs text-ink-3">
             Ingen bilde
           </div>
         )}
         <FavoriteButton itemId={item.id} currentPrice={item.price} sellerId={item.seller_id} itemTitle={item.title} />
         {images.length > 1 && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/65 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-sm bg-ink/65 px-2 py-0.5 text-[10px] font-medium text-raised">
             <svg
               width="10"
               height="10"
@@ -72,14 +72,14 @@ export function ItemCard({
           </div>
         )}
         {item.is_sold && (
-          <div className="absolute bottom-2 left-2 rounded-full bg-stone-900 px-2 py-0.5 text-xs font-medium text-stone-50">
+          <div className="absolute bottom-2 left-2 rounded-sm bg-ink px-2 py-0.5 text-xs font-medium text-paper">
             Solgt
           </div>
         )}
       </div>
       <div className="space-y-1 p-3">
         {item.brand && (
-          <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+          <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-wider text-ink-3">
             {item.brand}
           </p>
         )}
@@ -88,7 +88,7 @@ export function ItemCard({
           <p className="shrink-0 text-sm font-semibold">{formatPrice(item.price)}</p>
         </div>
         <div className="flex items-center justify-between gap-1">
-          <p className="line-clamp-1 text-xs text-stone-500">
+          <p className="line-clamp-1 text-xs text-ink-3">
             Str. {item.size} · {item.condition}
           </p>
           {shippingIcon(item.shipping) && (
@@ -100,7 +100,7 @@ export function ItemCard({
         {showSeller && (
           <div className="flex items-center gap-1.5 pt-1">
             <Avatar profile={seller} size="xs" />
-            <span className="line-clamp-1 text-[11px] text-stone-500">
+            <span className="line-clamp-1 text-[11px] text-ink-3">
               {sellerName}
             </span>
           </div>

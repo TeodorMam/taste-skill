@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<p className="py-10 text-sm text-stone-500">Laster…</p>}>
+    <Suspense fallback={<p className="py-10 text-sm text-ink-3">Laster…</p>}>
       <LoginInner />
     </Suspense>
   );
@@ -234,10 +234,10 @@ function LoginInner() {
   if (forgotOpen) {
     return (
       <section className="space-y-5 py-8">
-        <button onClick={closeForgot} className="text-sm text-stone-500 hover:text-black">← Tilbake til innlogging</button>
+        <button onClick={closeForgot} className="text-sm text-ink-3 hover:text-ink">← Tilbake til innlogging</button>
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Glemt passord</h1>
-          <p className="mt-1 text-sm text-stone-500">
+          <p className="mt-1 text-sm text-ink-3">
             {forgotStage === "idle" && "Skriv inn e-posten din, vi sender en engangskode."}
             {forgotStage === "sent" && "Skriv inn koden fra e-posten."}
             {forgotStage === "verified" && "Velg et nytt passord."}
@@ -248,7 +248,7 @@ function LoginInner() {
           <form onSubmit={sendForgotCode} className="space-y-3">
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
               placeholder="deg@eksempel.no" required autoComplete="email" className={inp} />
-            {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+            {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
             <button type="submit" disabled={submitting} className={btn}>{submitting ? "Sender…" : "Send kode"}</button>
           </form>
         )}
@@ -259,11 +259,11 @@ function LoginInner() {
               onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
               placeholder="Engangskode" autoFocus autoComplete="one-time-code"
               className={`${inp} text-center text-lg tracking-[0.3em]`} />
-            {info && <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{info}</p>}
-            {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+            {info && <p className="rounded-sm bg-olive-soft p-3 text-sm text-olive">{info}</p>}
+            {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
             <button type="submit" disabled={submitting} className={btn}>{submitting ? "Verifiserer…" : "Verifiser kode"}</button>
             <button type="button" onClick={() => { setForgotStage("idle"); setCode(""); setInfo(null); setError(null); }}
-              className="w-full text-center text-xs text-stone-500 hover:text-black">Bruk en annen e-post</button>
+              className="w-full text-center text-xs text-ink-3 hover:text-ink">Bruk en annen e-post</button>
           </form>
         )}
 
@@ -273,7 +273,7 @@ function LoginInner() {
               autoComplete="new-password" show={showPassword} onToggle={() => setShowPassword((v) => !v)} />
             <PasswordInput value={confirmPassword} onChange={setConfirmPassword} placeholder="Bekreft nytt passord"
               autoComplete="new-password" show={showConfirm} onToggle={() => setShowConfirm((v) => !v)} />
-            {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+            {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
             <button type="submit" disabled={submitting} className={btn}>{submitting ? "Lagrer…" : "Lagre nytt passord"}</button>
           </form>
         )}
@@ -288,7 +288,7 @@ function LoginInner() {
       {tab === "signup" && (
         <div className="flex items-center gap-3">
           <SignupProgress step={SIGNUP_STEPS[signupStage]} total={5} />
-          <span className="text-xs text-stone-500">Steg {SIGNUP_STEPS[signupStage]} av 5</span>
+          <span className="text-xs text-ink-3">Steg {SIGNUP_STEPS[signupStage]} av 5</span>
         </div>
       )}
 
@@ -302,7 +302,7 @@ function LoginInner() {
             : signupStage === "delivery" ? "Leveringsinformasjon"
             : "Opprett ny bruker"}
         </h1>
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-1 text-sm text-ink-3">
           {tab === "signin" ? "Med e-post og passord. Du forblir innlogget på denne enheten."
             : signupStage === "code" ? `Vi sendte en kode til ${email}.`
             : signupStage === "password" ? "Velg et sikkert passord for kontoen din."
@@ -325,7 +325,7 @@ function LoginInner() {
         <form onSubmit={sendSignupCode} className="space-y-3">
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
             placeholder="deg@eksempel.no" required autoComplete="email" className={inp} />
-          {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
           <button type="submit" disabled={submitting} className={btn}>{submitting ? "Sender…" : "Send bekreftelseskode"}</button>
         </form>
       )}
@@ -333,15 +333,15 @@ function LoginInner() {
       {/* Step 1, email code */}
       {tab === "signup" && signupStage === "code" && (
         <form onSubmit={verifySignupCode} className="space-y-3">
-          {info && <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{info}</p>}
+          {info && <p className="rounded-sm bg-olive-soft p-3 text-sm text-olive">{info}</p>}
           <input type="text" inputMode="numeric" pattern="[0-9]*" value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
             placeholder="Bekreftelseskode" autoFocus autoComplete="one-time-code"
             className={`${inp} text-center text-lg tracking-[0.3em]`} />
-          {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
           <button type="submit" disabled={submitting} className={btn}>{submitting ? "Verifiserer…" : "Bekreft kode"}</button>
           <button type="button" onClick={() => { setSignupStage("email"); setCode(""); setInfo(null); setError(null); }}
-            className="w-full text-center text-xs text-stone-500 hover:text-black">Bruk en annen e-post</button>
+            className="w-full text-center text-xs text-ink-3 hover:text-ink">Bruk en annen e-post</button>
         </form>
       )}
 
@@ -352,7 +352,7 @@ function LoginInner() {
             autoComplete="new-password" show={showPassword} onToggle={() => setShowPassword((v) => !v)} autoFocus />
           <PasswordInput value={confirmPassword} onChange={setConfirmPassword} placeholder="Bekreft passord"
             autoComplete="new-password" show={showConfirm} onToggle={() => setShowConfirm((v) => !v)} />
-          {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
           <button type="submit" disabled={submitting} className={btn}>{submitting ? "Lagrer…" : "Fortsett"}</button>
         </form>
       )}
@@ -364,7 +364,7 @@ function LoginInner() {
             onChange={(e) => setDob(formatDob(e.target.value))}
             placeholder="DD.MM.ÅÅÅÅ" autoFocus
             className={`${inp} text-center tracking-widest`} maxLength={10} />
-          {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
           <button type="submit" disabled={submitting || dob.length < 10} className={btn}>{submitting ? "Lagrer…" : "Fortsett"}</button>
         </form>
       )}
@@ -377,10 +377,10 @@ function LoginInner() {
           <textarea value={bio} onChange={(e) => setBio(e.target.value)}
             placeholder="Kort bio (valgfritt), hva du selger, hvor du trener"
             rows={3} maxLength={280} className={`${inp} resize-none`} />
-          {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
           <button type="submit" disabled={submitting} className={btn}>{submitting ? "Lagrer…" : "Fortsett"}</button>
           <button type="button" onClick={() => setSignupStage("delivery")}
-            className="w-full text-center text-xs text-stone-500 hover:text-black">Hopp over</button>
+            className="w-full text-center text-xs text-ink-3 hover:text-ink">Hopp over</button>
         </form>
       )}
 
@@ -400,10 +400,10 @@ function LoginInner() {
           </div>
           <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
             placeholder="Telefon (f.eks. 40012345)" inputMode="tel" className={inp} />
-          {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
           <button type="submit" disabled={submitting} className={btn}>{submitting ? "Fullfører…" : "Fullfør registrering"}</button>
           <button type="button" onClick={() => { router.push(next); router.refresh(); }}
-            className="w-full text-center text-xs text-stone-500 hover:text-black">Hopp over</button>
+            className="w-full text-center text-xs text-ink-3 hover:text-ink">Hopp over</button>
         </form>
       )}
 
@@ -414,10 +414,10 @@ function LoginInner() {
             placeholder="deg@eksempel.no" required autoComplete="email" className={inp} />
           <PasswordInput value={password} onChange={setPassword} placeholder="Passord"
             autoComplete="current-password" show={showPassword} onToggle={() => setShowPassword((v) => !v)} />
-          {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
           <button type="submit" disabled={submitting} className={btn}>{submitting ? "Et øyeblikk…" : "Logg inn"}</button>
           <button type="button" onClick={() => { setForgotOpen(true); resetState(); }}
-            className="w-full text-center text-xs text-[#5a6b32] underline hover:text-[#435022]">Glemt passord?</button>
+            className="w-full text-center text-xs text-olive underline hover:text-olive-press">Glemt passord?</button>
         </form>
       )}
     </section>
@@ -448,8 +448,8 @@ function SignupProgress({ step, total }: { step: number; total: number }) {
 function TabChip({ children, active, onClick }: { children: React.ReactNode; active: boolean; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick}
-      className={`rounded-full border px-4 py-1.5 text-xs font-medium transition ${
-        active ? "border-[#5a6b32] bg-[#5a6b32] text-white" : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+      className={`rounded-sm border px-4 py-1.5 text-xs font-medium transition ${
+        active ? "border-olive bg-olive text-raised" : "border-line-2 bg-raised text-ink-2 hover:border-ink"
       }`}>
       {children}
     </button>
@@ -465,7 +465,7 @@ function PasswordInput({ value, onChange, placeholder, autoComplete, show, onTog
       <input type={show ? "text" : "password"} value={value} onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder} autoComplete={autoComplete} autoFocus={autoFocus} className={`${inp} pr-10`} />
       <button type="button" onClick={onToggle}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-700"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 hover:text-ink-2"
         aria-label={show ? "Skjul passord" : "Vis passord"}>
         {show ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -485,7 +485,7 @@ function PasswordInput({ value, onChange, placeholder, autoComplete, show, onTog
 }
 
 const inp =
-  "block w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30";
+  "block w-full rounded-sm border border-line-2 bg-raised px-3 py-2.5 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30";
 
 const btn =
-  "w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50";
+  "w-full rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50";

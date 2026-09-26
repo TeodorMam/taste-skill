@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Archivo } from "next/font/google";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
@@ -8,6 +9,15 @@ import { BottomNav } from "@/components/BottomNav";
 import { ClientProviders } from "@/components/ClientProviders";
 import { SearchButton } from "@/components/SearchButton";
 import { Analytics } from "@/components/Analytics";
+
+// Archivo is variable in both width and weight. Headings and prices use the
+// narrow end of the width axis; body text stays at 100 %.
+const archivo = Archivo({
+  subsets: ["latin", "latin-ext"],
+  axes: ["wdth"],
+  variable: "--font-archivo",
+  display: "swap",
+});
 
 const SITE_DESCRIPTION =
   "Norges første bruktmarked kun for treningsklær. Kjøp og selg brukt Gymshark, Nike, YoungLA, Craft, DFYNE og mer, trygg betaling via Stripe.";
@@ -98,19 +108,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } = await supabase.auth.getUser();
 
   return (
-    <html lang="no">
-      <body className="bg-stone-50 text-stone-900">
+    <html lang="no" className={archivo.variable}>
+      <body className="bg-paper font-sans text-ink">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD) }}
         />
         <ClientProviders>
         <Analytics />
-        <header className="sticky top-0 z-10 border-b border-stone-200 bg-stone-50/80 backdrop-blur">
+        <header className="sticky top-0 z-10 border-b border-line bg-paper/80">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
             <Link href="/" className="text-base font-semibold tracking-tight">
               aktivbruk
-              <span className="text-[#5a6b32]">.</span>
+              <span className="text-olive">.</span>
             </Link>
             <div className="hidden sm:block">
               <NavLinks isLoggedIn={!!user} />
@@ -119,7 +129,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {!user && (
               <Link
                 href="/logg-inn"
-                className="rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-50 hover:bg-black sm:hidden"
+                className="rounded-sm bg-ink px-3 py-1.5 text-xs font-medium text-paper hover:bg-ink sm:hidden"
               >
                 Logg inn
               </Link>
@@ -128,7 +138,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <form action="/auth/signout" method="post" className="sm:hidden">
                 <button
                   type="submit"
-                  className="text-xs text-stone-500 hover:text-black"
+                  className="text-xs text-ink-3 hover:text-ink"
                 >
                   Logg ut
                 </button>
@@ -137,23 +147,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </div>
         </header>
         <main className="mx-auto max-w-3xl px-4 pb-24 pt-6 sm:pb-10">{children}</main>
-        <footer className="mx-auto max-w-3xl px-4 pb-24 pt-4 text-xs text-stone-500 sm:pb-10">
+        <footer className="mx-auto max-w-3xl px-4 pb-24 pt-4 text-xs text-ink-3 sm:pb-10">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p>
               Aktivbruk, bruktmarked for treningsklær. Et uavhengig prosjekt, ikke
               tilknyttet noen merkevare.
             </p>
             <div className="flex items-center gap-4">
-              <a href="mailto:kontakt@aktivbruk.com" className="text-stone-500 hover:text-black">
+              <a href="mailto:kontakt@aktivbruk.com" className="text-ink-3 hover:text-ink">
                 kontakt@aktivbruk.com
               </a>
-              <Link href="/om" className="text-stone-500 underline hover:text-black">
+              <Link href="/om" className="text-ink-3 underline hover:text-ink">
                 Om & FAQ
               </Link>
-              <Link href="/vilkar" className="text-stone-500 underline hover:text-black">
+              <Link href="/vilkar" className="text-ink-3 underline hover:text-ink">
                 Vilkår
               </Link>
-              <Link href="/personvern" className="text-stone-500 underline hover:text-black">
+              <Link href="/personvern" className="text-ink-3 underline hover:text-ink">
                 Personvern
               </Link>
             </div>

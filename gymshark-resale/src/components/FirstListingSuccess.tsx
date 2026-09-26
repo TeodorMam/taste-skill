@@ -65,16 +65,16 @@ export function FirstListingSuccess({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-0 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       onClick={close}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl"
+        className="w-full max-w-md overflow-hidden rounded-t-sheet bg-raised sm:rounded-sm"
       >
-        <div className="bg-gradient-to-br from-[#5a6b32] to-[#3d4720] px-6 py-8 text-center text-white">
+        <div className="bg-olive px-6 py-8 text-center text-raised">
           <div className="text-5xl">🎉</div>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight">
             Annonsen er ute!
@@ -85,75 +85,75 @@ export function FirstListingSuccess({
         </div>
 
         <div className="space-y-3 px-5 py-5">
-          <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
+          <p className="text-xs font-medium uppercase tracking-wider text-ink-3">
             Neste steg
           </p>
 
           <button
             type="button"
             onClick={copyLink}
-            className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 text-left transition hover:border-[#5a6b32]"
+            className="flex w-full items-center justify-between rounded-sm border border-line bg-raised px-4 py-3 text-left transition hover:border-olive"
           >
             <span className="flex items-center gap-3">
               <span className="text-xl">🔗</span>
               <span>
-                <span className="block text-sm font-medium text-stone-900">
+                <span className="block text-sm font-medium text-ink">
                   {copied ? "Lenke kopiert!" : "Del lenken"}
                 </span>
-                <span className="block text-xs text-stone-500">
+                <span className="block text-xs text-ink-3">
                   Send til venner eller del på Stories
                 </span>
               </span>
             </span>
-            <span className="text-stone-500">›</span>
+            <span className="text-ink-3">›</span>
           </button>
 
           {!profileComplete && (
             <Link
               href="/profil"
               onClick={close}
-              className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 transition hover:border-[#5a6b32]"
+              className="flex w-full items-center justify-between rounded-sm border border-line bg-raised px-4 py-3 transition hover:border-olive"
             >
               <span className="flex items-center gap-3">
                 <span className="text-xl">👤</span>
                 <span>
-                  <span className="block text-sm font-medium text-stone-900">
+                  <span className="block text-sm font-medium text-ink">
                     Fyll ut profilen
                   </span>
-                  <span className="block text-xs text-stone-500">
+                  <span className="block text-xs text-ink-3">
                     Navn og bilde gir kjøpere mer tillit
                   </span>
                 </span>
               </span>
-              <span className="text-stone-500">›</span>
+              <span className="text-ink-3">›</span>
             </Link>
           )}
 
           <Link
             href="/meldinger"
             onClick={close}
-            className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 transition hover:border-[#5a6b32]"
+            className="flex w-full items-center justify-between rounded-sm border border-line bg-raised px-4 py-3 transition hover:border-olive"
           >
             <span className="flex items-center gap-3">
               <span className="text-xl">💬</span>
               <span>
-                <span className="block text-sm font-medium text-stone-900">
+                <span className="block text-sm font-medium text-ink">
                   Hold øye med innboksen
                 </span>
-                <span className="block text-xs text-stone-500">
+                <span className="block text-xs text-ink-3">
                   Raske svar = raske salg, du får også e-postvarsler
                 </span>
               </span>
             </span>
-            <span className="text-stone-500">›</span>
+            <span className="text-ink-3">›</span>
           </Link>
         </div>
 
-        <div className="border-t border-stone-100 bg-stone-50 px-5 py-3">
+        <div className="border-t border-line bg-paper px-5 py-3">
           <button
             type="button"
             onClick={close}
-            className="w-full rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-black"
+            className="w-full rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-raised hover:bg-ink"
           >
             Til annonsen
           </button>

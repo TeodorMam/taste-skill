@@ -27,7 +27,7 @@ export function ShareButton({ url, title }: { url: string; title: string }) {
     <button
       type="button"
       onClick={onShare}
-      className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500"
+      className="inline-flex items-center gap-1.5 rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-xs font-medium text-ink-2 hover:border-ink"
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         <circle cx="18" cy="5" r="3" />

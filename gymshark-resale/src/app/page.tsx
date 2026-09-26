@@ -30,29 +30,29 @@ export default async function HomePage() {
     <div className="space-y-14 py-10 sm:py-16">
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="flex flex-col items-start gap-6">
-        <h1 className="text-5xl font-semibold tracking-tight text-stone-900 sm:text-6xl">
+        <h1 className="text-5xl font-semibold tracking-tight text-ink sm:text-6xl">
           Brukte treningsklær, <br className="hidden sm:inline" />
-          <span className="text-[#5a6b32]">bedre priser.</span>
+          <span className="text-olive">bedre priser.</span>
         </h1>
-        <p className="max-w-xl text-base text-stone-600 sm:text-lg">
+        <p className="max-w-xl text-base text-ink-2 sm:text-lg">
           Kjøp og selg brukte treningsklær fra Gymshark, Nike, YoungLA, Craft,
           DFYNE og mange flere. Ett minutt å legge ut, gratis å bruke.
         </p>
         <div className="flex flex-wrap gap-3">
           <Link
             href="/varer"
-            className="rounded-full bg-stone-900 px-6 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+            className="rounded-sm bg-ink px-6 py-3 text-sm font-medium text-paper hover:bg-ink"
           >
             Utforsk
           </Link>
           <Link
             href="/ny-annonse"
-            className="rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-medium text-stone-900 hover:border-stone-500"
+            className="rounded-sm border border-line-2 bg-raised px-6 py-3 text-sm font-medium text-ink hover:border-ink"
           >
             Legg ut vare
           </Link>
         </div>
-        <p className="text-xs text-stone-500">Gratis å bruke – ingen skjulte gebyrer</p>
+        <p className="text-xs text-ink-3">Gratis å bruke – ingen skjulte gebyrer</p>
       </section>
 
       {/* ── Nytt inne ─────────────────────────────────────────────────────── */}
@@ -62,7 +62,7 @@ export default async function HomePage() {
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Nytt inne</h2>
-          <p className="mt-0.5 text-sm text-stone-500">Nylig lagt ut treningsklær</p>
+          <p className="mt-0.5 text-sm text-ink-3">Nylig lagt ut treningsklær</p>
         </div>
         <ItemsWithLoadMore
           initialItems={items}

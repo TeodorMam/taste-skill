@@ -17,7 +17,7 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   ];
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-stone-200 bg-white/95 backdrop-blur sm:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-raised/95 sm:hidden">
       <div className="mx-auto flex max-w-3xl items-stretch justify-around">
         {items.map((it) => {
           const active =
@@ -28,13 +28,13 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
               key={it.href}
               href={it.href}
               className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition ${
-                active ? "text-[#5a6b32]" : "text-stone-500"
+                active ? "text-olive" : "text-ink-3"
               }`}
             >
               <span className="relative">
                 <Icon active={active} />
                 {it.badge > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold leading-none text-white">
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-sm bg-clay px-1 text-[9px] font-bold leading-none text-raised">
                     {it.badge > 9 ? "9+" : it.badge}
                   </span>
                 )}

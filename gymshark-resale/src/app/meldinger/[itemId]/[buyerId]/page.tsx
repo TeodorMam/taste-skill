@@ -449,15 +449,15 @@ export default function ChatPage() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
-  if (meId === undefined) return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+  if (meId === undefined) return <p className="py-6 text-sm text-ink-3">Laster…</p>;
 
   if (meId === null) {
     return (
       <section className="space-y-3 py-10">
-        <p className="text-sm text-stone-600">Logg inn for å se chatten.</p>
+        <p className="text-sm text-ink-2">Logg inn for å se chatten.</p>
         <Link
           href={`/logg-inn?next=/meldinger/${itemId}/${buyerId}`}
-          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+          className="inline-block rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
         >
           Logg inn
         </Link>
@@ -467,14 +467,14 @@ export default function ChatPage() {
 
   return (
     <div
-      className="-mx-4 -mt-6 flex flex-col bg-white"
+      className="-mx-4 -mt-6 flex flex-col bg-raised"
       style={{ height: "calc(100dvh - 3.5rem)" }}
     >
       {/* ── Top bar ──────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-stone-200 px-4 py-3">
+      <div className="flex shrink-0 items-center gap-3 border-b border-line px-4 py-3">
         <button
           onClick={() => router.push("/meldinger")}
-          className="shrink-0 rounded-full p-1 text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+          className="shrink-0 rounded-sm p-1 text-ink-2 hover:bg-sunk hover:text-ink"
           aria-label="Tilbake til innboks"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -484,26 +484,26 @@ export default function ChatPage() {
         {otherId ? (
           <Link
             href={`/selger/${otherId}`}
-            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg -mx-1 px-1 py-1 transition hover:bg-stone-100"
+            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-sm -mx-1 px-1 py-1 transition hover:bg-sunk"
             aria-label={`Se profil til ${otherName}`}
           >
             <OtherAvatar profile={otherProfile} name={otherName} />
-            <p className="truncate text-sm font-semibold text-stone-900">{otherName}</p>
+            <p className="truncate text-sm font-semibold text-ink">{otherName}</p>
           </Link>
         ) : (
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <OtherAvatar profile={otherProfile} name={otherName} />
-            <p className="truncate text-sm font-semibold text-stone-900">{otherName}</p>
+            <p className="truncate text-sm font-semibold text-ink">{otherName}</p>
           </div>
         )}
         {item && (
           <Link href={`/vare/${itemId}`} className="shrink-0" aria-label="Gå til annonse">
-            <div className="h-10 w-10 overflow-hidden rounded-xl bg-stone-100">
+            <div className="h-10 w-10 overflow-hidden rounded-sm bg-sunk">
               {cover ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={cover} alt="" className="h-full w-full object-cover" />
               ) : (
-                <div className="h-full w-full bg-stone-200" />
+                <div className="h-full w-full bg-line" />
               )}
             </div>
           </Link>
@@ -513,7 +513,7 @@ export default function ChatPage() {
       {/* ── Messages ─────────────────────────────────────────────────────── */}
       <div ref={listRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
         {messages.length === 0 && (
-          <p className="py-10 text-center text-xs text-stone-500">
+          <p className="py-10 text-center text-xs text-ink-3">
             {isSeller
               ? "Ingen meldinger fra denne kjøperen enda."
               : "Si hei, spør om størrelse, henting eller tilstand."}
@@ -534,7 +534,7 @@ export default function ChatPage() {
             return (
               <div key={m.id} className="flex flex-col items-center py-3">
                 <EventCard type={type as MessageType} metadata={m.metadata} />
-                <span className="mt-1 text-[10px] text-stone-500">{fmtTime(m.created_at)}</span>
+                <span className="mt-1 text-[10px] text-ink-3">{fmtTime(m.created_at)}</span>
               </div>
             );
           }
@@ -563,7 +563,7 @@ export default function ChatPage() {
                   onCancel={meta?.offer_id ? () => cancelAcceptedOffer(meta.offer_id) : undefined}
                   onWithdraw={meta?.offer_id ? () => withdrawPendingOffer(meta.offer_id) : undefined}
                 />
-                <span className="mt-0.5 px-1 text-[10px] text-stone-500">{fmtTime(m.created_at)}</span>
+                <span className="mt-0.5 px-1 text-[10px] text-ink-3">{fmtTime(m.created_at)}</span>
               </div>
             );
           }
@@ -574,9 +574,9 @@ export default function ChatPage() {
               <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
                 <a href={m.image_url!} target="_blank" rel="noopener noreferrer" className="max-w-[75%]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.image_url!} alt="" className="max-h-56 w-full rounded-2xl object-cover" />
+                  <img src={m.image_url!} alt="" className="max-h-56 w-full rounded-sm object-cover" />
                 </a>
-                <span className="mt-0.5 px-1 text-[10px] text-stone-500">
+                <span className="mt-0.5 px-1 text-[10px] text-ink-3">
                   {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
                 </span>
               </div>
@@ -603,13 +603,13 @@ export default function ChatPage() {
                     }}
                     rows={1}
                     autoFocus
-                    className="w-full resize-none rounded-2xl border border-[#5a6b32] bg-white px-3 py-2 text-sm leading-snug text-stone-900 outline-none"
+                    className="w-full resize-none rounded-sm border border-olive bg-raised px-3 py-2 text-sm leading-snug text-ink outline-none"
                   />
                   <div className="mt-1 flex justify-end gap-2">
                     <button
                       type="button"
                       onClick={cancelEdit}
-                      className="rounded-full px-3 py-1 text-xs font-medium text-stone-500 hover:text-stone-900"
+                      className="rounded-sm px-3 py-1 text-xs font-medium text-ink-3 hover:text-ink"
                     >
                       Avbryt
                     </button>
@@ -617,7 +617,7 @@ export default function ChatPage() {
                       type="button"
                       onClick={() => saveEdit(m.id)}
                       disabled={!editingText.trim()}
-                      className="rounded-full bg-[#5a6b32] px-3 py-1 text-xs font-semibold text-white hover:bg-[#435022] disabled:opacity-40"
+                      className="rounded-sm bg-olive px-3 py-1 text-xs font-semibold text-raised hover:bg-olive-press disabled:opacity-40"
                     >
                       Lagre
                     </button>
@@ -642,7 +642,7 @@ export default function ChatPage() {
                 {mine && menuOpen && (
                   <MessageMenu onEdit={() => beginEdit(m)} onDelete={() => deleteMessage(m.id)} />
                 )}
-                <span className="mt-1 px-1 text-[10px] text-stone-500">
+                <span className="mt-1 px-1 text-[10px] text-ink-3">
                   {fmtTime(m.created_at)}{wasEdited ? " · Redigert" : ""}{isSeen ? " · Sett" : ""}
                 </span>
               </div>
@@ -654,8 +654,8 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={mine ? (e) => { e.stopPropagation(); setOpenMenuId(menuOpen ? null : m.id); } : undefined}
-                className={`max-w-[75%] text-left whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm ${
-                  mine ? "bg-stone-900 text-stone-50 cursor-pointer" : "bg-stone-100 text-stone-900 cursor-default"
+                className={`max-w-[75%] text-left whitespace-pre-wrap break-words rounded-sm px-3 py-2 text-sm ${
+                  mine ? "bg-ink text-paper cursor-pointer" : "bg-sunk text-ink cursor-default"
                 }`}
                 aria-label={mine ? "Meldingsvalg" : undefined}
               >
@@ -664,7 +664,7 @@ export default function ChatPage() {
               {mine && menuOpen && (
                 <MessageMenu onEdit={() => beginEdit(m)} onDelete={() => deleteMessage(m.id)} />
               )}
-              <span className="mt-0.5 px-1 text-[10px] text-stone-500">
+              <span className="mt-0.5 px-1 text-[10px] text-ink-3">
                 {fmtTime(m.created_at)}{wasEdited ? " · Redigert" : ""}{isSeen ? " · Sett" : ""}
               </span>
             </div>
@@ -673,13 +673,13 @@ export default function ChatPage() {
       </div>
 
       {/* ── Input bar ────────────────────────────────────────────────────── */}
-      <div className="shrink-0 border-t border-stone-200 bg-white">
+      <div className="shrink-0 border-t border-line bg-raised">
         <form onSubmit={send} className="flex items-end gap-2 p-2">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || sending}
-            className="shrink-0 rounded-full p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-40"
+            className="shrink-0 rounded-sm p-2 text-ink-3 hover:bg-sunk hover:text-ink-2 disabled:opacity-40"
             aria-label="Send bilde"
           >
             {uploading ? (
@@ -705,12 +705,12 @@ export default function ChatPage() {
             onChange={(e) => setBody(e.target.value)}
             placeholder="Skriv en melding…"
             rows={1}
-            className="min-w-0 flex-1 resize-none rounded-2xl border border-stone-300 bg-white px-3 py-2 text-sm leading-snug outline-none focus:border-[#5a6b32]"
+            className="min-w-0 flex-1 resize-none rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm leading-snug outline-none focus:border-olive"
           />
           <button
             type="submit"
             disabled={sending || !body.trim()}
-            className="shrink-0 rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-40"
+            className="shrink-0 rounded-sm bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-ink disabled:opacity-40"
           >
             Send
           </button>
@@ -719,12 +719,12 @@ export default function ChatPage() {
           <button
             type="button"
             onClick={() => setShowBidModal(true)}
-            className="w-full pb-2 text-center text-xs font-medium text-stone-500 hover:text-stone-700"
+            className="w-full pb-2 text-center text-xs font-medium text-ink-3 hover:text-ink-2"
           >
             💸 Gi bud
           </button>
         )}
-        {error && <p className="px-3 pb-2 text-xs text-red-700">{error}</p>}
+        {error && <p className="px-3 pb-2 text-xs text-clay">{error}</p>}
       </div>
 
       {showBidModal && item && (
@@ -748,12 +748,12 @@ function MessageMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () =>
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute right-0 top-full z-10 mt-1 min-w-[140px] overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg"
+      className="absolute right-0 top-full z-10 mt-1 min-w-[140px] overflow-hidden rounded-sm border border-line bg-raised"
     >
       <button
         type="button"
         onClick={onEdit}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-stone-800 hover:bg-stone-100"
+        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-ink hover:bg-sunk"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -764,7 +764,7 @@ function MessageMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () =>
       <button
         type="button"
         onClick={onDelete}
-        className="flex w-full items-center gap-2 border-t border-stone-100 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+        className="flex w-full items-center gap-2 border-t border-line px-3 py-2 text-left text-sm text-clay hover:bg-clay-soft"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="3 6 5 6 21 6" />
@@ -795,24 +795,24 @@ function BidCard({
 }) {
 
   return (
-    <div className="w-56 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 text-sm shadow-sm transition-all">
+    <div className="w-56 overflow-hidden rounded-sm border border-line bg-paper text-sm transition-all">
       <div className="px-4 pt-3 pb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-500">Bud</p>
-        <p className="mt-0.5 text-xl font-semibold text-stone-900">{formatPrice(amount)}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-3">Bud</p>
+        <p className="mt-0.5 text-xl font-semibold text-ink">{formatPrice(amount)}</p>
       </div>
 
-      <div className="border-t border-stone-200 px-4 py-2.5">
+      <div className="border-t border-line px-4 py-2.5">
         {status === "pending" && isSeller && (
           <div className="flex gap-2">
             <button
               onClick={() => onRespond("accepted")}
-              className="flex-1 rounded-full bg-[#5a6b32] py-1.5 text-xs font-semibold text-white transition hover:bg-[#435022] active:scale-95"
+              className="flex-1 rounded-sm bg-olive py-1.5 text-xs font-semibold text-raised transition hover:bg-olive-press active:scale-95"
             >
               Godta
             </button>
             <button
               onClick={() => onRespond("declined")}
-              className="flex-1 rounded-full border border-stone-300 bg-white py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-500 active:scale-95"
+              className="flex-1 rounded-sm border border-line-2 bg-raised py-1.5 text-xs font-medium text-ink-2 transition hover:border-ink active:scale-95"
             >
               Avslå
             </button>
@@ -820,11 +820,11 @@ function BidCard({
         )}
         {status === "pending" && !isSeller && (
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-stone-500">Venter på svar…</p>
+            <p className="text-xs text-ink-3">Venter på svar…</p>
             {onWithdraw && (
               <button
                 onClick={onWithdraw}
-                className="text-[11px] text-stone-500 underline underline-offset-2 hover:text-red-600"
+                className="text-[11px] text-ink-3 underline underline-offset-2 hover:text-clay"
               >
                 Trekk tilbake
               </button>
@@ -833,11 +833,11 @@ function BidCard({
         )}
         {status === "accepted" && (
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-semibold text-[#5a6b32]">✓ Godtatt</p>
+            <p className="text-xs font-semibold text-olive">✓ Godtatt</p>
             {onCancel && (
               <button
                 onClick={onCancel}
-                className="text-[11px] text-stone-500 underline underline-offset-2 hover:text-red-600"
+                className="text-[11px] text-ink-3 underline underline-offset-2 hover:text-clay"
               >
                 Avbryt bud
               </button>
@@ -845,7 +845,7 @@ function BidCard({
           </div>
         )}
         {status === "declined" && (
-          <p className="text-xs text-stone-500">Avbrutt</p>
+          <p className="text-xs text-ink-3">Avbrutt</p>
         )}
       </div>
     </div>
@@ -856,10 +856,10 @@ function EventCard({ type, metadata }: { type: MessageType; metadata: Record<str
   const cfg = eventCardConfig(type, metadata);
   if (!cfg) return null;
   return (
-    <div className="mx-auto max-w-xs rounded-2xl border border-stone-200 bg-stone-50 px-5 py-3 text-center">
+    <div className="mx-auto max-w-xs rounded-sm border border-line bg-paper px-5 py-3 text-center">
       <p className="text-xl">{cfg.icon}</p>
-      <p className="mt-1 text-xs font-semibold text-stone-800">{cfg.title}</p>
-      <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500">{cfg.sub}</p>
+      <p className="mt-1 text-xs font-semibold text-ink">{cfg.title}</p>
+      <p className="mt-0.5 text-[11px] leading-relaxed text-ink-3">{cfg.sub}</p>
     </div>
   );
 }
@@ -868,7 +868,7 @@ function OtherAvatar({ profile, name }: { profile: Profile | null; name: string 
   if (profile?.avatar_url) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={profile.avatar_url} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+      <img src={profile.avatar_url} alt="" className="h-9 w-9 shrink-0 rounded-circle object-cover" />
     );
   }
   const initials = name
@@ -880,11 +880,11 @@ function OtherAvatar({ profile, name }: { profile: Profile | null; name: string 
     .join("")
     .toUpperCase();
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-200">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-circle bg-line">
       {initials ? (
-        <span className="text-xs font-semibold text-stone-600">{initials}</span>
+        <span className="text-xs font-semibold text-ink-2">{initials}</span>
       ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-ink-3">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>

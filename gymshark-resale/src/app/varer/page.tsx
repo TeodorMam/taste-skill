@@ -311,17 +311,17 @@ function BrowseInner() {
         <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => setShowSort(true)}
-            className="flex shrink-0 items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-sm font-medium text-stone-700 hover:border-stone-400"
+            className="flex shrink-0 items-center gap-1.5 rounded-sm border border-line bg-raised px-3.5 py-1.5 text-sm font-medium text-ink-2 hover:border-ink"
           >
             <SortIcon />
             Sorter
           </button>
           <button
             onClick={() => { setActiveFilterPanel(null); setShowFilter(true); }}
-            className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-sm border px-3.5 py-1.5 text-sm font-medium ${
               activeFilterCount > 0
-                ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                : "border-stone-200 bg-white text-stone-700 hover:border-stone-400"
+                ? "border-olive bg-olive text-raised"
+                : "border-line bg-raised text-ink-2 hover:border-ink"
             }`}
           >
             <FilterIcon />
@@ -329,12 +329,12 @@ function BrowseInner() {
           </button>
           {activeChips.length > 0 && (
             <>
-              <div className="h-5 shrink-0 w-px bg-stone-200" />
+              <div className="h-5 shrink-0 w-px bg-line" />
               {activeChips.map((chip) => (
                 <button
                   key={chip.label}
                   onClick={chip.clear}
-                  className="flex shrink-0 items-center gap-1 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500"
+                  className="flex shrink-0 items-center gap-1 rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-xs font-medium text-ink-2 hover:border-ink"
                 >
                   {chip.label}
                   <span className="ml-0.5 opacity-60">✕</span>
@@ -342,7 +342,7 @@ function BrowseInner() {
               ))}
               <button
                 onClick={clearAll}
-                className="shrink-0 rounded-full px-2 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-700"
+                className="shrink-0 rounded-sm px-2 py-1.5 text-xs font-medium text-ink-3 hover:text-ink-2"
               >
                 Nullstill
               </button>
@@ -351,24 +351,24 @@ function BrowseInner() {
         </div>
 
         {total !== null && (
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-ink-3">
             {initialLoading && !isFirstLoad.current && (
-              <span className="mr-1.5 inline-block h-3 w-3 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
+              <span className="mr-1.5 inline-block h-3 w-3 animate-spin rounded-circle border-2 border-line-2 border-t-ink-2" />
             )}
             {total} vare{total === 1 ? "" : "r"}
           </p>
         )}
 
-        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+        {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
 
         {initialLoading && isFirstLoad.current && <SkeletonGrid />}
 
         {!initialLoading && items.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
-            <p className="font-medium text-stone-700">Ingen treff</p>
+          <div className="rounded-sm border border-dashed border-line-2 p-10 text-center text-sm text-ink-3">
+            <p className="font-medium text-ink-2">Ingen treff</p>
             <p className="mt-1">Prøv å nullstille filtrene eller søke bredere.</p>
             {activeChips.length > 0 && (
-              <button onClick={clearAll} className="mt-4 rounded-full bg-stone-900 px-4 py-2 text-xs font-medium text-stone-50 hover:bg-black">
+              <button onClick={clearAll} className="mt-4 rounded-sm bg-ink px-4 py-2 text-xs font-medium text-paper hover:bg-ink">
                 Nullstill filtre
               </button>
             )}
@@ -387,7 +387,7 @@ function BrowseInner() {
                 <button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="rounded-full border border-stone-300 bg-white px-6 py-2.5 text-sm font-medium text-stone-700 transition hover:border-stone-500 disabled:opacity-50"
+                  className="rounded-sm border border-line-2 bg-raised px-6 py-2.5 text-sm font-medium text-ink-2 transition hover:border-ink disabled:opacity-50"
                 >
                   {loadingMore ? "Laster…" : "Last inn flere"}
                 </button>
@@ -400,21 +400,21 @@ function BrowseInner() {
       {/* Sort sheet */}
       {showSort && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" onClick={() => setShowSort(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl bg-white shadow-[0_-12px_40px_rgba(0,0,0,0.18)]">
+          <div className="fixed inset-0 z-40 bg-ink/20 backdrop-blur-[1px]" onClick={() => setShowSort(false)} />
+          <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-sheet bg-raised shadow-[0_-12px_40px_rgba(0,0,0,0.18)]">
             <button
               type="button"
               onClick={() => setShowSort(false)}
               aria-label="Lukk sortering"
-              className="mx-auto mb-1 mt-2 h-1 w-10 rounded-full bg-stone-300"
+              className="mx-auto mb-1 mt-2 h-1 w-10 rounded-sm bg-line-2"
             />
             <div className="px-4 pb-10 pt-1">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">Sorter etter</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-3">Sorter etter</p>
               {SORT_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => { setParam("sort", opt.value === "newest" ? "" : opt.value); setShowSort(false); }}
-                  className={`flex w-full items-center justify-between border-b border-stone-100 py-4 text-sm ${sort === opt.value ? "font-semibold text-[#5a6b32]" : "font-medium text-stone-700"}`}
+                  className={`flex w-full items-center justify-between border-b border-line py-4 text-sm ${sort === opt.value ? "font-semibold text-olive" : "font-medium text-ink-2"}`}
                 >
                   {opt.label}
                   {sort === opt.value && <CheckIcon />}
@@ -431,11 +431,11 @@ function BrowseInner() {
       {showFilter && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]"
+            className="fixed inset-0 z-40 bg-ink/20 backdrop-blur-[1px]"
             onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
           />
           <div
-            className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-3xl bg-white shadow-[0_-12px_40px_rgba(0,0,0,0.18)]"
+            className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-sheet bg-raised shadow-[0_-12px_40px_rgba(0,0,0,0.18)]"
             style={{
               maxHeight: "62vh",
               transform: `translateY(${dragY}px)`,
@@ -465,28 +465,28 @@ function BrowseInner() {
                 type="button"
                 onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
                 aria-label="Lukk filter"
-                className="mx-auto block h-1 w-10 rounded-full bg-stone-300"
+                className="mx-auto block h-1 w-10 rounded-sm bg-line-2"
               />
             </div>
-            <div className="flex shrink-0 items-center justify-between border-b border-stone-100 px-4 pb-3 pt-1">
+            <div className="flex shrink-0 items-center justify-between border-b border-line px-4 pb-3 pt-1">
               {activeFilterPanel ? (
                 <button
                   onClick={() => setActiveFilterPanel(null)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-black"
+                  className="flex items-center gap-1.5 text-sm font-medium text-ink-3 hover:text-ink"
                 >
                   <BackIcon /> Tilbake
                 </button>
               ) : (
-                <p className="text-sm font-semibold text-stone-800">Filter</p>
+                <p className="text-sm font-semibold text-ink">Filter</p>
               )}
-              <button onClick={clearAll} className="text-xs font-medium text-stone-500 hover:text-black">
+              <button onClick={clearAll} className="text-xs font-medium text-ink-3 hover:text-ink">
                 Nullstill
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto">
               {!activeFilterPanel ? (
-                <div className="divide-y divide-stone-100 px-4">
+                <div className="divide-y divide-line px-4">
                   {/* Clickable filter rows, only show value when actively selected */}
                   {filterRows.map((row) => (
                     <button
@@ -494,10 +494,10 @@ function BrowseInner() {
                       onClick={() => setActiveFilterPanel(row.key)}
                       className="flex w-full items-center justify-between py-4"
                     >
-                      <span className="text-sm font-medium text-stone-800">{row.label}</span>
+                      <span className="text-sm font-medium text-ink">{row.label}</span>
                       <span className="flex items-center gap-2">
                         {row.value && (
-                          <span className="text-sm font-medium text-[#5a6b32]">{row.value}</span>
+                          <span className="text-sm font-medium text-olive">{row.value}</span>
                         )}
                         <ChevronIcon />
                       </span>
@@ -506,18 +506,18 @@ function BrowseInner() {
 
                   {/* Kan sendes toggle */}
                   <div className="flex items-center justify-between py-4">
-                    <span className="text-sm font-medium text-stone-800">Kan sendes</span>
+                    <span className="text-sm font-medium text-ink">Kan sendes</span>
                     <button
                       onClick={() => setParam("shipping", shipping === "sendes" ? "" : "sendes")}
-                      className={`relative h-6 w-11 rounded-full transition-colors ${shipping === "sendes" ? "bg-[#5a6b32]" : "bg-stone-200"}`}
+                      className={`relative h-6 w-11 rounded-sm transition-colors ${shipping === "sendes" ? "bg-olive" : "bg-line"}`}
                     >
-                      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${shipping === "sendes" ? "translate-x-5" : "translate-x-0.5"}`} />
+                      <span className={`absolute top-0.5 h-5 w-5 rounded-sm bg-raised transition-transform ${shipping === "sendes" ? "translate-x-5" : "translate-x-0.5"}`} />
                     </button>
                   </div>
 
                   {/* Price slider, inline, no sub-panel */}
                   <div className="py-5 space-y-5">
-                    <p className="text-sm font-medium text-stone-800">Pris</p>
+                    <p className="text-sm font-medium text-ink">Pris</p>
                     <div className="space-y-1">
                       <input
                         type="range" min={0} max={PRICE_MAX} step={50}
@@ -526,7 +526,7 @@ function BrowseInner() {
                         onChange={(e) => setLocalPriceMin(Math.min(Number(e.target.value), localPriceMax - 50))}
                         onMouseUp={commitPrice}
                         onTouchEnd={commitPrice}
-                        className="w-full accent-[#5a6b32]"
+                        className="w-full accent-olive"
                       />
                       <input
                         type="range" min={0} max={PRICE_MAX} step={50}
@@ -535,11 +535,11 @@ function BrowseInner() {
                         onChange={(e) => setLocalPriceMax(Math.max(Number(e.target.value), localPriceMin + 50))}
                         onMouseUp={commitPrice}
                         onTouchEnd={commitPrice}
-                        className="w-full accent-[#5a6b32]"
+                        className="w-full accent-olive"
                       />
-                      <div className="flex justify-between pt-1 text-xs text-stone-500">
-                        <span>Min: <span className="font-medium text-stone-700">{localPriceMin} kr</span></span>
-                        <span>Max: <span className="font-medium text-stone-700">{localPriceMax >= PRICE_MAX ? "∞" : `${localPriceMax} kr`}</span></span>
+                      <div className="flex justify-between pt-1 text-xs text-ink-3">
+                        <span>Min: <span className="font-medium text-ink-2">{localPriceMin} kr</span></span>
+                        <span>Max: <span className="font-medium text-ink-2">{localPriceMax >= PRICE_MAX ? "∞" : `${localPriceMax} kr`}</span></span>
                       </div>
                     </div>
                   </div>
@@ -563,10 +563,10 @@ function BrowseInner() {
             </div>
 
             {/* Sticky CTA */}
-            <div className="shrink-0 border-t border-stone-100 px-4 pb-8 pt-3">
+            <div className="shrink-0 border-t border-line px-4 pb-8 pt-3">
               <button
                 onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
-                className="w-full rounded-full bg-[#5a6b32] py-4 text-base font-semibold text-white hover:bg-[#435022] active:bg-[#435022]"
+                className="w-full rounded-sm bg-olive py-4 text-base font-semibold text-raised hover:bg-olive-press active:bg-olive-press"
               >
                 {total !== null ? `Se ${total} annonser` : "Se annonser"}
               </button>
@@ -652,7 +652,7 @@ function FilterSubPanel({
     <OptionList>
       <OptionRow label="Alle merker" active={!brand} onClick={() => onSelect("brand", "")} />
       {availableBrands.length === 0 && (
-        <p className="py-6 text-sm text-stone-500">Ingen merker tilgjengelig ennå.</p>
+        <p className="py-6 text-sm text-ink-3">Ingen merker tilgjengelig ennå.</p>
       )}
       {availableBrands.map((b) => <OptionRow key={b} label={b} active={brand === b} onClick={() => onSelect("brand", b)} />)}
     </OptionList>
@@ -699,13 +699,13 @@ const SearchBar = memo(function SearchBar({
       value={value}
       onChange={(e) => setValue(e.target.value)}
       placeholder="Søk tittel eller merke…"
-      className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
+      className="block w-full rounded-sm border border-line-2 bg-raised px-4 py-2.5 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30"
     />
   );
 });
 
 function OptionList({ children }: { children: React.ReactNode }) {
-  return <div className="divide-y divide-stone-100 px-4">{children}</div>;
+  return <div className="divide-y divide-line px-4">{children}</div>;
 }
 
 function OptionRow({ label, active, onClick, indented = false }: {
@@ -714,7 +714,7 @@ function OptionRow({ label, active, onClick, indented = false }: {
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center justify-between py-3.5 text-sm ${indented ? "pl-5" : ""} ${active ? "font-semibold text-[#5a6b32]" : "font-medium text-stone-700"}`}
+      className={`flex w-full items-center justify-between py-3.5 text-sm ${indented ? "pl-5" : ""} ${active ? "font-semibold text-olive" : "font-medium text-ink-2"}`}
     >
       {label}
       {active && <CheckIcon />}
@@ -748,7 +748,7 @@ function FilterIcon() {
 
 function CheckIcon() {
   return (
-    <svg className="h-4 w-4 text-[#5a6b32]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <svg className="h-4 w-4 text-olive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
     </svg>
   );
@@ -756,7 +756,7 @@ function CheckIcon() {
 
 function ChevronIcon() {
   return (
-    <svg className="h-4 w-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="h-4 w-4 text-ink-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
     </svg>
   );

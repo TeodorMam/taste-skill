@@ -27,32 +27,32 @@ export function BidModal({
     ratio >= 0.9 ? "Sterkt bud – øker sjansen for rask aksept" :
     ratio > 0 && ratio < 0.7 ? "Lavt bud – kan bli avslått" :
     null;
-  const helperColor = ratio >= 0.9 ? "text-emerald-600" : "text-amber-600";
+  const helperColor = ratio >= 0.9 ? "text-olive" : "text-ochre";
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-ink/40" />
       <div
-        className="relative w-full rounded-t-3xl bg-white px-5 pb-10 pt-4 shadow-xl sm:max-w-sm sm:rounded-3xl sm:pb-6"
+        className="relative w-full rounded-t-sheet bg-raised px-5 pb-10 pt-4 sm:max-w-sm sm:rounded-sm sm:pb-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle (mobile only) */}
-        <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-stone-200 sm:hidden" />
+        <div className="mx-auto mb-5 h-1 w-10 rounded-sm bg-line sm:hidden" />
 
         <div className="mb-5 flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-stone-900">Gi et bud</h2>
-            <p className="mt-0.5 text-sm text-stone-500">
+            <h2 className="text-lg font-semibold text-ink">Gi et bud</h2>
+            <p className="mt-0.5 text-sm text-ink-3">
               Selger kan godta eller avslå. Ingen betaling før aksept.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="ml-3 shrink-0 rounded-full p-1 text-stone-500 hover:bg-stone-100 hover:text-stone-700"
+            className="ml-3 shrink-0 rounded-sm p-1 text-ink-3 hover:bg-sunk hover:text-ink-2"
             aria-label="Lukk"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -69,10 +69,10 @@ export function BidModal({
                 key={v}
                 type="button"
                 onClick={() => setRaw(String(v))}
-                className={`flex-1 rounded-full border py-2 text-sm font-medium transition ${
+                className={`flex-1 rounded-sm border py-2 text-sm font-medium transition ${
                   amount === v
-                    ? "border-[#5a6b32] bg-[#5a6b32]/5 text-[#5a6b32] ring-1 ring-[#5a6b32]"
-                    : "border-stone-200 text-stone-700 hover:border-stone-400"
+                    ? "border-olive bg-olive/5 text-olive ring-1 ring-olive"
+                    : "border-line text-ink-2 hover:border-ink"
                 }`}
               >
                 {formatPrice(v)}
@@ -83,7 +83,7 @@ export function BidModal({
 
         {/* Amount input */}
         <div className="mb-1">
-          <label className="mb-1.5 block text-xs font-medium text-stone-600">
+          <label className="mb-1.5 block text-xs font-medium text-ink-2">
             Ditt bud (kr)
           </label>
           <input
@@ -94,7 +94,7 @@ export function BidModal({
             placeholder="F.eks. 300"
             // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
-            className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
+            className="w-full rounded-sm border border-line-2 bg-raised px-4 py-3 text-base outline-none focus:border-olive focus:ring-1 focus:ring-olive/30"
           />
         </div>
         <div className="mb-4 h-4">
@@ -105,19 +105,19 @@ export function BidModal({
 
         {/* Trust signals */}
         <div className="mb-5 space-y-1.5">
-          <p className="text-xs text-stone-500">💬 Budet sendes som melding i chat</p>
-          <p className="text-xs text-stone-500">🔒 Ingen betaling før budet er akseptert</p>
+          <p className="text-xs text-ink-3">💬 Budet sendes som melding i chat</p>
+          <p className="text-xs text-ink-3">🔒 Ingen betaling før budet er akseptert</p>
         </div>
 
         <button
           type="button"
           onClick={() => amount > 0 && onSubmit(amount)}
           disabled={submitting || amount <= 0}
-          className="w-full rounded-full bg-[#5a6b32] py-3 text-sm font-semibold text-white hover:bg-[#435022] disabled:opacity-50"
+          className="w-full rounded-sm bg-olive py-3 text-sm font-semibold text-raised hover:bg-olive-press disabled:opacity-50"
         >
           {submitting ? "Sender…" : "Send bud"}
         </button>
-        <p className="mt-3 text-center text-[11px] leading-relaxed text-stone-500">
+        <p className="mt-3 text-center text-[11px] leading-relaxed text-ink-3">
           Bud er ikke bindende – du betaler først hvis du velger å kjøpe etter aksept.
         </p>
       </div>

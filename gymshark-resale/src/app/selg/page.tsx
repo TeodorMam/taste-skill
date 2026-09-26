@@ -68,7 +68,7 @@ export default function SellPage() {
   }
 
   if (step === "loading") {
-    return <p className="py-10 text-sm text-stone-500">Laster…</p>;
+    return <p className="py-10 text-sm text-ink-3">Laster…</p>;
   }
 
   if (step === "intro") {
@@ -84,8 +84,8 @@ export default function SellPage() {
             "Trygg betaling via Stripe",
             "Pengene utbetales etter levering",
           ].map((b) => (
-            <li key={b} className="flex items-center gap-3 text-sm text-stone-700">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#5a6b32] text-[10px] font-bold text-white">
+            <li key={b} className="flex items-center gap-3 text-sm text-ink-2">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-olive text-[10px] font-bold text-raised">
                 ✓
               </span>
               {b}
@@ -95,7 +95,7 @@ export default function SellPage() {
 
         <button
           onClick={() => setStep("connect")}
-          className="w-full rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+          className="w-full rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
         >
           Kom i gang
         </button>
@@ -109,12 +109,12 @@ export default function SellPage() {
         <div>
           <button
             onClick={() => setStep("intro")}
-            className="mb-4 text-sm text-stone-500 hover:text-black"
+            className="mb-4 text-sm text-ink-3 hover:text-ink"
           >
             ← Tilbake
           </button>
           <h1 className="text-2xl font-semibold tracking-tight">Sett opp selgerkonto</h1>
-          <p className="mt-2 text-sm leading-relaxed text-stone-600">
+          <p className="mt-2 text-sm leading-relaxed text-ink-2">
             For å motta betaling. Ett skjema med personlig info, ett med IBAN. Under 2 min.
           </p>
         </div>
@@ -125,8 +125,8 @@ export default function SellPage() {
             { step: "2", text: <>Legg inn <strong>IBAN</strong> (starter med NO)</> },
             { step: "3", text: "Ferdig, du er klar til å selge" },
           ].map(({ step, text }) => (
-            <li key={step} className="flex items-start gap-3 text-sm text-stone-700">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-semibold text-stone-600">
+            <li key={step} className="flex items-start gap-3 text-sm text-ink-2">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-sunk text-xs font-semibold text-ink-2">
                 {step}
               </span>
               <span className="pt-0.5">{text}</span>
@@ -134,20 +134,20 @@ export default function SellPage() {
           ))}
         </ol>
 
-        <p className="rounded-xl bg-[#5a6b32]/5 px-4 py-3 text-xs leading-relaxed text-stone-600">
+        <p className="rounded-sm bg-olive/5 px-4 py-3 text-xs leading-relaxed text-ink-2">
           💡 Bedriftsinfo har vi fylt ut for deg. Du skriver kun personlig info og IBAN.
         </p>
 
         <button
           onClick={handleConnect}
           disabled={connecting}
-          className="w-full rounded-full bg-[#5a6b32] px-5 py-3 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+          className="w-full rounded-sm bg-olive px-5 py-3 text-sm font-medium text-raised hover:bg-olive-press disabled:opacity-50"
         >
           {connecting ? "Sender til Stripe…" : "Fortsett →"}
         </button>
 
-        <p className="text-xs text-stone-500">
-          <span className="font-medium text-stone-500">Under 18?</span>{" "}
+        <p className="text-xs text-ink-3">
+          <span className="font-medium text-ink-3">Under 18?</span>{" "}
           Be en foresatt opprette utbetalingskontoen og motta pengene for deg.
         </p>
       </section>
@@ -156,18 +156,18 @@ export default function SellPage() {
 
   return (
     <section className="max-w-sm space-y-5">
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
+      <div className="rounded-sm border border-olive/30 bg-olive-soft p-6 text-center">
         <p className="text-4xl">✅</p>
-        <h1 className="mt-3 text-xl font-semibold tracking-tight text-emerald-900">
+        <h1 className="mt-3 text-xl font-semibold tracking-tight text-olive">
           Klar til å selge
         </h1>
-        <p className="mt-1 text-sm text-emerald-700">
+        <p className="mt-1 text-sm text-olive">
           Stripe-kontoen din er koblet til. Du kan nå ta imot betaling.
         </p>
       </div>
       <Link
         href="/ny-annonse"
-        className="block w-full rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-medium text-stone-50 hover:bg-black"
+        className="block w-full rounded-sm bg-ink px-5 py-3 text-center text-sm font-medium text-paper hover:bg-ink"
       >
         Legg ut din første annonse
       </Link>

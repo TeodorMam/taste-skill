@@ -15,7 +15,7 @@ function Stars({ avg }: { avg: number }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={n <= filled ? "text-amber-400" : "text-stone-200"}>
+        <span key={n} className={n <= filled ? "text-ochre" : "text-ink-3"}>
           ★
         </span>
       ))}
@@ -47,18 +47,18 @@ export default function ProfilPage() {
   }, [userId, supabase]);
 
   if (userId === undefined) {
-    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+    return <p className="py-6 text-sm text-ink-3">Laster…</p>;
   }
   if (userId === null) {
     return (
       <section className="space-y-3 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Min profil</h1>
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-ink-2">
           Logg inn for å redigere profilen din.
         </p>
         <Link
           href="/logg-inn?next=/profil"
-          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+          className="inline-block rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
         >
           Logg inn
         </Link>
@@ -78,12 +78,12 @@ export default function ProfilPage() {
       <ProfileEditor email={email} />
 
       {reviews !== null && (
-        <div className="rounded-2xl border border-stone-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
+        <div className="rounded-sm border border-line bg-raised p-4">
+          <p className="text-xs font-medium uppercase tracking-wider text-ink-3">
             Mine vurderinger
           </p>
           {reviews.length === 0 ? (
-            <p className="mt-3 text-sm text-stone-500">Ingen vurderinger ennå, de vises her etter første salg.</p>
+            <p className="mt-3 text-sm text-ink-3">Ingen vurderinger ennå, de vises her etter første salg.</p>
           ) : rated ? (
             <Link
               href="/profil/vurderinger"
@@ -93,15 +93,15 @@ export default function ProfilPage() {
                 {rated.avg.toFixed(1)}
               </span>
               <Stars avg={rated.avg} />
-              <span className="text-sm text-stone-500">
+              <span className="text-sm text-ink-3">
                 {rated.total} vurdering{rated.total !== 1 ? "er" : ""}
               </span>
-              <span className="ml-auto text-xs text-stone-500">Se alle →</span>
+              <span className="ml-auto text-xs text-ink-3">Se alle →</span>
             </Link>
           ) : summary && summary.total > 0 ? (
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
               <span className="text-2xl font-semibold">{summary.pct}%</span>
-              <span className="text-sm text-stone-500">
+              <span className="text-sm text-ink-3">
                 positive · {summary.total} vurdering{summary.total !== 1 ? "er" : ""}
               </span>
             </div>
@@ -112,37 +112,37 @@ export default function ProfilPage() {
       <div className="grid grid-cols-2 gap-3">
         <Link
           href="/favoritter"
-          className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:border-stone-400"
+          className="flex items-center gap-3 rounded-sm border border-line bg-raised p-4 transition hover:border-ink"
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg">♡</span>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-sunk text-lg">♡</span>
           <div>
-            <p className="text-sm font-medium text-stone-900">Favoritter</p>
-            <p className="text-xs text-stone-500">Lagrede varer</p>
+            <p className="text-sm font-medium text-ink">Favoritter</p>
+            <p className="text-xs text-ink-3">Lagrede varer</p>
           </div>
         </Link>
         <Link
           href="/mine"
-          className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:border-stone-400"
+          className="flex items-center gap-3 rounded-sm border border-line bg-raised p-4 transition hover:border-ink"
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg">🏷</span>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-sunk text-lg">🏷</span>
           <div>
-            <p className="text-sm font-medium text-stone-900">Mine annonser</p>
-            <p className="text-xs text-stone-500">Alt du har lagt ut</p>
+            <p className="text-sm font-medium text-ink">Mine annonser</p>
+            <p className="text-xs text-ink-3">Alt du har lagt ut</p>
           </div>
         </Link>
       </div>
 
       <Link
         href="/ordre"
-        className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:border-stone-400"
+        className="flex items-center gap-3 rounded-sm border border-line bg-raised p-4 transition hover:border-ink"
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg">📦</span>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-sunk text-lg">📦</span>
         <div className="flex-1">
-          <p className="text-sm font-medium text-stone-900">Mine ordre</p>
-          <p className="text-xs text-stone-500">Kjøp, salg og leveringsstatus</p>
+          <p className="text-sm font-medium text-ink">Mine ordre</p>
+          <p className="text-xs text-ink-3">Kjøp, salg og leveringsstatus</p>
         </div>
         {orderCount > 0 && (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-sm bg-clay px-1 text-[10px] font-bold text-raised">
             {orderCount > 9 ? "9+" : orderCount}
           </span>
         )}
@@ -150,15 +150,15 @@ export default function ProfilPage() {
 
       <Link
         href="/varsler"
-        className="relative flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:border-stone-400"
+        className="relative flex items-center gap-3 rounded-sm border border-line bg-raised p-4 transition hover:border-ink"
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-lg">🔔</span>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-sunk text-lg">🔔</span>
         <div className="flex-1">
-          <p className="text-sm font-medium text-stone-900">Varsler</p>
-          <p className="text-xs text-stone-500">Prisfall og søk</p>
+          <p className="text-sm font-medium text-ink">Varsler</p>
+          <p className="text-xs text-ink-3">Prisfall og søk</p>
         </div>
         {varslerCount > 0 && (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-sm bg-clay px-1 text-[10px] font-bold text-raised">
             {varslerCount > 9 ? "9+" : varslerCount}
           </span>
         )}
@@ -194,18 +194,18 @@ function AccountSection({ email }: { email: string | null }) {
   }
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4">
-      <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
+    <div className="rounded-sm border border-line bg-raised p-4">
+      <p className="text-xs font-medium uppercase tracking-wider text-ink-3">
         Konto
       </p>
-      <p className="mt-2 text-sm text-stone-700">
+      <p className="mt-2 text-sm text-ink-2">
         Innlogget som <span className="font-medium">{email ?? "ukjent"}</span>
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <form action="/auth/signout" method="post">
           <button
             type="submit"
-            className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-medium text-stone-700 hover:border-stone-500"
+            className="rounded-sm border border-line-2 bg-raised px-4 py-2 text-xs font-medium text-ink-2 hover:border-ink"
           >
             Logg ut
           </button>
@@ -214,7 +214,7 @@ function AccountSection({ email }: { email: string | null }) {
           <button
             type="button"
             onClick={() => setConfirming(true)}
-            className="rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-medium text-red-600 hover:border-red-400"
+            className="rounded-sm border border-clay/40 bg-raised px-4 py-2 text-xs font-medium text-clay hover:border-clay/40"
           >
             Slett konto
           </button>
@@ -222,27 +222,27 @@ function AccountSection({ email }: { email: string | null }) {
       </div>
 
       {confirming && (
-        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 space-y-3">
-          <p className="text-sm font-semibold text-red-900">Er du sikker?</p>
-          <p className="text-xs text-red-800">
+        <div className="mt-4 rounded-sm border border-clay/40 bg-clay-soft p-4 space-y-3">
+          <p className="text-sm font-semibold text-clay">Er du sikker?</p>
+          <p className="text-xs text-clay">
             Alle data slettes permanent innen 30 dager. Aktive ordre må fullføres først. Dette kan ikke angres.
           </p>
           {error && (
-            <p className="text-xs text-red-700">{error}</p>
+            <p className="text-xs text-clay">{error}</p>
           )}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={deleteAccount}
               disabled={deleting}
-              className="rounded-full bg-red-600 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="rounded-sm bg-clay px-4 py-2 text-xs font-medium text-raised hover:bg-clay disabled:opacity-50"
             >
               {deleting ? "Sletter…" : "Ja, slett kontoen min"}
             </button>
             <button
               type="button"
               onClick={() => { setConfirming(false); setError(null); }}
-              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-medium text-stone-700 hover:border-stone-500"
+              className="rounded-sm border border-line-2 bg-raised px-4 py-2 text-xs font-medium text-ink-2 hover:border-ink"
             >
               Avbryt
             </button>

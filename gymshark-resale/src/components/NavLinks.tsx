@@ -32,7 +32,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
   function textCls(href: string) {
     const active = path === href || (href !== "/" && path.startsWith(href));
     return `text-sm font-medium transition ${
-      active ? "text-black underline underline-offset-4 decoration-[#5a6b32] decoration-2" : "text-stone-500 hover:text-black"
+      active ? "text-ink underline underline-offset-4 decoration-olive decoration-2" : "text-ink-3 hover:text-ink"
     }`;
   }
 
@@ -62,7 +62,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
           <Avatar profile={profile} size="sm" />
         </Link>
       ) : (
-        <Link href={`/logg-inn?next=${encodeURIComponent("/profil")}`} className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-black">
+        <Link href={`/logg-inn?next=${encodeURIComponent("/profil")}`} className="rounded-sm bg-ink px-4 py-2 text-sm font-medium text-raised hover:bg-ink">
           Logg inn
         </Link>
       )}
@@ -72,7 +72,7 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
 
 function Badge({ count }: { count: number }) {
   return (
-    <span className="absolute -right-3 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+    <span className="absolute -right-3 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-sm bg-clay px-1 text-[10px] font-bold leading-none text-raised">
       {count > 9 ? "9+" : count}
     </span>
   );

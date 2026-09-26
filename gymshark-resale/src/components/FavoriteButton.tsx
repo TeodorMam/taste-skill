@@ -88,7 +88,7 @@ export function FavoriteButton({
         onClick={toggle}
         aria-label={ariaLabel}
         disabled={busy}
-        className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500 disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-xs font-medium text-ink-2 hover:border-ink disabled:opacity-50"
       >
         <Heart filled={!!favorited} />
         {favorited ? "Favoritt" : "Legg til"}
@@ -102,7 +102,7 @@ export function FavoriteButton({
       onClick={toggle}
       aria-label={ariaLabel}
       disabled={busy}
-      className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-stone-700 shadow-sm backdrop-blur transition hover:bg-white disabled:opacity-50"
+      className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-sm bg-raised/90 text-ink-2 transition hover:bg-raised disabled:opacity-50"
     >
       <Heart filled={!!favorited} />
     </button>

@@ -123,10 +123,10 @@ export default function EditItemPage() {
   }
 
   if (userId === undefined || (!item && !loadErr)) {
-    return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+    return <p className="py-6 text-sm text-ink-3">Laster…</p>;
   }
   if (loadErr) {
-    return <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{loadErr}</p>;
+    return <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{loadErr}</p>;
   }
   if (userId === null) {
     return (
@@ -134,7 +134,7 @@ export default function EditItemPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Logg inn</h1>
         <Link
           href={`/logg-inn?next=/vare/${params.id}/rediger`}
-          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50"
+          className="inline-block rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper"
         >
           Logg inn
         </Link>
@@ -145,8 +145,8 @@ export default function EditItemPage() {
     return (
       <section className="space-y-3 py-10">
         <h1 className="text-2xl font-semibold tracking-tight">Ingen tilgang</h1>
-        <p className="text-sm text-stone-600">Du kan bare redigere dine egne annonser.</p>
-        <Link href={`/vare/${params.id}`} className="text-sm text-[#5a6b32] underline">
+        <p className="text-sm text-ink-2">Du kan bare redigere dine egne annonser.</p>
+        <Link href={`/vare/${params.id}`} className="text-sm text-olive underline">
           Tilbake til annonsen
         </Link>
       </section>
@@ -158,12 +158,12 @@ export default function EditItemPage() {
       <div>
         <Link
           href={`/vare/${params.id}`}
-          className="text-sm text-stone-500 hover:text-black"
+          className="text-sm text-ink-3 hover:text-ink"
         >
           ← Tilbake til annonsen
         </Link>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Rediger annonse</h1>
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-1 text-sm text-ink-3">
           Bilder kan ikke byttes her, legg ut på nytt om du vil endre bilder.
         </p>
       </div>
@@ -194,7 +194,7 @@ export default function EditItemPage() {
         </Field>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-stone-800">Kategori</span>
+          <span className="block text-sm font-medium text-ink">Kategori</span>
           <div className="flex flex-wrap gap-2">
             {CATEGORY_PARENTS.map((p) => (
               <button
@@ -209,10 +209,10 @@ export default function EditItemPage() {
                     setCategory("");
                   }
                 }}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                   categoryParent === p
-                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                    ? "border-olive bg-olive text-raised"
+                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
                 }`}
               >
                 {p}
@@ -227,10 +227,10 @@ export default function EditItemPage() {
                     key={c}
                     type="button"
                     onClick={() => setCategory(category === c ? "" : c)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                    className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                       category === c
-                        ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                        : "border-stone-300 bg-stone-50 text-stone-700 hover:border-stone-500"
+                        ? "border-olive bg-olive text-raised"
+                        : "border-line-2 bg-paper text-ink-2 hover:border-ink"
                     }`}
                   >
                     {c}
@@ -242,17 +242,17 @@ export default function EditItemPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-stone-800">Kjønn</span>
+          <span className="block text-sm font-medium text-ink">Kjønn</span>
           <div className="flex flex-wrap gap-2">
             {GENDERS.map((g) => (
               <button
                 key={g}
                 type="button"
                 onClick={() => setGender(gender === g ? "" : g)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                   gender === g
-                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                    ? "border-olive bg-olive text-raised"
+                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
                 }`}
               >
                 {g}
@@ -262,17 +262,17 @@ export default function EditItemPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-stone-800">Farge (valgfritt)</span>
+          <span className="block text-sm font-medium text-ink">Farge (valgfritt)</span>
           <div className="flex flex-wrap gap-2">
             {COLORS.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(color === c ? "" : c)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                   color === c
-                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                    ? "border-olive bg-olive text-raised"
+                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
                 }`}
               >
                 {c}
@@ -282,17 +282,17 @@ export default function EditItemPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-stone-800">Passform (valgfritt)</span>
+          <span className="block text-sm font-medium text-ink">Passform (valgfritt)</span>
           <div className="flex flex-wrap gap-2">
             {FITS.map((f) => (
               <button
                 key={f}
                 type="button"
                 onClick={() => setFit(fit === f ? "" : f)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                   fit === f
-                    ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-                    : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
+                    ? "border-olive bg-olive text-raised"
+                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
                 }`}
               >
                 {f}
@@ -349,21 +349,21 @@ export default function EditItemPage() {
         </Field>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-stone-800">Frakt</span>
+          <span className="block text-sm font-medium text-ink">Frakt</span>
           <div className="grid grid-cols-3 gap-2">
             {SHIPPING_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => setShipping(opt.value)}
-                className={`rounded-xl border p-3 text-left transition ${
+                className={`rounded-sm border p-3 text-left transition ${
                   shipping === opt.value
-                    ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]"
-                    : "border-stone-200 bg-white hover:border-stone-400"
+                    ? "border-olive bg-olive/5 ring-1 ring-olive"
+                    : "border-line bg-raised hover:border-ink"
                 }`}
               >
                 <p className="text-sm font-medium">{opt.label}</p>
-                <p className="mt-0.5 text-[11px] text-stone-500">{opt.hint}</p>
+                <p className="mt-0.5 text-[11px] text-ink-3">{opt.hint}</p>
               </button>
             ))}
           </div>
@@ -371,22 +371,22 @@ export default function EditItemPage() {
 
         {shipping !== "Kun henting" && (
           <div className="space-y-1.5">
-            <span className="block text-sm font-medium text-stone-800">Pakkestørrelse (Posten)</span>
-            <p className="text-xs text-stone-500">Velg den størrelsen som passer varen din. Kjøper betaler frakten.</p>
+            <span className="block text-sm font-medium text-ink">Pakkestørrelse (Posten)</span>
+            <p className="text-xs text-ink-3">Velg den størrelsen som passer varen din. Kjøper betaler frakten.</p>
             <div className="space-y-2">
               {POSTEN_PACKAGES.map((pkg) => (
                 <button
                   key={pkg.id}
                   type="button"
                   onClick={() => setPackageSize(pkg.id)}
-                  className={`w-full rounded-xl border p-3 text-left transition ${
+                  className={`w-full rounded-sm border p-3 text-left transition ${
                     packageSize === pkg.id
-                      ? "border-[#5a6b32] bg-[#5a6b32]/5 ring-1 ring-[#5a6b32]"
-                      : "border-stone-200 bg-white hover:border-stone-400"
+                      ? "border-olive bg-olive/5 ring-1 ring-olive"
+                      : "border-line bg-raised hover:border-ink"
                   }`}
                 >
                   <p className="text-sm font-medium">{pkg.label}</p>
-                  <p className="mt-0.5 text-[11px] text-stone-500">Maks {pkg.maxWeight} · {pkg.dimensions}</p>
+                  <p className="mt-0.5 text-[11px] text-ink-3">Maks {pkg.maxWeight} · {pkg.dimensions}</p>
                 </button>
               ))}
             </div>
@@ -394,13 +394,13 @@ export default function EditItemPage() {
         )}
 
         {error && (
-          <p className="hidden rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:block">{error}</p>
+          <p className="hidden rounded-sm bg-clay-soft p-3 text-sm text-clay sm:block">{error}</p>
         )}
 
         <div className="hidden gap-2 sm:flex">
           <Link
             href={`/vare/${params.id}`}
-            className="flex-1 rounded-full border border-stone-300 bg-white px-5 py-3 text-center text-sm font-medium text-stone-700 hover:border-stone-500"
+            className="flex-1 rounded-sm border border-line-2 bg-raised px-5 py-3 text-center text-sm font-medium text-ink-2 hover:border-ink"
           >
             Avbryt
           </Link>
@@ -408,7 +408,7 @@ export default function EditItemPage() {
             type="submit"
             form="edit-form"
             disabled={saving}
-            className="flex-1 rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+            className="flex-1 rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
           >
             {saving ? "Lagrer…" : "Lagre endringer"}
           </button>
@@ -416,14 +416,14 @@ export default function EditItemPage() {
       </form>
 
       {/* Sticky submit bar, mobile only */}
-      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-stone-100 bg-white/95 px-4 py-3 backdrop-blur sm:hidden">
+      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-line bg-raised/95 px-4 py-3 sm:hidden">
         {error && (
-          <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>
+          <p className="mb-2 rounded-sm bg-clay-soft px-3 py-2 text-xs text-clay">{error}</p>
         )}
         <div className="flex gap-2">
           <Link
             href={`/vare/${params.id}`}
-            className="flex-1 rounded-full border border-stone-300 bg-white py-3 text-center text-sm font-medium text-stone-700"
+            className="flex-1 rounded-sm border border-line-2 bg-raised py-3 text-center text-sm font-medium text-ink-2"
           >
             Avbryt
           </Link>
@@ -431,7 +431,7 @@ export default function EditItemPage() {
             type="submit"
             form="edit-form"
             disabled={saving}
-            className="flex-1 rounded-full bg-stone-900 py-3 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-50"
+            className="flex-1 rounded-sm bg-ink py-3 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
           >
             {saving ? "Lagrer…" : "Lagre endringer"}
           </button>
@@ -444,11 +444,11 @@ export default function EditItemPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block space-y-1.5">
-      <span className="block text-sm font-medium text-stone-800">{label}</span>
+      <span className="block text-sm font-medium text-ink">{label}</span>
       {children}
     </label>
   );
 }
 
 const input =
-  "block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30";
+  "block w-full rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30";
