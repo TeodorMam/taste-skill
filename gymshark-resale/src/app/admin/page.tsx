@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdminDb, fmtAgo } from "@/lib/admin";
+import { Icon } from "@/components/Icon";
 import {
   type Item,
   type Message,
@@ -78,7 +79,7 @@ function Stat({
 }) {
   return (
     <div className="rounded-sm border border-line bg-raised p-4">
-      <p className="text-xs font-medium uppercase tracking-wider text-ink-3">{label}</p>
+      <p className="text-[13px] font-[620] text-ink-2">{label}</p>
       <p
         className={`mt-1.5 text-3xl font-semibold tracking-tight ${
           accent ? "text-olive" : "text-ink"
@@ -103,7 +104,7 @@ function Section({
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+        <h2 className="text-[26px] leading-[1.08]">{title}</h2>
         {sub && <p className="mt-0.5 text-sm text-ink-3">{sub}</p>}
       </div>
       {children}
@@ -145,7 +146,7 @@ function OrderLine({
         <p className="line-clamp-1 text-sm font-medium">{title}</p>
         <p className="line-clamp-1 text-xs text-ink-3">{who}</p>
         <div className="flex items-center gap-2 pt-0.5">
-          <span className={`rounded-sm px-2 py-0.5 text-[11px] font-medium ${chip.className}`}>
+          <span className={`rounded-sm px-2 py-0.5 text-xs font-medium ${chip.className}`}>
             {chip.label}
           </span>
           <span className="text-xs text-ink-3">{when}</span>
@@ -163,7 +164,7 @@ export default async function AdminPage() {
   if (!db) {
     return (
       <div className="space-y-4 py-10">
-        <h1 className="text-2xl font-semibold tracking-tight">Admin</h1>
+        <h1 className="text-[32px] leading-none">Admin</h1>
         <Quiet>SUPABASE_SERVICE_ROLE_KEY mangler i miljøet, så dashboardet kan ikke lese data.</Quiet>
       </div>
     );
@@ -307,7 +308,7 @@ export default async function AdminPage() {
   return (
     <div className="space-y-10 py-8 sm:py-10">
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-ink">
+        <h1 className="text-[40px] leading-none text-ink">
           Admin<span className="text-olive">.</span>
         </h1>
         <p className="mt-1 text-sm text-ink-3">Oppdatert {fmtAgo(new Date().toISOString())}</p>
@@ -361,17 +362,17 @@ export default async function AdminPage() {
           <div className="space-y-3">
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-sm border border-line bg-raised p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-ink-3">Besøkende</p>
+                <p className="text-[13px] font-[620] text-ink-2">Besøkende</p>
                 <p className="mt-1.5 text-3xl font-semibold tracking-tight">{sessionsIn(views7d)}</p>
                 <p className="mt-0.5 text-xs text-ink-3">{sessionsIn(views)} siste 30 d</p>
               </div>
               <div className="rounded-sm border border-line bg-raised p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-ink-3">Sidevisninger</p>
+                <p className="text-[13px] font-[620] text-ink-2">Sidevisninger</p>
                 <p className="mt-1.5 text-3xl font-semibold tracking-tight">{views7d.length}</p>
                 <p className="mt-0.5 text-xs text-ink-3">{views.length} siste 30 d</p>
               </div>
               <div className="rounded-sm border border-line bg-raised p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-ink-3">Så en vare</p>
+                <p className="text-[13px] font-[620] text-ink-2">Så en vare</p>
                 <p className="mt-1.5 text-3xl font-semibold tracking-tight text-olive">{itemSessions}</p>
                 <p className="mt-0.5 text-xs text-ink-3">av {sessionsIn(views7d)} besøkende</p>
               </div>
@@ -379,7 +380,7 @@ export default async function AdminPage() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-sm border border-line bg-raised p-4">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-3">Mest besøkt</p>
+                <p className="mb-2 text-[13px] font-[620] text-ink-2">Mest besøkt</p>
                 <ul className="space-y-1.5">
                   {topPages.map(([path, n]) => (
                     <li key={path} className="flex items-baseline justify-between gap-3 text-sm">
@@ -390,7 +391,7 @@ export default async function AdminPage() {
                 </ul>
               </div>
               <div className="rounded-sm border border-line bg-raised p-4">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-3">Kommer fra</p>
+                <p className="mb-2 text-[13px] font-[620] text-ink-2">Kommer fra</p>
                 <ul className="space-y-1.5">
                   {topSources.map(([host, n]) => (
                     <li key={host} className="flex items-baseline justify-between gap-3 text-sm">
@@ -450,20 +451,7 @@ export default async function AdminPage() {
         {hidden.length > 0 && (
           <details className="group">
             <summary className="flex cursor-pointer list-none items-center gap-1.5 px-1 text-sm text-ink-3 transition hover:text-ink-2 [&::-webkit-details-marker]:hidden">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="transition-transform group-open:rotate-90"
-                aria-hidden
-              >
-                <path d="M9 18l6-6-6-6" />
-              </svg>
+<Icon name="chevron-h" size={12} strokeWidth={2} className="transition-transform group-open:rotate-90" />
               {hidden.length} {hidden.length === 1 ? "kansellert eller ufullført ordre" : "kansellerte eller ufullførte ordre"}
             </summary>
             <div className="mt-2">

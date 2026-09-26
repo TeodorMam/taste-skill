@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/BackLink";
 
 export const metadata = {
   title: "Vilkår for bruk, Aktivbruk",
@@ -9,10 +10,10 @@ export default function VilkarPage() {
   return (
     <section className="max-w-xl space-y-8">
       <div>
-        <p className="mb-4 text-sm text-ink-3">
-          <Link href="/varer" className="hover:text-ink">← Tilbake</Link>
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">Vilkår for bruk</h1>
+        <div className="mb-4">
+          <BackLink href="/varer">Tilbake</BackLink>
+        </div>
+        <h1 className="text-[40px] leading-none">Vilkår for bruk</h1>
         <p className="mt-2 text-sm text-ink-3">Sist oppdatert: september 2026</p>
       </div>
 
@@ -271,7 +272,7 @@ export default function VilkarPage() {
         </p>
       </Block>
 
-      <div className="rounded-sm border border-line bg-raised p-5">
+      <div className="border-t border-ink pt-4">
         <p className="text-sm font-medium text-ink">Spørsmål om vilkårene?</p>
         <p className="mt-1 text-sm text-ink-2">
           Ta kontakt på{" "}
@@ -295,7 +296,7 @@ export default function VilkarPage() {
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <h2 className="text-base font-semibold tracking-tight">{title}</h2>
+      <h2 className="text-[17px] font-[620] leading-[1.3] [font-stretch:100%]">{title}</h2>
       <div className="space-y-2 text-sm leading-relaxed text-ink-2">{children}</div>
     </div>
   );

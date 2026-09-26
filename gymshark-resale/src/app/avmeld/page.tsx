@@ -22,14 +22,14 @@ export default async function AvmeldPage({
   if (ok) {
     return (
       <div className="space-y-4 py-16">
-        <h1 className="text-2xl font-semibold tracking-tight">Avmeldt.</h1>
+        <h1 className="text-[32px] leading-none">Avmeldt.</h1>
         <p className="text-sm text-ink-2">
           Du får ikke flere påminnelser om å legge igjen en vurdering. Beskjeder om
           egne kjøp og salg, som betaling og levering, kommer fortsatt.
         </p>
         <Link
           href="/"
-          className="inline-block rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink"
+          className="btn btn-ink"
         >
           Til forsiden
         </Link>
@@ -40,7 +40,7 @@ export default async function AvmeldPage({
   if (feil || !token) {
     return (
       <div className="space-y-4 py-16">
-        <h1 className="text-2xl font-semibold tracking-tight">Lenken virket ikke.</h1>
+        <h1 className="text-[32px] leading-none">Lenken virket ikke.</h1>
         <p className="text-sm text-ink-2">
           Den kan være utdatert. Send oss en e-post på{" "}
           <a href="mailto:kontakt@aktivbruk.com" className="underline underline-offset-2">
@@ -50,7 +50,7 @@ export default async function AvmeldPage({
         </p>
         <Link
           href="/"
-          className="inline-block rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink"
+          className="btn btn-ink"
         >
           Til forsiden
         </Link>
@@ -60,7 +60,7 @@ export default async function AvmeldPage({
 
   return (
     <div className="space-y-5 py-16">
-      <h1 className="text-2xl font-semibold tracking-tight">Slutte å få påminnelser?</h1>
+      <h1 className="text-[32px] leading-none">Slutte å få påminnelser?</h1>
       <p className="max-w-md text-sm text-ink-2">
         Du får da ingen flere e-poster som ber deg legge igjen en vurdering.
         Beskjeder om dine egne kjøp og salg, som betaling og levering, fortsetter som før.
@@ -69,7 +69,7 @@ export default async function AvmeldPage({
         <input type="hidden" name="token" value={token} />
         <button
           type="submit"
-          className="rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink"
+          className="btn btn-ink"
         >
           Ja, meld meg av
         </button>

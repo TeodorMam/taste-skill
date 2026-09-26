@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { type Review } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
+import { Icon } from "@/components/Icon";
 
 export function ReviewForm({
   itemId,
@@ -71,8 +72,8 @@ export function ReviewForm({
 
   if (existing) {
     return (
-      <div className="rounded-sm border border-line bg-paper p-4 text-sm">
-        <p className="font-medium text-ink">
+      <div className="border-y border-line py-3.5 text-sm">
+        <p className="flex flex-wrap items-center gap-1.5 font-[620] text-ink">
           Takk for vurderingen, {renderStars(existing.rating ?? (existing.is_positive ? 4 : 2), 16)}
         </p>
         {existing.comment && (
@@ -85,8 +86,8 @@ export function ReviewForm({
   const display = hovered ?? rating ?? 0;
 
   return (
-    <div className="space-y-3 rounded-sm border border-line bg-raised p-4">
-      <p className="text-sm font-medium text-ink">{label}</p>
+    <div className="space-y-3 border-y border-line py-4">
+      <p className="text-sm font-[620] text-ink">{label}</p>
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
@@ -95,29 +96,29 @@ export function ReviewForm({
             onClick={() => setRating(n)}
             onMouseEnter={() => setHovered(n)}
             onMouseLeave={() => setHovered(null)}
-            className="text-3xl leading-none transition-transform hover:scale-110 focus:outline-none"
+            className={`flex h-11 w-11 items-center justify-center ${n <= display ? "text-ink" : "text-[#A9A597]"}`}
             aria-label={`${n} stjerner`}
           >
-            <span className={n <= display ? "text-ochre" : "text-ink-3"}>★</span>
+            <Icon name="stjerne" filled={n <= display} size={28} />
           </button>
         ))}
       </div>
       {rating !== null && (
-        <p className="text-xs text-ink-3">{ratingLabel(rating)}</p>
+        <p className="text-[13px] text-ink-3">{ratingLabel(rating)}</p>
       )}
       <textarea
         value={comment}
         onChange={(e) => setComment(e.target.value.slice(0, 280))}
         placeholder="Valgfri kommentar (maks 280 tegn)…"
         rows={2}
-        className="block w-full resize-none rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30"
+        className="field resize-none"
       />
-      {error && <p className="text-xs text-clay">{error}</p>}
+      {error && <p className="text-[13px] text-clay">{error}</p>}
       <button
         type="button"
         onClick={submit}
         disabled={submitting}
-        className="w-full rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
+        className="btn btn-line w-full"
       >
         {submitting ? "Lagrer…" : "Send vurdering"}
       </button>
@@ -131,11 +132,15 @@ function ratingLabel(r: number): string {
 
 export function renderStars(rating: number, size = 14): React.ReactNode {
   return (
-    <span className="inline-flex items-center gap-0.5" style={{ fontSize: size }}>
+    <span className="inline-flex items-center gap-0.5" aria-label={`${Math.round(rating)} av 5 stjerner`}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={n <= Math.round(rating) ? "text-ochre" : "text-ink-3"}>
-          ★
-        </span>
+        <Icon
+          key={n}
+          name="stjerne"
+          filled={n <= Math.round(rating)}
+          size={size}
+          className={n <= Math.round(rating) ? "text-ink" : "text-[#A9A597]"}
+        />
       ))}
     </span>
   );

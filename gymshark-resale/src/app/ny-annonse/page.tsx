@@ -21,6 +21,8 @@ import { POSTEN_PACKAGES } from "@/lib/shipping";
 import { prepareImagesForUpload } from "@/lib/image";
 import { createClient } from "@/utils/supabase/client";
 import { FirstListingTips } from "@/components/FirstListingTips";
+import { Icon } from "@/components/Icon";
+import { Sep } from "@/components/Sep";
 
 type Slot = { id: string; file: File; preview: string };
 
@@ -195,7 +197,7 @@ export default function PostPage() {
   return (
     <section className="space-y-6 pb-28 sm:pb-6">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Legg ut vare</h1>
+        <h1 className="text-[40px] leading-none">Legg ut vare</h1>
         <p className="mt-1 text-sm text-ink-3">
           Bare treningsklær. Fyll inn under ett minutt.
         </p>
@@ -209,12 +211,12 @@ export default function PostPage() {
             {slots.map((s, i) => (
               <div
                 key={s.id}
-                className="group relative aspect-square overflow-hidden rounded-sm border border-line bg-sunk"
+                className="group relative aspect-[3/4] overflow-hidden bg-sunk"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={s.preview} alt="" className="h-full w-full object-cover" />
                 {i === 0 && (
-                  <span className="absolute left-1 top-1 rounded-sm bg-olive px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-raised">
+                  <span className="absolute bottom-1 right-1 flex h-[22px] items-center rounded-sm bg-ink px-[7px] text-xs font-semibold text-paper">
                     Cover
                   </span>
                 )}
@@ -222,9 +224,9 @@ export default function PostPage() {
                   type="button"
                   onClick={() => removeSlot(s.id)}
                   aria-label="Fjern"
-                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-sm bg-ink/70 text-xs text-raised transition hover:bg-ink"
+                  className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-sm bg-ink text-paper hover:bg-ink/90"
                 >
-                  ✕
+                  <Icon name="kryss" size={14} />
                 </button>
                 <div className="absolute bottom-1 left-1 flex gap-0.5">
                   <button
@@ -232,26 +234,26 @@ export default function PostPage() {
                     onClick={() => moveSlot(s.id, -1)}
                     disabled={i === 0}
                     aria-label="Flytt venstre"
-                    className="flex h-6 w-6 items-center justify-center rounded-sm bg-raised/90 text-xs text-ink disabled:opacity-30"
+                    className="flex h-7 w-7 items-center justify-center rounded-sm bg-raised text-ink disabled:opacity-30"
                   >
-                    ‹
+                    <Icon name="chevron-v" size={14} />
                   </button>
                   <button
                     type="button"
                     onClick={() => moveSlot(s.id, 1)}
                     disabled={i === slots.length - 1}
                     aria-label="Flytt høyre"
-                    className="flex h-6 w-6 items-center justify-center rounded-sm bg-raised/90 text-xs text-ink disabled:opacity-30"
+                    className="flex h-7 w-7 items-center justify-center rounded-sm bg-raised text-ink disabled:opacity-30"
                   >
-                    ›
+                    <Icon name="chevron-h" size={14} />
                   </button>
                 </div>
               </div>
             ))}
             {remaining > 0 && (
-              <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-sm border-2 border-dashed border-line-2 bg-paper text-ink-3 transition hover:border-olive hover:text-olive">
-                <span className="text-2xl leading-none">＋</span>
-                <span className="text-[10px] font-medium">
+              <label className="flex aspect-[3/4] cursor-pointer flex-col items-center justify-center gap-2 rounded-sm bg-raised text-ink shadow-[inset_0_0_0_1px_#CFCBBE] hover:shadow-[inset_0_0_0_1px_#1C1E18]">
+                <Icon name="kamera" size={24} />
+                <span className="text-[13px] font-medium">
                   {slots.length === 0 ? "Legg til bilder" : `${remaining} igjen`}
                 </span>
                 <input
@@ -298,7 +300,7 @@ export default function PostPage() {
         </Field>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-ink">Kategori</span>
+          <span className="block text-sm font-[620] leading-[1.3] text-ink">Kategori</span>
           <div className="flex flex-wrap gap-2">
             {CATEGORY_PARENTS.map((p) => (
               <button
@@ -313,11 +315,7 @@ export default function PostPage() {
                     setCategory("");
                   }
                 }}
-                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
-                  categoryParent === p
-                    ? "border-olive bg-olive text-raised"
-                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-                }`}
+                className={`chip ${categoryParent === p ? "chip-on" : ""}`}
               >
                 {p}
               </button>
@@ -331,11 +329,7 @@ export default function PostPage() {
                     key={c}
                     type="button"
                     onClick={() => setCategory(category === c ? "" : c)}
-                    className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
-                      category === c
-                        ? "border-olive bg-olive text-raised"
-                        : "border-line-2 bg-paper text-ink-2 hover:border-ink"
-                    }`}
+                    className={`chip ${category === c ? "chip-on" : ""}`}
                   >
                     {c}
                   </button>
@@ -346,18 +340,14 @@ export default function PostPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-ink">Kjønn</span>
+          <span className="block text-sm font-[620] leading-[1.3] text-ink">Kjønn</span>
           <div className="flex flex-wrap gap-2">
             {GENDERS.map((g) => (
               <button
                 key={g}
                 type="button"
                 onClick={() => setGender(gender === g ? "" : g)}
-                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
-                  gender === g
-                    ? "border-olive bg-olive text-raised"
-                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-                }`}
+                className={`chip ${gender === g ? "chip-on" : ""}`}
               >
                 {g}
               </button>
@@ -366,18 +356,14 @@ export default function PostPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-ink">Farge (valgfritt)</span>
+          <span className="block text-sm font-[620] leading-[1.3] text-ink">Farge (valgfritt)</span>
           <div className="flex flex-wrap gap-2">
             {COLORS.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(color === c ? "" : c)}
-                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
-                  color === c
-                    ? "border-olive bg-olive text-raised"
-                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-                }`}
+                className={`chip ${color === c ? "chip-on" : ""}`}
               >
                 {c}
               </button>
@@ -386,18 +372,14 @@ export default function PostPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-ink">Passform (valgfritt)</span>
+          <span className="block text-sm font-[620] leading-[1.3] text-ink">Passform (valgfritt)</span>
           <div className="flex flex-wrap gap-2">
             {FITS.map((f) => (
               <button
                 key={f}
                 type="button"
                 onClick={() => setFit(fit === f ? "" : f)}
-                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
-                  fit === f
-                    ? "border-olive bg-olive text-raised"
-                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-                }`}
+                className={`chip ${fit === f ? "chip-on" : ""}`}
               >
                 {f}
               </button>
@@ -459,21 +441,20 @@ export default function PostPage() {
         </Field>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-ink">Frakt</span>
+          <span className="block text-sm font-[620] leading-[1.3] text-ink">Frakt</span>
           <div className="grid grid-cols-3 gap-2">
             {SHIPPING_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => setShipping(opt.value)}
-                className={`rounded-sm border p-3 text-left transition ${
-                  shipping === opt.value
-                    ? "border-olive bg-olive/5 ring-1 ring-olive"
-                    : "border-line bg-raised hover:border-ink"
-                }`}
+                className={`opt flex-col gap-1.5 ${shipping === opt.value ? "opt-on" : ""}`}
               >
-                <p className="text-sm font-medium">{opt.label}</p>
-                <p className="mt-0.5 text-[11px] text-ink-3">{opt.hint}</p>
+                <span className="flex gap-1">
+                  {opt.icons.map((ic) => <Icon key={ic} name={ic} size={18} />)}
+                </span>
+                <p className="text-[15px] font-[620]">{opt.label}</p>
+                <p className={`text-[13px] ${shipping === opt.value ? "text-[#C9C8B8]" : "text-ink-3"}`}>{opt.hint}</p>
               </button>
             ))}
           </div>
@@ -481,7 +462,7 @@ export default function PostPage() {
 
         {shipping !== "Kun henting" && (
           <div className="space-y-1.5">
-            <span className="block text-sm font-medium text-ink">Pakkestørrelse (Posten)</span>
+            <span className="block text-sm font-[620] leading-[1.3] text-ink">Pakkestørrelse (Posten)</span>
             <p className="text-xs text-ink-3">Velg den størrelsen som passer varen din. Kjøper betaler frakten.</p>
             <div className="space-y-2">
               {POSTEN_PACKAGES.map((pkg) => (
@@ -489,14 +470,10 @@ export default function PostPage() {
                   key={pkg.id}
                   type="button"
                   onClick={() => setPackageSize(pkg.id)}
-                  className={`w-full rounded-sm border p-3 text-left transition ${
-                    packageSize === pkg.id
-                      ? "border-olive bg-olive/5 ring-1 ring-olive"
-                      : "border-line bg-raised hover:border-ink"
-                  }`}
+                  className={`opt flex-col gap-0.5 ${packageSize === pkg.id ? "opt-on" : ""}`}
                 >
-                  <p className="text-sm font-medium">{pkg.label}</p>
-                  <p className="mt-0.5 text-[11px] text-ink-3">{pkg.weightLabel} · {pkg.dimensions}</p>
+                  <p className="text-[15px] font-[620]">{pkg.label}</p>
+                  <p className={`num text-[13px] ${packageSize === pkg.id ? "text-[#C9C8B8]" : "text-ink-3"}`}>{pkg.weightLabel}<Sep />{pkg.dimensions}</p>
                 </button>
               ))}
             </div>
@@ -506,16 +483,16 @@ export default function PostPage() {
       </form>
 
       {/* Sticky submit bar, mobile only, sits above the bottom nav */}
-      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-line bg-raised/95 px-4 py-3 sm:hidden">
+      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-line bg-paper px-4 py-3 sm:hidden">
         {error && (
           <p className="mb-2 rounded-sm bg-clay-soft px-3 py-2 text-xs text-clay">{error}</p>
         )}
         {submitting && slots.length > 0 && (
           <div className="mb-2 space-y-1">
             <p className="text-xs text-ink-3">Laster opp bilde {uploadIdx + 1} av {slots.length}…</p>
-            <div className="h-1 overflow-hidden rounded-sm bg-line">
+            <div className="h-0.5 overflow-hidden bg-line">
               <div
-                className="h-full rounded-sm bg-olive transition-all duration-300"
+                className="h-full bg-ink transition-all duration-300"
                 style={{ width: `${((uploadIdx + 1) / slots.length) * 100}%` }}
               />
             </div>
@@ -525,7 +502,7 @@ export default function PostPage() {
           type="submit"
           form="post-form"
           disabled={submitting}
-          className="w-full rounded-sm bg-ink py-3 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
+          className="btn btn-olive btn-lg w-full"
         >
           {submitting ? "Legger ut…" : "Legg ut"}
         </button>
@@ -539,9 +516,9 @@ export default function PostPage() {
         {submitting && slots.length > 0 && (
           <div className="mb-3 space-y-1.5">
             <p className="text-xs text-ink-3">Laster opp bilde {uploadIdx + 1} av {slots.length}…</p>
-            <div className="h-1.5 overflow-hidden rounded-sm bg-line">
+            <div className="h-0.5 overflow-hidden bg-line">
               <div
-                className="h-full rounded-sm bg-ink transition-all duration-300"
+                className="h-full bg-ink transition-all duration-300"
                 style={{ width: `${((uploadIdx + 1) / slots.length) * 100}%` }}
               />
             </div>
@@ -551,7 +528,7 @@ export default function PostPage() {
           type="submit"
           form="post-form"
           disabled={submitting}
-          className="w-full rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
+          className="btn btn-olive btn-lg w-full"
         >
           {submitting ? "Legger ut…" : "Legg ut"}
         </button>
@@ -562,12 +539,12 @@ export default function PostPage() {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="block space-y-1.5">
-      <span className="block text-sm font-medium text-ink">{label}</span>
+    <label className="block space-y-2">
+      <span className="block text-sm font-[620] leading-[1.3] text-ink">{label}</span>
       {children}
     </label>
   );
 }
 
 const input =
-  "block w-full rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30";
+  "field";

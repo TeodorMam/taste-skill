@@ -46,6 +46,8 @@ const PATHS = {
   "etikett": <><path d="M3 3h8l10 10-8 8L3 11z"/><circle cx="7.5" cy="7.5" r="1.5"/></>,  // mine annonser
   "tips": <><path d="M9 17v-2l-3-4V7l3-3h6l3 3v4l-3 4v2z"/><path d="M9.5 20.5h5"/><path d="M12 10v4"/></>,  // tips
   "feiring": <><path d="M3 21l5-13 8 8z"/><path d="M14 2.5v3"/><path d="M19.5 4.5l-2.5 2.5"/><path d="M21.5 10h-3"/><path d="M11 9l2 2"/></>,  // feiring
+  "oeye": <><path d="M2 12l5-5h10l5 5-5 5H7z"/><circle cx="12" cy="12" r="3"/></>,  // vis passord
+  "oeye-av": <><path d="M2 12l5-5h10l5 5-5 5H7z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></>,  // skjul passord
   "selg": <><path d="M3 3h18v18H3z"/><path d="M12 7.5v9"/><path d="M7.5 12h9"/></>,  // selg
 } as const;
 

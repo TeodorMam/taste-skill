@@ -9,6 +9,7 @@ import {
 } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 import { prepareImageForUpload } from "@/lib/image";
+import { Icon } from "@/components/Icon";
 
 type EmailStage = "idle" | "editing" | "code";
 
@@ -175,25 +176,23 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
         tabIndex={0}
         onClick={() => setOpen(true)}
         onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setOpen(true)}
-        className="cursor-pointer rounded-sm border border-olive/40 bg-raised p-4 transition hover:border-olive hover:bg-olive/5"
+        className="cursor-pointer border-y border-line py-4 hover:bg-ink/[0.03]"
       >
         <div className="flex items-center gap-3">
           <Avatar url={avatarUrl} displayName={displayName} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold tracking-tight">{name}</p>
-            <p className="truncate text-xs text-ink-3">{currentEmail ?? ""}</p>
+            <p className="truncate text-[17px] font-[620]">{name}</p>
+            <p className="truncate text-[13px] text-ink-3">{currentEmail ?? ""}</p>
           </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink-3" aria-hidden>
-            <path d="M9 18l6-6-6-6" />
-          </svg>
+          <Icon name="chevron-h" size={18} className="text-ink-3" />
         </div>
 
         {isIncomplete && (
-          <div className="mt-3 rounded-sm border border-ochre/30 bg-ochre-soft p-3">
-            <p className="text-xs font-semibold text-ochre">
+          <div className="mt-3 rounded-sm bg-ochre-soft p-3">
+            <p className="flex items-center gap-1.5 text-[13px] font-semibold text-ochre"><Icon name="advarsel" size={14} />
               {missingShipping ? "Leveringsinformasjon mangler" : "Profilen din er ikke fullført"}
             </p>
-            <p className="mt-0.5 text-xs text-ochre">
+            <p className="mt-0.5 text-[13px] text-ochre">
               {missingShipping
                 ? "Fyll inn navn, adresse og telefon for å kunne kjøpe og motta varer."
                 : missingName && missingAvatar
@@ -211,14 +210,14 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
   return (
     <form
       onSubmit={save}
-      className="space-y-3 rounded-sm border border-line bg-raised p-4"
+      className="space-y-3 border-t border-ink pt-4"
     >
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold">Profil</p>
+        <h2 className="text-[17px] font-[620] leading-[1.3] [font-stretch:100%]">Profil</h2>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="text-xs text-ink-3 hover:text-ink"
+          className="tbtn text-sm font-medium text-ink-2"
         >
           Lukk
         </button>
@@ -227,7 +226,8 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
       <div className="flex items-center gap-3">
         <Avatar url={avatarUrl} displayName={displayName} />
         <div className="space-y-1.5">
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-xs font-medium text-ink-2 hover:border-ink">
+          <label className="btn btn-quiet btn-sm cursor-pointer">
+            <Icon name="kamera" size={16} />
             {uploading ? "Laster opp…" : avatarUrl ? "Bytt bilde" : "Last opp bilde"}
             <input
               type="file"
@@ -244,7 +244,7 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
             <button
               type="button"
               onClick={() => setAvatarUrl(null)}
-              className="block text-[11px] text-ink-3 underline underline-offset-2 hover:text-ink"
+              className="block text-xs text-ink-3 underline underline-offset-2 hover:text-ink"
             >
               Fjern bilde
             </button>
@@ -265,16 +265,16 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
 
       {/* Email change */}
       <div>
-        <span className="block text-xs font-medium text-ink-2">E-post</span>
+        <span className="block text-sm font-[620] leading-[1.3] text-ink">E-post</span>
         {emailStage === "idle" && (
           <div className="mt-1 flex items-center gap-2">
-            <span className="flex-1 rounded-sm border border-line bg-paper px-3 py-2 text-sm text-ink-2">
+            <span className="flex h-12 flex-1 items-center rounded-sm bg-sunk px-3.5 text-ink-2">
               {currentEmail ?? ""}
             </span>
             <button
               type="button"
               onClick={() => { setEmailStage("editing"); setEmailError(null); }}
-              className="shrink-0 rounded-sm border border-line-2 px-3 py-1.5 text-xs font-medium text-ink-2 hover:border-ink"
+              className="btn btn-quiet btn-sm shrink-0"
             >
               Endre
             </button>
@@ -297,14 +297,14 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
                 type="button"
                 onClick={sendEmailChange}
                 disabled={savingEmail || !newEmail.trim()}
-                className="rounded-sm bg-ink px-4 py-2 text-xs font-medium text-raised hover:bg-ink disabled:opacity-50"
+                className="btn btn-ink btn-sm"
               >
                 {savingEmail ? "Sender…" : "Send bekreftelseskode"}
               </button>
               <button
                 type="button"
                 onClick={() => { setEmailStage("idle"); setEmailError(null); setNewEmail(""); }}
-                className="rounded-sm border border-line-2 px-3 py-2 text-xs font-medium text-ink-2 hover:border-ink"
+                className="btn btn-quiet btn-sm"
               >
                 Avbryt
               </button>
@@ -340,7 +340,7 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
               <button
                 type="button"
                 onClick={() => { setEmailStage("idle"); setEmailError(null); setNewEmail(""); setEmailCode(""); }}
-                className="rounded-sm border border-line-2 px-3 py-2 text-xs font-medium text-ink-2 hover:border-ink"
+                className="btn btn-quiet btn-sm"
               >
                 Avbryt
               </button>
@@ -358,7 +358,7 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
           placeholder="Litt om deg, hva du selger, hvor du trener, osv."
           className={`${inp} resize-none`}
         />
-        <p className="mt-1 text-[10px] text-ink-3">{bio.length}/280</p>
+        <p className="mt-1 text-xs text-ink-3">{bio.length}/280</p>
       </Field>
 
       <div className="border-t border-line pt-3">
@@ -397,7 +397,7 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
             className={`${inp} tracking-widest`}
           />
         </Field>
-        <p className="mt-1 text-[10px] text-ink-3">Lagres privat, vises ikke på profilen din.</p>
+        <p className="mt-1 text-xs text-ink-3">Lagres privat, vises ikke på profilen din.</p>
       </div>
 
       {error && (
@@ -408,12 +408,12 @@ export function ProfileEditor({ email: initialEmail }: { email?: string | null }
         <button
           type="submit"
           disabled={saving || uploading}
-          className="rounded-sm bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
+          className="btn btn-ink"
         >
           {saving ? "Lagrer…" : "Lagre profil"}
         </button>
         {savedAt && Date.now() - savedAt < 4000 && (
-          <span className="text-xs text-olive">✓ Lagret</span>
+          <span className="flex items-center gap-1 text-[13px] font-[620] text-olive"><Icon name="hake" size={14} />Lagret</span>
         )}
       </div>
     </form>
@@ -436,14 +436,11 @@ function Avatar({ url, displayName }: { url: string | null; displayName: string 
     ? displayName.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase()
     : null;
   return (
-    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-circle bg-olive/10">
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-circle bg-[#DCD8CC]">
       {initials ? (
-        <span className="text-base font-semibold text-olive">{initials}</span>
+        <span className="text-base font-semibold text-ink-2">{initials}</span>
       ) : (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-ink-3" aria-hidden>
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
+        <Icon name="profil" size={26} className="text-ink-3" />
       )}
     </div>
   );
@@ -457,12 +454,12 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block space-y-1">
-      <span className="block text-xs font-medium text-ink-2">{label}</span>
+    <label className="block space-y-2">
+      <span className="block text-sm font-[620] leading-[1.3] text-ink">{label}</span>
       {children}
     </label>
   );
 }
 
 const inp =
-  "block w-full rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30";
+  "field";

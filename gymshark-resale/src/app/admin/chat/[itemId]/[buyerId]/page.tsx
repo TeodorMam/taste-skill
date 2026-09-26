@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdminDb, fmtWhen, fmtAgo } from "@/lib/admin";
+import { BackLink } from "@/components/BackLink";
 import {
   type Item,
   type Message,
@@ -29,12 +30,12 @@ export const metadata = {
 
 /** Lifecycle events carry their meaning in message_type, not in body. */
 const SYSTEM_LABELS: Record<string, string> = {
-  bid: "💸 Bud",
-  bid_accepted: "✅ Bud godtatt",
-  payment: "✅ Betaling gjennomført",
-  shipped: "📦 Varen er sendt",
-  delivered: "📬 Varen er levert",
-  payout: "💰 Utbetaling sendt",
+  bid: "Bud",
+  bid_accepted: "Bud godtatt",
+  payment: "Betaling gjennomført",
+  shipped: "Varen er sendt",
+  delivered: "Varen er levert",
+  payout: "Utbetaling sendt",
 };
 
 function systemText(m: Message): string {
@@ -55,7 +56,7 @@ export default async function AdminThreadPage({
   if (!db) {
     return (
       <div className="space-y-4 py-10">
-        <h1 className="text-2xl font-semibold tracking-tight">Samtale</h1>
+        <h1 className="text-[32px] leading-none">Samtale</h1>
         <p className="rounded-sm border border-dashed border-line bg-raised px-4 py-8 text-center text-sm text-ink-3">
           SUPABASE_SERVICE_ROLE_KEY mangler i miljøet.
         </p>
@@ -95,13 +96,11 @@ export default async function AdminThreadPage({
   return (
     <div className="space-y-6 py-8 sm:py-10">
       <div>
-        <Link href="/admin" className="text-xs text-ink-3 hover:text-ink">
-          ← Tilbake til admin
-        </Link>
+        <BackLink href="/admin">Tilbake til admin</BackLink>
       </div>
 
       <header className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">
+        <h1 className="text-[32px] leading-none text-ink">
           {item?.title ?? "Slettet vare"}
         </h1>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-3">
@@ -147,7 +146,7 @@ export default async function AdminThreadPage({
           if (SYSTEM_LABELS[type]) {
             return (
               <div key={m.id} className="flex justify-center py-1">
-                <span className="rounded-sm bg-olive/10 px-3 py-1 text-[11px] font-medium text-olive-press">
+                <span className="rounded-sm bg-olive/10 px-3 py-1 text-xs font-medium text-olive-press">
                   {systemText(m)} · {fmtWhen(m.created_at)}
                 </span>
               </div>
@@ -178,7 +177,7 @@ export default async function AdminThreadPage({
                   {m.body}
                 </div>
               )}
-              <span className="mt-0.5 px-1 text-[10px] text-ink-3">
+              <span className="mt-0.5 px-1 text-xs text-ink-3">
                 {fromSeller ? sellerName : buyerName} · {fmtWhen(m.created_at)}
                 {m.edited_at ? " · redigert" : ""}
               </span>

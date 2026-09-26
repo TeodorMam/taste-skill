@@ -19,6 +19,7 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
+import { Icon } from "@/components/Icon";
 
 const PAGE_SIZE = 24;
 const PRICE_MAX = 2000;
@@ -300,49 +301,49 @@ function BrowseInner() {
 
   return (
     <>
-      <section className="space-y-3 pb-6">
-        <h1 className="text-3xl font-semibold tracking-tight">Utforsk</h1>
-
-        <SearchBar externalValue={urlQ} onCommit={commitSearchQuery} />
+      <section className="pb-6">
+        <div className="flex flex-col gap-4 pb-4 lg:flex-row lg:items-end lg:justify-between lg:gap-10 lg:pb-6 lg:pt-4">
+          <h1 className="text-[40px] leading-none lg:text-[64px]">Utforsk</h1>
+          <div className="w-full lg:max-w-[590px]">
+            <SearchBar externalValue={urlQ} onCommit={commitSearchQuery} />
+          </div>
+        </div>
 
         {/* Filter + sort bar, same layout on mobile and desktop.
             Filter/Sort sit as pill buttons on the left; active-filter
             chips scroll horizontally to their right. */}
-        <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:border-y lg:border-t-ink lg:border-b-line lg:py-3.5">
+        <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => setShowSort(true)}
-            className="flex shrink-0 items-center gap-1.5 rounded-sm border border-line bg-raised px-3.5 py-1.5 text-sm font-medium text-ink-2 hover:border-ink"
+            className="chip"
           >
-            <SortIcon />
+            <Icon name="sorter" size={16} />
             Sorter
           </button>
           <button
             onClick={() => { setActiveFilterPanel(null); setShowFilter(true); }}
-            className={`flex shrink-0 items-center gap-1.5 rounded-sm border px-3.5 py-1.5 text-sm font-medium ${
-              activeFilterCount > 0
-                ? "border-olive bg-olive text-raised"
-                : "border-line bg-raised text-ink-2 hover:border-ink"
-            }`}
+            className={`chip num ${activeFilterCount > 0 ? "chip-on" : ""}`}
           >
-            <FilterIcon />
+            <Icon name="filter" size={16} />
             {activeFilterCount > 0 ? `Filter (${activeFilterCount})` : "Filter"}
           </button>
           {activeChips.length > 0 && (
             <>
-              <div className="h-5 shrink-0 w-px bg-line" />
+              <div className="h-5 w-px shrink-0 bg-line" />
               {activeChips.map((chip) => (
                 <button
                   key={chip.label}
                   onClick={chip.clear}
-                  className="flex shrink-0 items-center gap-1 rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-xs font-medium text-ink-2 hover:border-ink"
+                  className="chip"
                 >
-                  {chip.label}
-                  <span className="ml-0.5 opacity-60">✕</span>
+                  <ChipLabel text={chip.label} />
+                  <Icon name="kryss" size={12} className="ml-0.5 text-ink-2" />
                 </button>
               ))}
               <button
                 onClick={clearAll}
-                className="shrink-0 rounded-sm px-2 py-1.5 text-xs font-medium text-ink-3 hover:text-ink-2"
+                className="tbtn shrink-0 px-2 text-sm"
               >
                 Nullstill
               </button>
@@ -351,24 +352,31 @@ function BrowseInner() {
         </div>
 
         {total !== null && (
-          <p className="text-xs text-ink-3">
-            {initialLoading && !isFirstLoad.current && (
-              <span className="mr-1.5 inline-block h-3 w-3 animate-spin rounded-circle border-2 border-line-2 border-t-ink-2" />
-            )}
+          <p className="num flex items-center text-[13px] text-ink-3">
             {total} vare{total === 1 ? "" : "r"}
           </p>
         )}
+        </div>
+
+        {/* Thin progress bar while a new query loads, instead of a spinner in
+            the text. */}
+        <div className="relative mb-6 mt-3 h-0.5 overflow-hidden lg:mt-0">
+          {initialLoading && !isFirstLoad.current && (
+            <span className="absolute inset-y-0 left-0 w-[38%] animate-pulse bg-ink" />
+          )}
+        </div>
 
         {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
 
         {initialLoading && isFirstLoad.current && <SkeletonGrid />}
 
         {!initialLoading && items.length === 0 && (
-          <div className="rounded-sm border border-dashed border-line-2 p-10 text-center text-sm text-ink-3">
-            <p className="font-medium text-ink-2">Ingen treff</p>
-            <p className="mt-1">Prøv å nullstille filtrene eller søke bredere.</p>
+          <div className="text-[15px] text-ink-2">
+            <Icon name="soek" size={28} className="text-ink-3" />
+            <p className="mt-3 text-[26px] font-[680] leading-[1.08] text-ink [font-stretch:80%]">Ingen treff</p>
+            <p className="mt-1.5">Prøv å nullstille filtrene eller søke bredere.</p>
             {activeChips.length > 0 && (
-              <button onClick={clearAll} className="mt-4 rounded-sm bg-ink px-4 py-2 text-xs font-medium text-paper hover:bg-ink">
+              <button onClick={clearAll} className="btn btn-ink mt-5">
                 Nullstill filtre
               </button>
             )}
@@ -383,13 +391,13 @@ function BrowseInner() {
               ))}
             </div>
             {hasMore && (
-              <div className="flex justify-center pt-2">
+              <div className="flex justify-center pt-10 lg:pt-14">
                 <button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="rounded-sm border border-line-2 bg-raised px-6 py-2.5 text-sm font-medium text-ink-2 transition hover:border-ink disabled:opacity-50"
+                  className="btn btn-line px-10"
                 >
-                  {loadingMore ? "Laster…" : "Last inn flere"}
+                  {loadingMore ? "Laster…" : "Se flere"}
                 </button>
               </div>
             )}
@@ -400,24 +408,24 @@ function BrowseInner() {
       {/* Sort sheet */}
       {showSort && (
         <>
-          <div className="fixed inset-0 z-40 bg-ink/20 backdrop-blur-[1px]" onClick={() => setShowSort(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-sheet bg-raised shadow-[0_-12px_40px_rgba(0,0,0,0.18)]">
+          <div className="fixed inset-0 z-40 bg-ink/35" onClick={() => setShowSort(false)} />
+          <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-[560px] rounded-t-sheet bg-raised">
             <button
               type="button"
               onClick={() => setShowSort(false)}
               aria-label="Lukk sortering"
-              className="mx-auto mb-1 mt-2 h-1 w-10 rounded-sm bg-line-2"
+              className="mx-auto mb-1 mt-3 block h-1 w-10 rounded-sm bg-[#B3AFA2]"
             />
-            <div className="px-4 pb-10 pt-1">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-3">Sorter etter</p>
+            <div className="px-4 pb-10 pt-2">
+              <p className="pb-2 text-[17px] font-[620] text-ink">Sorter etter</p>
               {SORT_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => { setParam("sort", opt.value === "newest" ? "" : opt.value); setShowSort(false); }}
-                  className={`flex w-full items-center justify-between border-b border-line py-4 text-sm ${sort === opt.value ? "font-semibold text-olive" : "font-medium text-ink-2"}`}
+                  className={`flex min-h-[52px] w-full items-center justify-between border-b border-line text-[15px] ${sort === opt.value ? "font-[650] text-ink" : "font-medium text-ink-2"}`}
                 >
-                  {opt.label}
-                  {sort === opt.value && <CheckIcon />}
+                  <ChipLabel text={opt.label} />
+                  {sort === opt.value && <Icon name="hake" size={18} />}
                 </button>
               ))}
             </div>
@@ -431,11 +439,11 @@ function BrowseInner() {
       {showFilter && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-ink/20 backdrop-blur-[1px]"
+            className="fixed inset-0 z-40 bg-ink/35"
             onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
           />
           <div
-            className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-sheet bg-raised shadow-[0_-12px_40px_rgba(0,0,0,0.18)]"
+            className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-w-[560px] flex-col rounded-t-sheet bg-raised"
             style={{
               maxHeight: "62vh",
               transform: `translateY(${dragY}px)`,
@@ -444,7 +452,7 @@ function BrowseInner() {
             }}
           >
             <div
-              className="shrink-0 cursor-grab pt-2 pb-1 active:cursor-grabbing"
+              className="shrink-0 cursor-grab pb-1 pt-3 active:cursor-grabbing"
               onTouchStart={(e) => { dragStartYRef.current = e.touches[0].clientY; }}
               onTouchMove={(e) => {
                 if (dragStartYRef.current == null) return;
@@ -465,21 +473,21 @@ function BrowseInner() {
                 type="button"
                 onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
                 aria-label="Lukk filter"
-                className="mx-auto block h-1 w-10 rounded-sm bg-line-2"
+                className="mx-auto block h-1 w-10 rounded-sm bg-[#B3AFA2]"
               />
             </div>
-            <div className="flex shrink-0 items-center justify-between border-b border-line px-4 pb-3 pt-1">
+            <div className="flex shrink-0 items-center justify-between border-b border-line px-4 pb-1 pt-1">
               {activeFilterPanel ? (
                 <button
                   onClick={() => setActiveFilterPanel(null)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-ink-3 hover:text-ink"
+                  className="tbtn font-[550] text-ink-2 hover:text-ink"
                 >
-                  <BackIcon /> Tilbake
+                  <Icon name="pil-v" size={18} /> Tilbake
                 </button>
               ) : (
-                <p className="text-sm font-semibold text-ink">Filter</p>
+                <p className="flex min-h-[44px] items-center text-[17px] font-[620] text-ink">Filter</p>
               )}
-              <button onClick={clearAll} className="text-xs font-medium text-ink-3 hover:text-ink">
+              <button onClick={clearAll} className="tbtn text-sm">
                 Nullstill
               </button>
             </div>
@@ -492,32 +500,34 @@ function BrowseInner() {
                     <button
                       key={row.key}
                       onClick={() => setActiveFilterPanel(row.key)}
-                      className="flex w-full items-center justify-between py-4"
+                      className="flex min-h-[56px] w-full items-center justify-between"
                     >
-                      <span className="text-sm font-medium text-ink">{row.label}</span>
+                      <span className="text-[15px] font-medium text-ink">{row.label}</span>
                       <span className="flex items-center gap-2">
                         {row.value && (
-                          <span className="text-sm font-medium text-olive">{row.value}</span>
+                          <span className="text-[15px] font-[650] text-ink"><ChipLabel text={row.value} /></span>
                         )}
-                        <ChevronIcon />
+                        <Icon name="chevron-h" size={18} className="text-ink-2" />
                       </span>
                     </button>
                   ))}
 
                   {/* Kan sendes toggle */}
-                  <div className="flex items-center justify-between py-4">
-                    <span className="text-sm font-medium text-ink">Kan sendes</span>
+                  <div className="flex min-h-[56px] items-center justify-between">
+                    <span className="text-[15px] font-medium text-ink">Kan sendes</span>
                     <button
                       onClick={() => setParam("shipping", shipping === "sendes" ? "" : "sendes")}
-                      className={`relative h-6 w-11 rounded-sm transition-colors ${shipping === "sendes" ? "bg-olive" : "bg-line"}`}
+                      role="switch"
+                      aria-checked={shipping === "sendes"}
+                      className={`relative h-6 w-11 rounded-sm transition-colors ${shipping === "sendes" ? "bg-ink" : "bg-line-2"}`}
                     >
-                      <span className={`absolute top-0.5 h-5 w-5 rounded-sm bg-raised transition-transform ${shipping === "sendes" ? "translate-x-5" : "translate-x-0.5"}`} />
+                      <span className={`absolute top-0.5 h-5 w-5 rounded-sm bg-raised transition-transform duration-150 ease-out ${shipping === "sendes" ? "translate-x-5" : "translate-x-0.5"}`} />
                     </button>
                   </div>
 
                   {/* Price slider, inline, no sub-panel */}
                   <div className="py-5 space-y-5">
-                    <p className="text-sm font-medium text-ink">Pris</p>
+                    <p className="text-[15px] font-medium text-ink">Pris</p>
                     <div className="space-y-1">
                       <input
                         type="range" min={0} max={PRICE_MAX} step={50}
@@ -526,7 +536,7 @@ function BrowseInner() {
                         onChange={(e) => setLocalPriceMin(Math.min(Number(e.target.value), localPriceMax - 50))}
                         onMouseUp={commitPrice}
                         onTouchEnd={commitPrice}
-                        className="w-full accent-olive"
+                        className="w-full accent-ink"
                       />
                       <input
                         type="range" min={0} max={PRICE_MAX} step={50}
@@ -535,9 +545,9 @@ function BrowseInner() {
                         onChange={(e) => setLocalPriceMax(Math.max(Number(e.target.value), localPriceMin + 50))}
                         onMouseUp={commitPrice}
                         onTouchEnd={commitPrice}
-                        className="w-full accent-olive"
+                        className="w-full accent-ink"
                       />
-                      <div className="flex justify-between pt-1 text-xs text-ink-3">
+                      <div className="num flex justify-between pt-1 text-[13px] text-ink-3">
                         <span>Min: <span className="font-medium text-ink-2">{localPriceMin} kr</span></span>
                         <span>Max: <span className="font-medium text-ink-2">{localPriceMax >= PRICE_MAX ? "∞" : `${localPriceMax} kr`}</span></span>
                       </div>
@@ -566,7 +576,7 @@ function BrowseInner() {
             <div className="shrink-0 border-t border-line px-4 pb-8 pt-3">
               <button
                 onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
-                className="w-full rounded-sm bg-olive py-4 text-base font-semibold text-raised hover:bg-olive-press active:bg-olive-press"
+                className="btn btn-olive btn-lg num w-full"
               >
                 {total !== null ? `Se ${total} annonser` : "Se annonser"}
               </button>
@@ -694,13 +704,16 @@ const SearchBar = memo(function SearchBar({
   }, [externalValue]);
 
   return (
-    <input
-      type="search"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      placeholder="Søk tittel eller merke…"
-      className="block w-full rounded-sm border border-line-2 bg-raised px-4 py-2.5 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30"
-    />
+    <div className="relative">
+      <Icon name="soek" size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-3" />
+      <input
+        type="search"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Søk tittel eller merke…"
+        className="field pl-10"
+      />
+    </div>
   );
 });
 
@@ -714,10 +727,10 @@ function OptionRow({ label, active, onClick, indented = false }: {
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center justify-between py-3.5 text-sm ${indented ? "pl-5" : ""} ${active ? "font-semibold text-olive" : "font-medium text-ink-2"}`}
+      className={`flex min-h-[52px] w-full items-center justify-between text-[15px] ${indented ? "pl-5" : ""} ${active ? "font-[650] text-ink" : "font-medium text-ink-2"}`}
     >
       {label}
-      {active && <CheckIcon />}
+      {active && <Icon name="hake" size={18} />}
     </button>
   );
 }
@@ -730,42 +743,23 @@ function SkeletonGrid() {
   );
 }
 
-function SortIcon() {
+// Labels like "Overdel › T-skjorte" and "Pris lav → høy" keep their text for
+// screen readers, but the separator character is drawn as an icon.
+function ChipLabel({ text }: { text: string }) {
+  const parts = text.split(/ ([›→]) /);
+  if (parts.length === 1) return <>{text}</>;
   return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M6 12h12M10 17h4" />
-    </svg>
-  );
-}
-
-function FilterIcon() {
-  return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg className="h-4 w-4 text-olive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
-
-function ChevronIcon() {
-  return (
-    <svg className="h-4 w-4 text-ink-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-    </svg>
-  );
-}
-
-function BackIcon() {
-  return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-    </svg>
+    <span className="inline-flex items-center gap-1.5">
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <span key={i} className="inline-flex">
+            <Icon name={part === "›" ? "chevron-h" : "pil-h"} size={14} />
+            <span className="sr-only">{part}</span>
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </span>
   );
 }

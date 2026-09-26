@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { Icon } from "@/components/Icon";
 
 export default function LoginPage() {
   return (
@@ -234,9 +235,9 @@ function LoginInner() {
   if (forgotOpen) {
     return (
       <section className="space-y-5 py-8">
-        <button onClick={closeForgot} className="text-sm text-ink-3 hover:text-ink">← Tilbake til innlogging</button>
+        <button onClick={closeForgot} className="-mt-2 inline-flex h-11 items-center gap-2 text-[15px] font-[550] text-ink-2 hover:text-ink"><Icon name="pil-v" size={18} />Tilbake til innlogging</button>
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Glemt passord</h1>
+          <h1 className="text-[40px] leading-none">Glemt passord</h1>
           <p className="mt-1 text-sm text-ink-3">
             {forgotStage === "idle" && "Skriv inn e-posten din, vi sender en engangskode."}
             {forgotStage === "sent" && "Skriv inn koden fra e-posten."}
@@ -293,7 +294,7 @@ function LoginInner() {
       )}
 
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">
+        <h1 className="text-[40px] leading-none">
           {tab === "signin" ? "Logg inn"
             : signupStage === "code" ? "Bekreft e-post"
             : signupStage === "password" ? "Velg passord"
@@ -417,7 +418,7 @@ function LoginInner() {
           {error && <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>}
           <button type="submit" disabled={submitting} className={btn}>{submitting ? "Et øyeblikk…" : "Logg inn"}</button>
           <button type="button" onClick={() => { setForgotOpen(true); resetState(); }}
-            className="w-full text-center text-xs text-olive underline hover:text-olive-press">Glemt passord?</button>
+            className="tbtn w-full justify-center text-sm font-medium text-ink-2 underline underline-offset-4">Glemt passord?</button>
         </form>
       )}
     </section>
@@ -429,16 +430,16 @@ function SignupProgress({ step, total }: { step: number; total: number }) {
   const circ = 2 * Math.PI * r;
   const filled = (step / total) * circ;
   const isDone = step === total;
-  const color = "#5a6b32";
+  const color = "#4B5A28";
   return (
     <svg width="44" height="44" viewBox="0 0 44 44">
-      <circle cx="22" cy="22" r={r} fill="none" stroke="#e7e5e4" strokeWidth="3" />
+      <circle cx="22" cy="22" r={r} fill="none" stroke="#D6D3C7" strokeWidth="3" />
       <circle cx="22" cy="22" r={r} fill="none" stroke={color} strokeWidth="3"
-        strokeDasharray={`${filled} ${circ}`} strokeDashoffset={0} strokeLinecap="round"
+        strokeDasharray={`${filled} ${circ}`} strokeDashoffset={0} strokeLinecap="butt"
         transform="rotate(-90 22 22)" style={{ transition: "stroke-dasharray 0.4s ease" }} />
       {isDone && <circle cx="22" cy="22" r={r - 5} fill={color} />}
       <text x="22" y="22" textAnchor="middle" dominantBaseline="central"
-        fontSize="11" fontWeight="600" fill={isDone ? "white" : color}>
+        fontSize="11" fontWeight="600" fill={isDone ? "#FBFAF6" : color}>
         {step}/{total}
       </text>
     </svg>
@@ -448,9 +449,7 @@ function SignupProgress({ step, total }: { step: number; total: number }) {
 function TabChip({ children, active, onClick }: { children: React.ReactNode; active: boolean; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick}
-      className={`rounded-sm border px-4 py-1.5 text-xs font-medium transition ${
-        active ? "border-olive bg-olive text-raised" : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-      }`}>
+      className={`tab ${active ? "tab-on" : ""}`}>
       {children}
     </button>
   );
@@ -463,29 +462,18 @@ function PasswordInput({ value, onChange, placeholder, autoComplete, show, onTog
   return (
     <div className="relative">
       <input type={show ? "text" : "password"} value={value} onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder} autoComplete={autoComplete} autoFocus={autoFocus} className={`${inp} pr-10`} />
+        placeholder={placeholder} autoComplete={autoComplete} autoFocus={autoFocus} className={`${inp} pr-12`} />
       <button type="button" onClick={onToggle}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 hover:text-ink-2"
+        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-ink-2 hover:text-ink"
         aria-label={show ? "Skjul passord" : "Vis passord"}>
-        {show ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-            <line x1="1" y1="1" x2="23" y2="23"/>
-          </svg>
-        ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-        )}
+        <Icon name={show ? "oeye-av" : "oeye"} size={18} />
       </button>
     </div>
   );
 }
 
 const inp =
-  "block w-full rounded-sm border border-line-2 bg-raised px-3 py-2.5 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30";
+  "field";
 
 const btn =
   "w-full rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50";

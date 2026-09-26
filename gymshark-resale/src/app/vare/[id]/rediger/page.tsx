@@ -20,6 +20,8 @@ import {
 } from "@/lib/supabase";
 import { POSTEN_PACKAGES } from "@/lib/shipping";
 import { createClient } from "@/utils/supabase/client";
+import { Icon } from "@/components/Icon";
+import { Sep } from "@/components/Sep";
 
 export default function EditItemPage() {
   const params = useParams<{ id: string }>();
@@ -131,10 +133,10 @@ export default function EditItemPage() {
   if (userId === null) {
     return (
       <section className="space-y-3 py-10">
-        <h1 className="text-2xl font-semibold tracking-tight">Logg inn</h1>
+        <h1 className="text-[32px] leading-none">Logg inn</h1>
         <Link
           href={`/logg-inn?next=/vare/${params.id}/rediger`}
-          className="inline-block rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper"
+          className="btn btn-ink"
         >
           Logg inn
         </Link>
@@ -144,9 +146,9 @@ export default function EditItemPage() {
   if (!isSeller) {
     return (
       <section className="space-y-3 py-10">
-        <h1 className="text-2xl font-semibold tracking-tight">Ingen tilgang</h1>
+        <h1 className="text-[32px] leading-none">Ingen tilgang</h1>
         <p className="text-sm text-ink-2">Du kan bare redigere dine egne annonser.</p>
-        <Link href={`/vare/${params.id}`} className="text-sm text-olive underline">
+        <Link href={`/vare/${params.id}`} className="text-sm font-semibold text-ink underline underline-offset-2">
           Tilbake til annonsen
         </Link>
       </section>
@@ -158,11 +160,12 @@ export default function EditItemPage() {
       <div>
         <Link
           href={`/vare/${params.id}`}
-          className="text-sm text-ink-3 hover:text-ink"
+          className="-mt-2 inline-flex h-11 items-center gap-2 text-[15px] font-[550] text-ink-2 hover:text-ink"
         >
-          ← Tilbake til annonsen
+          <Icon name="pil-v" size={18} />
+          Tilbake til annonsen
         </Link>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">Rediger annonse</h1>
+        <h1 className="mt-2 text-[40px] leading-none">Rediger annonse</h1>
         <p className="mt-1 text-sm text-ink-3">
           Bilder kan ikke byttes her, legg ut på nytt om du vil endre bilder.
         </p>
@@ -194,7 +197,7 @@ export default function EditItemPage() {
         </Field>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-ink">Kategori</span>
+          <span className="block text-sm font-[620] leading-[1.3] text-ink">Kategori</span>
           <div className="flex flex-wrap gap-2">
             {CATEGORY_PARENTS.map((p) => (
               <button
@@ -209,11 +212,7 @@ export default function EditItemPage() {
                     setCategory("");
                   }
                 }}
-                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
-                  categoryParent === p
-                    ? "border-olive bg-olive text-raised"
-                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-                }`}
+                className={`chip ${categoryParent === p ? "chip-on" : ""}`}
               >
                 {p}
               </button>
@@ -227,11 +226,7 @@ export default function EditItemPage() {
                     key={c}
                     type="button"
                     onClick={() => setCategory(category === c ? "" : c)}
-                    className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
-                      category === c
-                        ? "border-olive bg-olive text-raised"
-                        : "border-line-2 bg-paper text-ink-2 hover:border-ink"
-                    }`}
+                    className={`chip ${category === c ? "chip-on" : ""}`}
                   >
                     {c}
                   </button>
@@ -242,18 +237,14 @@ export default function EditItemPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-ink">Kjønn</span>
+          <span className="block text-sm font-[620] leading-[1.3] text-ink">Kjønn</span>
           <div className="flex flex-wrap gap-2">
             {GENDERS.map((g) => (
               <button
                 key={g}
                 type="button"
                 onClick={() => setGender(gender === g ? "" : g)}
-                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
-                  gender === g
-                    ? "border-olive bg-olive text-raised"
-                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-                }`}
+                className={`chip ${gender === g ? "chip-on" : ""}`}
               >
                 {g}
               </button>
@@ -262,18 +253,14 @@ export default function EditItemPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-ink">Farge (valgfritt)</span>
+          <span className="block text-sm font-[620] leading-[1.3] text-ink">Farge (valgfritt)</span>
           <div className="flex flex-wrap gap-2">
             {COLORS.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(color === c ? "" : c)}
-                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
-                  color === c
-                    ? "border-olive bg-olive text-raised"
-                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-                }`}
+                className={`chip ${color === c ? "chip-on" : ""}`}
               >
                 {c}
               </button>
@@ -282,18 +269,14 @@ export default function EditItemPage() {
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-ink">Passform (valgfritt)</span>
+          <span className="block text-sm font-[620] leading-[1.3] text-ink">Passform (valgfritt)</span>
           <div className="flex flex-wrap gap-2">
             {FITS.map((f) => (
               <button
                 key={f}
                 type="button"
                 onClick={() => setFit(fit === f ? "" : f)}
-                className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
-                  fit === f
-                    ? "border-olive bg-olive text-raised"
-                    : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-                }`}
+                className={`chip ${fit === f ? "chip-on" : ""}`}
               >
                 {f}
               </button>
@@ -349,21 +332,20 @@ export default function EditItemPage() {
         </Field>
 
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-ink">Frakt</span>
+          <span className="block text-sm font-[620] leading-[1.3] text-ink">Frakt</span>
           <div className="grid grid-cols-3 gap-2">
             {SHIPPING_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => setShipping(opt.value)}
-                className={`rounded-sm border p-3 text-left transition ${
-                  shipping === opt.value
-                    ? "border-olive bg-olive/5 ring-1 ring-olive"
-                    : "border-line bg-raised hover:border-ink"
-                }`}
+                className={`opt flex-col gap-1.5 ${shipping === opt.value ? "opt-on" : ""}`}
               >
-                <p className="text-sm font-medium">{opt.label}</p>
-                <p className="mt-0.5 text-[11px] text-ink-3">{opt.hint}</p>
+                <span className="flex gap-1">
+                  {opt.icons.map((ic) => <Icon key={ic} name={ic} size={18} />)}
+                </span>
+                <p className="text-[15px] font-[620]">{opt.label}</p>
+                <p className={`text-[13px] ${shipping === opt.value ? "text-[#C9C8B8]" : "text-ink-3"}`}>{opt.hint}</p>
               </button>
             ))}
           </div>
@@ -371,7 +353,7 @@ export default function EditItemPage() {
 
         {shipping !== "Kun henting" && (
           <div className="space-y-1.5">
-            <span className="block text-sm font-medium text-ink">Pakkestørrelse (Posten)</span>
+            <span className="block text-sm font-[620] leading-[1.3] text-ink">Pakkestørrelse (Posten)</span>
             <p className="text-xs text-ink-3">Velg den størrelsen som passer varen din. Kjøper betaler frakten.</p>
             <div className="space-y-2">
               {POSTEN_PACKAGES.map((pkg) => (
@@ -379,14 +361,10 @@ export default function EditItemPage() {
                   key={pkg.id}
                   type="button"
                   onClick={() => setPackageSize(pkg.id)}
-                  className={`w-full rounded-sm border p-3 text-left transition ${
-                    packageSize === pkg.id
-                      ? "border-olive bg-olive/5 ring-1 ring-olive"
-                      : "border-line bg-raised hover:border-ink"
-                  }`}
+                  className={`opt flex-col gap-0.5 ${packageSize === pkg.id ? "opt-on" : ""}`}
                 >
-                  <p className="text-sm font-medium">{pkg.label}</p>
-                  <p className="mt-0.5 text-[11px] text-ink-3">Maks {pkg.maxWeight} · {pkg.dimensions}</p>
+                  <p className="text-[15px] font-[620]">{pkg.label}</p>
+                  <p className={`num text-[13px] ${packageSize === pkg.id ? "text-[#C9C8B8]" : "text-ink-3"}`}>Maks {pkg.maxWeight}<Sep />{pkg.dimensions}</p>
                 </button>
               ))}
             </div>
@@ -400,7 +378,7 @@ export default function EditItemPage() {
         <div className="hidden gap-2 sm:flex">
           <Link
             href={`/vare/${params.id}`}
-            className="flex-1 rounded-sm border border-line-2 bg-raised px-5 py-3 text-center text-sm font-medium text-ink-2 hover:border-ink"
+            className="btn btn-quiet flex-1"
           >
             Avbryt
           </Link>
@@ -408,7 +386,7 @@ export default function EditItemPage() {
             type="submit"
             form="edit-form"
             disabled={saving}
-            className="flex-1 rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
+            className="btn btn-ink flex-1"
           >
             {saving ? "Lagrer…" : "Lagre endringer"}
           </button>
@@ -416,7 +394,7 @@ export default function EditItemPage() {
       </form>
 
       {/* Sticky submit bar, mobile only */}
-      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-line bg-raised/95 px-4 py-3 sm:hidden">
+      <div className="fixed bottom-14 left-0 right-0 z-30 border-t border-line bg-paper px-4 py-3 sm:hidden">
         {error && (
           <p className="mb-2 rounded-sm bg-clay-soft px-3 py-2 text-xs text-clay">{error}</p>
         )}
@@ -443,12 +421,12 @@ export default function EditItemPage() {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="block space-y-1.5">
-      <span className="block text-sm font-medium text-ink">{label}</span>
+    <label className="block space-y-2">
+      <span className="block text-sm font-[620] leading-[1.3] text-ink">{label}</span>
       {children}
     </label>
   );
 }
 
 const input =
-  "block w-full rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/30";
+  "field";

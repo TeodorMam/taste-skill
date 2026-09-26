@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Icon, type IconName } from "@/components/Icon";
 import { createClient } from "@/utils/supabase/client";
 import {
   type Item,
@@ -42,23 +43,28 @@ function fmtTime(iso: string): string {
   return d.toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function msgPreview(msg: Message, meId: string): string {
+// Older system notes were stored with a "🚫 " prefix. The text stays as it is
+// in the database; the prefix is shown as the cross icon instead.
+const CANCEL_PREFIX = "🚫 ";
+
+function msgPreview(msg: Message, meId: string): { icon: IconName | null; text: string } {
   const mine = msg.sender_id === meId;
   const prefix = mine ? "Du: " : "";
   const type = msg.message_type ?? "text";
 
   if (type === "bid") {
     const amount = (msg.metadata as { amount?: number } | null)?.amount;
-    return `${prefix}💸 Bud: ${amount ? fmtAmount(amount) : "?"}`;
+    return { icon: "bud", text: `${prefix}Bud: ${amount ? fmtAmount(amount) : "?"}` };
   }
-  if (type === "bid_accepted") return mine ? "✅ Du godtok budet" : "✅ Budet ble godtatt";
-  if (type === "payment") return "✅ Betaling gjennomført";
-  if (type === "shipped") return "📦 Varen er sendt";
-  if (type === "delivered") return "📬 Varen er levert";
-  if (type === "payout") return "💰 Utbetaling sendt";
+  if (type === "bid_accepted") return { icon: "hake", text: mine ? "Du godtok budet" : "Budet ble godtatt" };
+  if (type === "payment") return { icon: "betaling", text: "Betaling gjennomført" };
+  if (type === "shipped") return { icon: "sendt", text: "Varen er sendt" };
+  if (type === "delivered") return { icon: "levert", text: "Varen er levert" };
+  if (type === "payout") return { icon: "utbetaling", text: "Utbetaling sendt" };
 
-  if (msg.image_url && !msg.body.trim()) return `${prefix}📷 Bilde`;
-  return `${prefix}${msg.body}`;
+  if (msg.image_url && !msg.body.trim()) return { icon: "kamera", text: `${prefix}Bilde` };
+  if (msg.body.startsWith(CANCEL_PREFIX)) return { icon: "kryss", text: `${prefix}${msg.body.slice(CANCEL_PREFIX.length)}` };
+  return { icon: null, text: `${prefix}${msg.body}` };
 }
 
 export default function InboxPage() {
@@ -205,11 +211,11 @@ export default function InboxPage() {
   if (userId === null) {
     return (
       <section className="space-y-3 py-10">
-        <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
+        <h1 className="text-[40px] leading-none">Innboks</h1>
         <p className="text-sm text-ink-2">Logg inn for å se innboksen din.</p>
         <Link
           href="/logg-inn?next=/meldinger"
-          className="inline-block rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
+          className="btn btn-ink"
         >
           Logg inn
         </Link>
@@ -231,22 +237,23 @@ export default function InboxPage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-3xl font-semibold tracking-tight">Innboks</h1>
+      <h1 className="text-[40px] leading-none">Innboks</h1>
 
-      <div className="flex gap-1 rounded-sm bg-sunk p-1">
+      <div className="tabs">
         <TabButton active={tab === "alle"} onClick={() => setTab("alle")}>
-          Alle {counts.alle > 0 && <span className="opacity-60">({counts.alle})</span>}
+          Alle {counts.alle > 0 && <span className="num font-medium text-ink-3">({counts.alle})</span>}
         </TabButton>
         <TabButton active={tab === "kjop"} onClick={() => setTab("kjop")}>
-          Kjøp {counts.kjop > 0 && <span className="opacity-60">({counts.kjop})</span>}
+          Kjøp {counts.kjop > 0 && <span className="num font-medium text-ink-3">({counts.kjop})</span>}
         </TabButton>
         <TabButton active={tab === "salg"} onClick={() => setTab("salg")}>
-          Salg {counts.salg > 0 && <span className="opacity-60">({counts.salg})</span>}
+          Salg {counts.salg > 0 && <span className="num font-medium text-ink-3">({counts.salg})</span>}
         </TabButton>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-sm border border-dashed border-line-2 p-10 text-center text-sm text-ink-3">
+        <div className="pt-4 text-[15px] text-ink-2">
+          <Icon name="innboks-tom" size={28} className="mb-3 text-ink-3" />
           {tab === "alle"
             ? "Ingen samtaler ennå. Når du sender eller mottar en melding, dukker den opp her."
             : tab === "kjop"
@@ -254,7 +261,7 @@ export default function InboxPage() {
               : "Ingen salgssamtaler ennå."}
         </div>
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-sm border border-line bg-raised">
+        <ul className="divide-y divide-line border-b border-line">
           {filtered.map(({ key, item, otherId, lastMessage, unread }) => {
             const profile = profilesMap[otherId] ?? null;
             const name = profileDisplayName(profile, otherId);
@@ -266,7 +273,7 @@ export default function InboxPage() {
               <li
                 key={key}
                 onClick={() => openThread(item, lastMessage.buyer_id, key)}
-                className="flex cursor-pointer items-center gap-3 px-4 py-3 transition hover:bg-paper active:bg-sunk"
+                className="flex cursor-pointer items-center gap-3 py-3.5 transition-colors hover:bg-ink/[0.03] active:bg-sunk"
               >
                 {/* User avatar */}
                 <div className="shrink-0">
@@ -277,36 +284,37 @@ export default function InboxPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <span
-                      className={`truncate text-sm ${
-                        isUnread ? "font-bold text-ink" : "font-medium text-ink-2"
+                      className={`truncate text-[15px] ${
+                        isUnread ? "font-[650] text-ink" : "font-medium text-ink"
                       }`}
                     >
                       {name}
                     </span>
                     <span
-                      className={`shrink-0 text-[11px] ${
-                        isUnread ? "font-semibold text-olive" : "text-ink-3"
+                      className={`num shrink-0 text-xs ${
+                        isUnread ? "font-semibold text-ink" : "text-ink-3"
                       }`}
                     >
                       {fmtTime(lastMessage.created_at)}
                     </span>
                   </div>
                   <p
-                    className={`truncate text-xs ${
+                    className={`flex min-w-0 items-center gap-1.5 text-[13px] ${
                       isUnread ? "font-semibold text-ink" : "text-ink-3"
                     }`}
                   >
-                    {preview}
+                    {preview.icon && <Icon name={preview.icon} size={14} />}
+                    <span className="truncate">{preview.text}</span>
                   </p>
                 </div>
 
                 {/* Unread badge OR item thumbnail */}
                 {isUnread ? (
                   <div className="flex shrink-0 items-center gap-2">
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-sm bg-olive px-1.5 text-[11px] font-semibold leading-none text-raised">
+                    <span className="count">
                       {unread > 9 ? "9+" : unread}
                     </span>
-                    <div className="relative h-12 w-12 overflow-hidden rounded-sm bg-sunk">
+                    <div className="relative h-14 w-[42px] overflow-hidden bg-sunk">
                       {cover ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
@@ -315,7 +323,7 @@ export default function InboxPage() {
                       )}
                       {item.is_sold && (
                         <div className="absolute inset-0 flex items-end justify-center pb-0.5">
-                          <span className="rounded-sm bg-ink/75 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-raised">
+                          <span className="bg-ink px-1 text-[11px] font-semibold text-paper">
                             Solgt
                           </span>
                         </div>
@@ -323,7 +331,7 @@ export default function InboxPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-sunk">
+                  <div className="relative h-14 w-[42px] shrink-0 overflow-hidden bg-sunk">
                     {cover ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
@@ -332,7 +340,7 @@ export default function InboxPage() {
                     )}
                     {item.is_sold && (
                       <div className="absolute inset-0 flex items-end justify-center pb-0.5">
-                        <span className="rounded-sm bg-ink/75 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-raised">
+                        <span className="rounded-sm bg-ink/75 px-1 py-px text-xs font-bold text-raised">
                           Solgt
                         </span>
                       </div>
@@ -361,11 +369,7 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 rounded-sm px-4 py-2 text-sm font-medium transition ${
-        active
-          ? "bg-raised text-ink"
-          : "text-ink-3 hover:text-ink"
-      }`}
+      className={`tab ${active ? "tab-on" : ""}`}
     >
       {children}
     </button>
@@ -392,14 +396,11 @@ function UserAvatar({ profile, name }: { profile: Profile | null; name: string }
     .join("")
     .toUpperCase();
   return (
-    <div className="flex h-11 w-11 items-center justify-center rounded-circle bg-line">
+    <div className="flex h-11 w-11 items-center justify-center rounded-circle bg-[#DCD8CC]">
       {initials ? (
         <span className="text-sm font-semibold text-ink-2">{initials}</span>
       ) : (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-ink-3">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
+        <Icon name="profil" size={20} className="text-ink-3" />
       )}
     </div>
   );

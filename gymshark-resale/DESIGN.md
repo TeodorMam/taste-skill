@@ -50,7 +50,7 @@ Hvorfor Archivo: jeg testet fire løsninger på forsiden og varekortet (Schibste
 | `clay` | #9A3F24 | Feil, tvist, slett | 6,0 : 1 |
 | `ochre` | #7A5A12 | Frister og advarsler | 5,7 : 1 |
 
-Oliven er gjort litt mørkere enn dagens #5a6b32 slik at hvit tekst og olivenstor tekst får god margin over AA. Dagens kode bruker oliven 180 ganger. Målet er under 25. Blått, indigo, smaragd og rødt i statusmerker går ut. Rød brukes ikke lenger til tellere.
+Oliven er gjort litt mørkere enn den gamle #5a6b32 slik at hvit tekst og olivenstor tekst får god margin over AA. Oliven brukes til hovedhandlinger, aktiv-streken og bekreftelser, ikke til lenker. Blått, indigo, smaragd og rødt i statusmerker er borte, og tellere er blekkfirkanter.
 
 ## 4. Avstand
 
@@ -71,7 +71,7 @@ Oliven er gjort litt mørkere enn dagens #5a6b32 slik at hvit tekst og olivensto
 | `r-chat` | 10 px med 2 px hjørne mot avsender | Chatbobler |
 | `rund` | 50 % | Avatarer og radioknapper |
 
-`rounded-full` brukes i dag 208 ganger, og `rounded-2xl` 62 ganger. Begge forsvinner.
+`rounded-full` og `rounded-2xl` brukes ikke. Runde former heter `rounded-circle` og brukes bare til avatarer og radioknapper.
 
 ## 5b. Forside og bunntekst
 
@@ -79,7 +79,6 @@ Oliven er gjort litt mørkere enn dagens #5a6b32 slik at hvit tekst og olivensto
 - Mobil: overskriften står i tre linjer («Brukte / treningsklær, / bedre priser.»), venstrestilt, med `font-size: clamp(48px, 17vw, 64px)`. Målt: på 360 px er det 35 px luft mellom lengste linje og sidemargen, så teksten kuttes aldri. Klemmen tar seg av 320 px-skjermer.
 - Desktop: samme prinsipp som mobil. Overskrift, ingress og knapper står under hverandre med én felles venstrekant. Overskriften er 120 px i to linjer uten innrykk, ingressen er maks 560 px bred, og knappene står rett under ingressen. Det er ingen kolonner eller innrykk i heroen.
 - Bunnteksten er lys og lav både på mobil og desktop: papirbakgrunn, hårstrek over og 13–14 px tekst. Den mørke varianten ligger på lerretet til sammenligning.
-- En variant med 6 px hjørner (bilder 4 px, ark 12 px) ligger på lerretet til sammenligning.
 
 ## 6. Ikoner
 
@@ -92,7 +91,7 @@ Oliven er gjort litt mørkere enn dagens #5a6b32 slik at hvit tekst og olivensto
 
 ## 7. Komponenter
 
-**Knappehierarki.** Hver skjerm har maks én hovedhandling (fylt) og én sekundær (1,5 px blekkant). Alt annet er tekstlenker med understrek eller ikon med tekst uten ramme (Legg til, Del, Skriv til selger, Legg ut vare, Logg ut). «Se flere» heter det samme på forsiden og /varer (i dag heter den «Last inn flere» på /varer). Den er en sekundærknapp (samme stil som «Gi bud») sentrert under griden. Mens den laster står det «Laster…», og knappen er deaktivert.
+**Knappehierarki.** Hver skjerm har maks én hovedhandling (fylt) og én sekundær (1,5 px blekkant). Alt annet er tekstlenker med understrek eller ikon med tekst uten ramme (Legg til, Del, Skriv til selger, Legg ut vare, Logg ut). «Se flere» heter det samme på forsiden og /varer. Den er en sekundærknapp (samme stil som «Gi bud») sentrert under griden. Mens den laster står det «Laster…», og knappen er deaktivert.
 
 **Knapper.** 48 px høye (36 px liten, 52 px stor), 2 px hjørne og tekst i vekt 600 som aldri brytes. Varianter:
 - `olive`: skjermens ene hovedhandling (Kjøp nå, Betal nå, Send bud, Legg ut, Se N annonser, Godta, Alt OK).

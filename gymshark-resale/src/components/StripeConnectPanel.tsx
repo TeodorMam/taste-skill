@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ToastProvider";
+import { Icon } from "@/components/Icon";
 
 type Status = "loading" | "none" | "pending" | "active";
 
@@ -71,8 +72,8 @@ export function StripeConnectPanel() {
   if (status === "loading") return null;
 
   return (
-    <div className="rounded-sm border border-line bg-raised p-4">
-      <p className="text-xs font-medium uppercase tracking-wider text-ink-3">Selgerkonto</p>
+    <div className="border-t border-ink pt-4">
+      <p className="text-[13px] font-[620] text-ink-2">Selgerkonto</p>
 
       {status === "none" && (
         <div className="mt-3 space-y-4">
@@ -87,22 +88,23 @@ export function StripeConnectPanel() {
               { n: "3", label: "Ferdig, du er klar til å selge" },
             ].map(({ n, label }) => (
               <li key={n} className="flex items-start gap-2.5 text-sm text-ink-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-sunk text-[11px] font-semibold text-ink-3">
+                <span className="num flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-ink text-xs font-semibold text-paper">
                   {n}
                 </span>
                 <span>{label}</span>
               </li>
             ))}
           </ol>
-          <p className="rounded-sm bg-olive/5 px-3 py-2 text-xs text-ink-2">
-            💡 Bedriftsinfo har vi fylt ut for deg. Du skriver kun personlig info og IBAN.
+          <p className="flex gap-2 rounded-sm bg-olive-soft px-3 py-2 text-[13px] text-ink-2">
+            <Icon name="tips" size={16} className="mt-px text-olive" />
+            Bedriftsinfo har vi fylt ut for deg. Du skriver kun personlig info og IBAN.
           </p>
           <button
             onClick={handleConnect}
             disabled={connecting}
-            className="rounded-sm bg-olive px-4 py-2 text-sm font-medium text-raised hover:bg-olive-press disabled:opacity-50"
+            className="btn btn-olive"
           >
-            {connecting ? "Sender til Stripe…" : "Kom i gang →"}
+            {connecting ? "Sender til Stripe…" : <>Kom i gang <Icon name="pil-h" size={16} /></>}
           </button>
           <p className="text-xs text-ink-3">
             <span className="font-medium text-ink-3">Under 18?</span>{" "}
@@ -120,14 +122,14 @@ export function StripeConnectPanel() {
             <button
               onClick={handleConnect}
               disabled={connecting}
-              className="rounded-sm bg-ochre px-4 py-2 text-sm font-medium text-raised hover:bg-ochre disabled:opacity-50"
+              className="btn btn-sm bg-ochre text-raised hover:bg-ochre/90"
             >
-              {connecting ? "Sender til Stripe…" : "Fortsett verifisering →"}
+              {connecting ? "Sender til Stripe…" : <>Fortsett verifisering <Icon name="pil-h" size={16} /></>}
             </button>
             {!confirmDisconnect ? (
               <button
                 onClick={() => setConfirmDisconnect(true)}
-                className="rounded-sm border border-line-2 bg-raised px-4 py-2 text-sm font-medium text-ink-2 hover:border-ink"
+                className="btn btn-quiet btn-sm"
               >
                 Koble fra
               </button>
@@ -137,7 +139,7 @@ export function StripeConnectPanel() {
                 <button
                   onClick={() => { void handleDisconnect(); setConfirmDisconnect(false); }}
                   disabled={disconnecting}
-                  className="rounded-sm bg-clay px-3 py-1.5 text-xs font-medium text-raised hover:bg-clay disabled:opacity-50"
+                  className="btn btn-clayfill btn-sm"
                 >
                   {disconnecting ? "Kobler fra…" : "Ja, koble fra"}
                 </button>
@@ -155,16 +157,16 @@ export function StripeConnectPanel() {
 
       {status === "active" && (
         <div className="mt-3 space-y-1">
-          <p className="text-sm font-medium text-olive">✓ Selgerkonto aktivert</p>
+          <p className="flex items-center gap-1.5 text-sm font-[620] text-olive"><Icon name="hake" size={16} />Selgerkonto aktivert</p>
           <p className="text-xs text-ink-3">Betalinger er aktivert. Utbetalinger skjer automatisk via Stripe Express-dashbordet ditt.</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <a
               href="https://dashboard.stripe.com/express"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs font-medium text-olive underline underline-offset-2 hover:text-olive-press"
+              className="inline-flex items-center gap-1 text-[13px] font-semibold text-ink underline underline-offset-2 hover:text-olive"
             >
-              Åpne Stripe-dashboard ↗
+              Åpne Stripe-dashboard <Icon name="ekstern" size={14} />
             </a>
             {!confirmDisconnect ? (
               <button

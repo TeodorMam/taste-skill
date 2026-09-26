@@ -69,6 +69,9 @@ input, textarea, select {
   .btn-ink { @apply bg-ink text-paper hover:bg-ink/90; }
   .btn-line { @apply text-ink shadow-[inset_0_0_0_1.5px_#1C1E18] hover:bg-ink/5; }
   .btn-clay { @apply text-clay shadow-[inset_0_0_0_1.5px_#9A3F24] hover:bg-clay/5; }
+  .btn-clayfill { @apply bg-clay text-raised hover:bg-clay/90; }
+  /* Quiet: small utility actions inside lists and panels. */
+  .btn-quiet { @apply bg-raised text-ink shadow-[inset_0_0_0_1px_#CFCBBE] hover:shadow-[inset_0_0_0_1px_#1C1E18]; }
   .btn-sm { @apply h-9 gap-2 px-3 text-sm; }
   .btn-lg { @apply h-[52px] text-base; }
   .tbtn {
@@ -83,7 +86,7 @@ input, textarea, select {
   .field {
     @apply block h-12 w-full rounded-sm border-0 bg-raised px-3.5 text-ink shadow-[inset_0_0_0_1px_#CFCBBE] outline-none focus-visible:outline-none transition-shadow duration-150 placeholder:text-ink-3 focus:shadow-[inset_0_0_0_1.5px_#1C1E18,0_0_0_3px_rgba(75,90,40,0.25)] disabled:opacity-45;
   }
-  textarea.field {
+  :where(textarea).field {
     @apply h-auto min-h-[112px] py-3 leading-normal;
   }
   .field-label {
@@ -103,6 +106,26 @@ input, textarea, select {
      as one line. */
   .item-grid {
     @apply grid grid-cols-2 gap-x-3.5 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-11;
+  }
+
+  /* Option cards (delivery, package size): selected is an ink fill. */
+  .opt {
+    @apply flex w-full items-start gap-3 rounded-sm bg-raised p-3.5 text-left text-ink shadow-[inset_0_0_0_1px_#CFCBBE] transition-colors duration-150 hover:shadow-[inset_0_0_0_1px_#1C1E18];
+  }
+  .opt-on {
+    @apply bg-ink text-paper shadow-none hover:shadow-none;
+  }
+
+  /* Tabs: "where am I" is an olive bar under the active tab, the same rule
+     as the menus. */
+  .tabs {
+    @apply flex gap-6 shadow-[inset_0_-1px_0_#D6D3C7];
+  }
+  .tab {
+    @apply relative inline-flex h-11 items-center gap-2 px-0.5 text-[15px] font-[550] text-ink-3 transition-colors hover:text-ink;
+  }
+  .tab-on {
+    @apply font-[650] text-ink after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-olive;
   }
 
   /* Small ink square used for unread counts. */

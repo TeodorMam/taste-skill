@@ -7,6 +7,7 @@ import { type Item, type Profile, formatPrice, profileDisplayName } from "@/lib/
 import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 import { useToast } from "@/components/ToastProvider";
+import { Icon } from "@/components/Icon";
 
 type Tab = "active" | "sold" | "all";
 
@@ -152,13 +153,13 @@ export default function MinePage() {
   if (userId === null) {
     return (
       <section className="space-y-3 py-10">
-        <h1 className="text-3xl font-semibold tracking-tight">Mine annonser</h1>
+        <h1 className="text-[40px] leading-none">Mine annonser</h1>
         <p className="text-sm text-ink-2">
           Logg inn for å se annonsene dine.
         </p>
         <Link
           href="/logg-inn?next=/mine"
-          className="inline-block rounded-sm bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink"
+          className="btn btn-ink"
         >
           Logg inn
         </Link>
@@ -170,26 +171,27 @@ export default function MinePage() {
     <section className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Mine annonser</h1>
+          <h1 className="text-[40px] leading-none">Mine annonser</h1>
           <p className="mt-1 text-sm text-ink-3">
             Alt du har lagt ut, på ett sted.
           </p>
         </div>
         <Link
           href="/ny-annonse"
-          className="rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink"
+          className="btn btn-olive"
         >
-          + Ny annonse
+          <Icon name="pluss" size={18} />
+          Ny annonse
         </Link>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-3 divide-x divide-line border-y border-line">
         <Stat label="Aktive" value={counts.active} />
         <Stat label="Solgt" value={counts.sold} />
         <Stat label="Omsetning" value={formatPrice(totalRevenue)} />
       </div>
 
-      <div className="flex gap-2">
+      <div className="tabs">
         <TabChip active={tab === "active"} onClick={() => setTab("active")}>
           Aktive ({counts.active})
         </TabChip>
@@ -214,8 +216,9 @@ export default function MinePage() {
       )}
 
       {filtered && filtered.length === 0 && (
-        <div className="rounded-sm border border-dashed border-line-2 p-10 text-center text-sm text-ink-3">
-          <p className="font-medium text-ink-2">
+        <div className="pt-2 text-[15px] text-ink-2">
+          <Icon name="etikett" size={28} className="text-ink-3" />
+          <p className="mt-3 text-[17px] font-[620] text-ink">
             {tab === "active"
               ? "Ingen aktive annonser"
               : tab === "sold"
@@ -225,7 +228,7 @@ export default function MinePage() {
           <p className="mt-1">Legg ut din første vare, det tar under ett minutt.</p>
           <Link
             href="/ny-annonse"
-            className="mt-4 inline-block rounded-sm bg-ink px-5 py-2.5 text-xs font-medium text-paper hover:bg-ink"
+            className="btn btn-olive mt-5"
           >
             Legg ut vare
           </Link>
@@ -238,15 +241,15 @@ export default function MinePage() {
             <div key={item.id} className="space-y-2">
               <ItemCard item={item} hideSeller />
               {soldPickerItemId === item.id ? (
-                <div className="space-y-1.5 rounded-sm border border-line bg-paper p-3">
-                  <p className="text-[11px] font-medium text-ink-2">Hva skjedde?</p>
-                  {pickerLoading && <p className="text-[11px] text-ink-3">Laster…</p>}
+                <div className="space-y-1.5 border-t border-ink pt-2">
+                  <p className="text-[13px] font-[620] text-ink">Hva skjedde?</p>
+                  {pickerLoading && <p className="text-xs text-ink-3">Laster…</p>}
                   {pickerBuyers.map(({ buyerId, name }) => (
                     <button
                       key={buyerId}
                       onClick={() => markSoldWithBuyer(item, buyerId)}
                       disabled={busyId === item.id}
-                      className="w-full rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-left text-[11px] font-medium text-ink hover:border-olive hover:bg-olive/5 disabled:opacity-50"
+                      className="btn btn-quiet btn-sm h-auto min-h-9 justify-start whitespace-normal py-2 text-left w-full"
                     >
                       Solgt til {name}
                     </button>
@@ -254,20 +257,20 @@ export default function MinePage() {
                   <button
                     onClick={() => markSoldWithBuyer(item, null)}
                     disabled={busyId === item.id}
-                    className="w-full rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-left text-[11px] text-ink-2 hover:border-ink disabled:opacity-50"
+                    className="btn btn-quiet btn-sm h-auto min-h-9 justify-start whitespace-normal py-2 text-left w-full"
                   >
                     Solgte et annet sted
                   </button>
                   <button
                     onClick={() => markSoldWithBuyer(item, null)}
                     disabled={busyId === item.id}
-                    className="w-full rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-left text-[11px] text-ink-2 hover:border-ink disabled:opacity-50"
+                    className="btn btn-quiet btn-sm h-auto min-h-9 justify-start whitespace-normal py-2 text-left w-full"
                   >
                     Bestemte meg for å ikke selge
                   </button>
                   <button
                     onClick={() => setSoldPickerItemId(null)}
-                    className="w-full pt-0.5 text-center text-[11px] text-ink-3 hover:text-ink-2"
+                    className="tbtn w-full justify-center text-sm font-medium text-ink-2"
                   >
                     Avbryt
                   </button>
@@ -276,18 +279,18 @@ export default function MinePage() {
                 <div className="flex gap-1.5">
                   {confirmId === item.id ? (
                     <>
-                      <span className="flex-1 rounded-sm border border-clay/40 bg-clay-soft px-2 py-1.5 text-center text-[11px] font-medium text-clay">
+                      <span className="flex h-9 flex-1 items-center justify-center rounded-sm bg-clay-soft text-[13px] font-medium text-clay">
                         Sikker?
                       </span>
                       <button
                         onClick={() => deleteItem(item)}
-                        className="flex-1 rounded-sm border border-clay bg-clay px-2 py-1.5 text-[11px] font-medium text-raised hover:bg-clay"
+                        className="btn btn-clayfill btn-sm flex-1"
                       >
                         Slett
                       </button>
                       <button
                         onClick={() => setConfirmId(null)}
-                        className="rounded-sm border border-line-2 bg-raised px-2.5 py-1.5 text-[11px] font-medium text-ink-2 hover:border-ink"
+                        className="btn btn-quiet btn-sm"
                       >
                         Avbryt
                       </button>
@@ -297,23 +300,24 @@ export default function MinePage() {
                       <button
                         onClick={() => item.is_sold ? reactivate(item) : openSoldPicker(item)}
                         disabled={busyId === item.id}
-                        className="flex-1 rounded-sm border border-line-2 bg-raised px-2 py-1.5 text-[11px] font-medium text-ink-2 hover:border-ink disabled:opacity-50"
+                        className="btn btn-quiet btn-sm flex-1"
                       >
                         {busyId === item.id ? "…" : item.is_sold ? "Gjør aktiv" : "Marker solgt"}
                       </button>
                       <Link
                         href={`/vare/${item.id}/rediger`}
-                        className="rounded-sm border border-line-2 bg-raised px-2.5 py-1.5 text-[11px] font-medium text-ink-2 hover:border-ink"
+                        className="btn btn-quiet btn-sm px-2.5"
+                        aria-label="Rediger"
                       >
-                        ✎
+                        <Icon name="rediger" size={16} />
                       </Link>
                       <button
                         onClick={() => askDelete(item.id)}
                         disabled={busyId === item.id}
-                        className="rounded-sm border border-clay/40 bg-raised px-2.5 py-1.5 text-[11px] font-medium text-clay hover:border-clay/40 hover:bg-clay-soft disabled:opacity-50"
+                        className="btn btn-quiet btn-sm px-2.5 text-clay"
                         aria-label="Slett"
                       >
-                        🗑
+                        <Icon name="slett" size={16} />
                       </button>
                     </>
                   )}
@@ -329,11 +333,11 @@ export default function MinePage() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-sm border border-line bg-raised p-3 sm:p-4">
-      <p className="text-[10px] font-medium uppercase tracking-wider text-ink-3">
+    <div className="px-3 py-3 first:pl-0 sm:px-5 sm:py-4">
+      <p className="text-[13px] font-medium text-ink-3">
         {label}
       </p>
-      <p className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">
+      <p className="price mt-1 text-2xl leading-none sm:text-[34px]">
         {value}
       </p>
     </div>
@@ -352,11 +356,7 @@ function TabChip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-sm border px-4 py-1.5 text-xs font-medium transition ${
-        active
-          ? "border-olive bg-olive text-raised"
-          : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-      }`}
+      className={`tab ${active ? "tab-on" : ""}`}
     >
       {children}
     </button>

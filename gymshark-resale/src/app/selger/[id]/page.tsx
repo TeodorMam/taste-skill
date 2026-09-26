@@ -17,6 +17,8 @@ import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 import { ReviewList } from "@/components/ReviewList";
 import { Avatar } from "@/components/Avatar";
 import { ReportButton } from "@/components/ReportButton";
+import { BackLink } from "@/components/BackLink";
+import { Sep } from "@/components/Sep";
 
 function fmtLastSeen(iso: string | null | undefined): string | null {
   if (!iso) return null;
@@ -96,32 +98,30 @@ export default function SellerPage() {
 
   return (
     <section className="space-y-5">
-      <Link href="/varer" className="text-sm text-ink-3 hover:text-ink">
-        ← Tilbake
-      </Link>
+      <BackLink href="/varer">Tilbake</BackLink>
 
-      <div className="rounded-sm border border-line bg-raised p-5 sm:p-6">
+      <div className="border-t border-ink pt-5">
         <div className="flex items-center gap-3">
           <Avatar profile={profile} size="lg" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-lg font-semibold tracking-tight">
+            <p className="truncate text-[26px] font-[680] leading-[1.08] [font-stretch:80%]">
               {displayName}
             </p>
-            <p className="text-xs text-ink-3">
+            <p className="mt-1 text-[13px] text-ink-3">
               {firstDate
                 ? `Medlem siden ${firstDate.toLocaleDateString("no-NO", {
                     month: "short",
                     year: "numeric",
                   })}`
                 : "Ny selger"}
-              {profile?.location ? ` · ${profile.location}` : ""}
-              {fmtLastSeen(profile?.last_seen_at) ? ` · ${fmtLastSeen(profile?.last_seen_at)}` : ""}
+              {profile?.location ? <><Sep />{profile.location}</> : ""}
+              {fmtLastSeen(profile?.last_seen_at) ? <><Sep />{fmtLastSeen(profile?.last_seen_at)}</> : ""}
             </p>
           </div>
           {summary && summary.total > 0 && (
             <div className="text-right">
               <p
-                className={`text-lg font-semibold ${
+                className={`price text-2xl leading-none ${
                   summary.pct >= 80
                     ? "text-olive"
                     : summary.pct >= 50
@@ -131,7 +131,7 @@ export default function SellerPage() {
               >
                 {summary.pct}%
               </p>
-              <p className="text-[10px] text-ink-3">
+              <p className="mt-1 text-xs text-ink-3">
                 {summary.total} vurdering{summary.total === 1 ? "" : "er"}
               </p>
             </div>
@@ -139,23 +139,23 @@ export default function SellerPage() {
         </div>
 
         {profile?.bio && (
-          <p className="mt-3 whitespace-pre-line text-sm text-ink-2">
+          <p className="mt-4 max-w-[62ch] whitespace-pre-line text-[15px] leading-[1.55] text-ink-2">
             {profile.bio}
           </p>
         )}
 
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="mt-5 grid grid-cols-3 divide-x divide-line border-y border-line">
           <Stat label="Aktive" value={counts.active} />
           <Stat label="Solgt" value={counts.sold} />
           <Stat label="Omsetning" value={formatPrice(counts.revenue)} />
         </div>
 
-        <div className="mt-3 border-t border-line pt-3">
+        <div className="mt-2">
           <ReportButton type="user" targetId={params.id} />
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="tabs">
         <TabChip active={tab === "active"} onClick={() => setTab("active")}>
           Aktive ({counts.active})
         </TabChip>
@@ -184,7 +184,7 @@ export default function SellerPage() {
           ))}
         </div>
       ) : filteredItems && filteredItems.length === 0 ? (
-        <div className="rounded-sm border border-dashed border-line-2 p-10 text-center text-sm text-ink-3">
+        <div className="border-t border-line pt-5 text-sm text-ink-3">
           {tab === "active"
             ? "Ingen aktive annonser."
             : "Ingen solgte annonser enda."}
@@ -204,11 +204,11 @@ export default function SellerPage() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-sm bg-paper p-3">
-      <p className="text-[10px] font-medium uppercase tracking-wider text-ink-3">
+    <div className="px-3 py-3 first:pl-0 sm:px-5 sm:py-4">
+      <p className="text-[13px] font-medium text-ink-3">
         {label}
       </p>
-      <p className="mt-0.5 text-base font-semibold tracking-tight sm:text-lg">
+      <p className="price mt-1 text-2xl leading-none sm:text-[34px]">
         {value}
       </p>
     </div>
@@ -227,11 +227,7 @@ function TabChip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-sm border px-4 py-1.5 text-xs font-medium transition ${
-        active
-          ? "border-olive bg-olive text-raised"
-          : "border-line-2 bg-raised text-ink-2 hover:border-ink"
-      }`}
+      className={`tab ${active ? "tab-on" : ""}`}
     >
       {children}
     </button>

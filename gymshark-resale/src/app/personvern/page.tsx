@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { BackLink } from "@/components/BackLink";
+import { Icon } from "@/components/Icon";
 
 export const metadata = {
   title: "Personvernerklæring, Aktivbruk",
@@ -9,10 +11,10 @@ export default function PersonvernPage() {
   return (
     <section className="max-w-xl space-y-8">
       <div>
-        <p className="mb-4 text-sm text-ink-3">
-          <Link href="/varer" className="hover:text-ink">← Tilbake</Link>
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">Personvernerklæring</h1>
+        <div className="mb-4">
+          <BackLink href="/varer">Tilbake</BackLink>
+        </div>
+        <h1 className="text-[40px] leading-none">Personvernerklæring</h1>
         <p className="mt-2 text-sm text-ink-3">Sist oppdatert: september 2026</p>
       </div>
 
@@ -132,9 +134,9 @@ export default function PersonvernPage() {
               href="https://stripe.com/en-no/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-ink"
+              className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-ink"
             >
-              Stripes personvernpolicy ↗
+              Stripes personvernpolicy <Icon name="ekstern" size={14} />
             </a>
           </li>
           <li>
@@ -146,9 +148,9 @@ export default function PersonvernPage() {
               href="https://supabase.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-ink"
+              className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-ink"
             >
-              Supabase personvernpolicy ↗
+              Supabase personvernpolicy <Icon name="ekstern" size={14} />
             </a>
           </li>
           <li>
@@ -161,9 +163,9 @@ export default function PersonvernPage() {
               href="https://resend.com/legal/privacy-policy"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-ink"
+              className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-ink"
             >
-              Resends personvernpolicy ↗
+              Resends personvernpolicy <Icon name="ekstern" size={14} />
             </a>
           </li>
         </ul>
@@ -298,9 +300,9 @@ export default function PersonvernPage() {
             href="https://www.datatilsynet.no"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline underline-offset-2 hover:text-ink"
+            className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-ink"
           >
-            Datatilsynet ↗
+            Datatilsynet <Icon name="ekstern" size={14} />
           </a>
         </p>
       </Block>
@@ -321,7 +323,7 @@ export default function PersonvernPage() {
         </p>
       </Block>
 
-      <div className="rounded-sm border border-line bg-raised p-5">
+      <div className="border-t border-ink pt-4">
         <p className="text-sm font-medium text-ink">Spørsmål om personvern?</p>
         <p className="mt-1 text-sm text-ink-2">
           Ta kontakt på{" "}
@@ -340,7 +342,7 @@ export default function PersonvernPage() {
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <h2 className="text-base font-semibold tracking-tight">{title}</h2>
+      <h2 className="text-[17px] font-[620] leading-[1.3] [font-stretch:100%]">{title}</h2>
       <div className="space-y-2 text-sm leading-relaxed text-ink-2">{children}</div>
     </div>
   );

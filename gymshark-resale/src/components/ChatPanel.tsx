@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import type { Message } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
+import { Icon } from "@/components/Icon";
 
 function fmtTime(iso: string): string {
   const d = new Date(iso);
@@ -173,7 +174,7 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
   const lastSentIdx = messages.reduce((acc, m, i) => (m.sender_id === meId ? i : acc), -1);
 
   return (
-    <div className="flex flex-col rounded-sm border border-line bg-raised">
+    <div className="flex flex-col border-y border-line bg-paper">
       <div
         ref={listRef}
         className="max-h-72 min-h-32 space-y-2 overflow-y-auto p-3"
@@ -200,18 +201,18 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
               {m.image_url ? (
                 <a href={m.image_url} target="_blank" rel="noopener noreferrer" className="max-w-[75%]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.image_url} alt="" className="rounded-sm object-cover max-h-56 w-full" />
+                  <img src={m.image_url} alt="" className="max-h-56 w-full rounded-chat object-cover" />
                 </a>
               ) : (
                 <div
-                  className={`max-w-[75%] rounded-sm px-3 py-2 text-sm ${
-                    mine ? "bg-ink text-paper" : "bg-sunk text-ink"
+                  className={`max-w-[75%] rounded-chat px-3.5 py-2.5 text-[15px] leading-[1.45] ${
+                    mine ? "rounded-br-sm bg-ink text-paper" : "rounded-bl-sm bg-raised text-ink shadow-[inset_0_0_0_1px_#D6D3C7]"
                   }`}
                 >
                   {m.body}
                 </div>
               )}
-              <span className="mt-0.5 px-1 text-[10px] text-ink-3">
+              <span className="mt-0.5 px-1 text-xs text-ink-3">
                 {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
               </span>
             </div>
@@ -223,14 +224,10 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || sending}
-          className="shrink-0 rounded-sm p-2 text-ink-3 hover:bg-sunk hover:text-ink-2 disabled:opacity-40"
+          className="flex h-12 w-11 shrink-0 items-center justify-center text-ink hover:bg-ink/5 disabled:opacity-45"
           aria-label="Send bilde"
         >
-          {uploading ? (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-          ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-          )}
+          <Icon name="kamera" size={20} className={uploading ? "animate-pulse" : ""} />
         </button>
         <input
           ref={fileInputRef}
@@ -247,12 +244,12 @@ export function ChatPanel({ itemId, buyerId, sellerId, meId }: Props) {
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="Skriv en melding…"
-          className="min-w-0 flex-1 rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm outline-none focus:border-olive"
+          className="field min-w-0 flex-1"
         />
         <button
           type="submit"
           disabled={sending || !body.trim()}
-          className="shrink-0 rounded-sm bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-ink disabled:opacity-40"
+          className="btn btn-ink shrink-0"
         >
           Send
         </button>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 
 export const metadata = {
   title: "Om Aktivbruk, bruktmarked for treningstøy",
@@ -11,11 +12,11 @@ export default function AboutPage() {
     <section className="space-y-10">
       {/* ── Om Aktivbruk ─────────────────────────────────────────── */}
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Om Aktivbruk.</h1>
+        <h1 className="text-[40px] leading-none">Om Aktivbruk.</h1>
         <p className="mt-3 text-base font-medium text-ink">
           Et bruktmarked for mennesker som trener.
         </p>
-        <div className="mt-4 space-y-3 text-sm leading-relaxed text-ink-2">
+        <div className="mt-4 space-y-3 text-[15px] leading-[1.55] text-ink-2">
           <p>Aktivbruk er en markedsplass for brukt treningstøy.</p>
           <p>
             Jeg startet med treningstøy fordi det er her jeg så et tydelig behov.
@@ -32,11 +33,11 @@ export default function AboutPage() {
       </div>
 
       {/* ── Founder story (accent border) ────────────────────────── */}
-      <div className="space-y-4 border-l-2 border-olive/20 pl-5">
-        <h2 className="text-lg font-semibold tracking-tight">
+      <div className="space-y-4 border-t border-ink pt-5">
+        <h2 className="text-[26px] leading-[1.08]">
           Hvorfor startet jeg Aktivbruk?
         </h2>
-        <div className="space-y-3 text-sm leading-relaxed text-ink-2">
+        <div className="space-y-3 text-[15px] leading-[1.55] text-ink-2">
           <p>
             Jeg heter Teodor og startet Aktivbruk som 16-åring. Det er jeg som
             står bak.
@@ -60,8 +61,8 @@ export default function AboutPage() {
 
       {/* ── Hvorfor Aktivbruk? ───────────────────────────────────── */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">Hvorfor Aktivbruk?</h2>
-        <div className="space-y-3 text-sm leading-relaxed text-ink-2">
+        <h2 className="text-[26px] leading-[1.08]">Hvorfor Aktivbruk?</h2>
+        <div className="space-y-3 text-[15px] leading-[1.55] text-ink-2">
           <p>
             FINN og Tise er store og har enorme brukerbaser. Det er ikke målet
             å konkurrere med dem på å være størst på alt.
@@ -78,10 +79,10 @@ export default function AboutPage() {
 
       {/* ── Dette er bare starten ────────────────────────────────── */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">
+        <h2 className="text-[26px] leading-[1.08]">
           Dette er bare starten
         </h2>
-        <div className="space-y-3 text-sm leading-relaxed text-ink-2">
+        <div className="space-y-3 text-[15px] leading-[1.55] text-ink-2">
           <p>I dag fokuserer Aktivbruk på treningstøy.</p>
           <p className="font-medium text-ink">
             Men målet er større enn klær.
@@ -102,7 +103,7 @@ export default function AboutPage() {
             markedsplass for treningstøy. Deretter utvider jeg når tiden er
             riktig.
           </p>
-          <p className="pt-1 text-xs font-medium uppercase tracking-widest text-ink-3">
+          <p className="pt-1 text-[13px] font-[620] text-ink-2">
             Fra brukt treningstøy til et større bruktmarked for trening og sport.
           </p>
         </div>
@@ -110,10 +111,10 @@ export default function AboutPage() {
 
       {/* ── Bygget fra bunnen av ─────────────────────────────────── */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">
+        <h2 className="text-[26px] leading-[1.08]">
           Bygget fra bunnen av
         </h2>
-        <div className="space-y-3 text-sm leading-relaxed text-ink-2">
+        <div className="space-y-3 text-[15px] leading-[1.55] text-ink-2">
           <p>
             Aktivbruk er et selvstendig prosjekt som jeg bygger fra bunnen av.
           </p>
@@ -132,11 +133,11 @@ export default function AboutPage() {
       </div>
 
       {/* ── Divider mellom Om Aktivbruk og FAQ ───────────────────── */}
-      <div className="h-px bg-line" />
+      <div className="h-px bg-ink" />
 
       {/* ── Vanlige spørsmål ─────────────────────────────────────── */}
-      <div className="space-y-3">
-        <h2 className="text-2xl font-semibold tracking-tight">
+      <div>
+        <h2 className="border-b border-line pb-3 text-[26px] leading-[1.08]">
           Vanlige spørsmål
         </h2>
 
@@ -166,9 +167,9 @@ export default function AboutPage() {
           er nødvendig.{" "}
           <a
             href="/kjoperbeskyttelse"
-            className="font-medium underline underline-offset-2 hover:text-ink"
+            className="inline-flex items-center gap-1 font-semibold text-ink underline underline-offset-2"
           >
-            Les mer om kjøperbeskyttelse →
+            Les mer om kjøperbeskyttelse <Icon name="pil-h" size={16} />
           </a>
         </Faq>
 
@@ -201,18 +202,18 @@ export default function AboutPage() {
       </div>
 
       {/* ── CTA ──────────────────────────────────────────────────── */}
-      <div className="rounded-sm border border-line bg-raised p-5 text-center">
+      <div className="border-t border-ink pt-5">
         <p className="text-sm text-ink-2">Klar til å komme i gang?</p>
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-5">
           <Link
             href="/varer"
-            className="rounded-sm bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink"
+            className="btn btn-ink"
           >
             Utforsk varer
           </Link>
           <Link
             href="/ny-annonse"
-            className="rounded-sm border border-line-2 bg-raised px-5 py-2.5 text-sm font-medium text-ink-2 hover:border-ink"
+            className="tbtn tbtn-u"
           >
             Legg ut vare
           </Link>
@@ -221,7 +222,7 @@ export default function AboutPage() {
 
       {/* ── Ansvarlig for siden ──────────────────────────────────── */}
       <div className="border-t border-line pt-5">
-        <p className="text-sm leading-relaxed text-ink-2">
+        <p className="text-[15px] leading-[1.55] text-ink-2">
           Aktivbruk er laget og drives av Teodor Mamelund i Oslo. Har du
           spørsmål om siden, eller om hvordan opplysningene dine behandles,
           nås jeg på{" "}
@@ -240,12 +241,12 @@ export default function AboutPage() {
 
 function Faq({ q, children }: { q: string; children: React.ReactNode }) {
   return (
-    <details className="group rounded-sm border border-line bg-raised p-4">
-      <summary className="flex cursor-pointer items-center justify-between text-sm font-medium text-ink">
+    <details className="group border-b border-line">
+      <summary className="flex min-h-[56px] cursor-pointer list-none items-center justify-between gap-4 py-3 text-[15px] font-[620] text-ink [&::-webkit-details-marker]:hidden">
         {q}
-        <span className="text-ink-3 transition group-open:rotate-45">＋</span>
+        <Icon name="pluss" size={18} className="text-ink-2 transition-transform duration-200 ease-out group-open:rotate-45" />
       </summary>
-      <p className="mt-2 text-sm leading-relaxed text-ink-2">{children}</p>
+      <p className="pb-4 text-[15px] leading-[1.55] text-ink-2">{children}</p>
     </details>
   );
 }
