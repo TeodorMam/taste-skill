@@ -20,6 +20,7 @@ import { createClient } from "@/utils/supabase/client";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 import { Icon } from "@/components/Icon";
+import { BottomSheet } from "@/components/BottomSheet";
 
 const PAGE_SIZE = 24;
 const PRICE_MAX = 2000;
@@ -55,10 +56,6 @@ function BrowseInner() {
   const [debouncedQ, setDebouncedQ] = useState(initialQ);
   const [showFilter, setShowFilter] = useState(false);
   const [showSort, setShowSort] = useState(false);
-  // Swipe-down state for the filter sheet's drag handle. Positive dragY
-  // pulls the sheet down; releasing past ~100px closes it.
-  const [dragY, setDragY] = useState(0);
-  const dragStartYRef = useRef<number | null>(null);
   const [activeFilterPanel, setActiveFilterPanel] = useState<FilterKey | null>(null);
   const [localPriceMin, setLocalPriceMin] = useState(0);
   const [localPriceMax, setLocalPriceMax] = useState(PRICE_MAX);
@@ -407,15 +404,7 @@ function BrowseInner() {
 
       {/* Sort sheet */}
       {showSort && (
-        <>
-          <div className="fixed inset-0 z-40 bg-ink/35" onClick={() => setShowSort(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-[560px] rounded-t-sheet bg-raised">
-            <button
-              type="button"
-              onClick={() => setShowSort(false)}
-              aria-label="Lukk sortering"
-              className="mx-auto mb-1 mt-3 block h-1 w-10 rounded-sm bg-[#B3AFA2]"
-            />
+        <BottomSheet onClose={() => setShowSort(false)} closeLabel="Lukk sortering">
             <div className="px-4 pb-10 pt-2">
               <p className="pb-2 text-[17px] font-[620] text-ink">Sorter etter</p>
               {SORT_OPTIONS.map((opt) => (
@@ -429,53 +418,19 @@ function BrowseInner() {
                 </button>
               ))}
             </div>
-          </div>
-        </>
+        </BottomSheet>
       )}
 
       {/* Filter sheet, bottom-anchored so the results grid stays partly
-          visible above (Finn/Tise pattern). Real swipe-to-dismiss on the
-          top strip. */}
+          visible above (Finn/Tise pattern). Swipe down anywhere on it to
+          close; the list scrolls first and drags the sheet from the top. */}
       {showFilter && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-ink/35"
-            onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
-          />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-w-[560px] flex-col rounded-t-sheet bg-raised"
-            style={{
-              maxHeight: "62vh",
-              transform: `translateY(${dragY}px)`,
-              transition: dragStartYRef.current == null ? "transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1)" : "none",
-              touchAction: "pan-y",
-            }}
-          >
-            <div
-              className="shrink-0 cursor-grab pb-1 pt-3 active:cursor-grabbing"
-              onTouchStart={(e) => { dragStartYRef.current = e.touches[0].clientY; }}
-              onTouchMove={(e) => {
-                if (dragStartYRef.current == null) return;
-                const delta = e.touches[0].clientY - dragStartYRef.current;
-                if (delta > 0) setDragY(delta);
-              }}
-              onTouchEnd={() => {
-                const shouldClose = dragY > 100;
-                dragStartYRef.current = null;
-                if (shouldClose) {
-                  setShowFilter(false);
-                  setActiveFilterPanel(null);
-                }
-                setDragY(0);
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
-                aria-label="Lukk filter"
-                className="mx-auto block h-1 w-10 rounded-sm bg-[#B3AFA2]"
-              />
-            </div>
+        <BottomSheet
+          onClose={() => { setShowFilter(false); setActiveFilterPanel(null); }}
+          closeLabel="Lukk filter"
+          className="flex flex-col"
+          style={{ maxHeight: "62vh" }}
+        >
             <div className="flex shrink-0 items-center justify-between border-b border-line px-4 pb-1 pt-1">
               {activeFilterPanel ? (
                 <button
@@ -492,7 +447,7 @@ function BrowseInner() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div data-sheet-scroll className="flex-1 overflow-y-auto overscroll-contain">
               {!activeFilterPanel ? (
                 <div className="divide-y divide-line px-4">
                   {/* Clickable filter rows, only show value when actively selected */}
@@ -575,14 +530,13 @@ function BrowseInner() {
             {/* Sticky CTA */}
             <div className="shrink-0 border-t border-line px-4 pb-8 pt-3">
               <button
-                onClick={() => { setShowFilter(false); setActiveFilterPanel(null); setDragY(0); }}
+                onClick={() => { setShowFilter(false); setActiveFilterPanel(null); }}
                 className="btn btn-olive btn-lg num w-full"
               >
                 {total !== null ? `Se ${total} annonser` : "Se annonser"}
               </button>
             </div>
-          </div>
-        </>
+        </BottomSheet>
       )}
     </>
   );
