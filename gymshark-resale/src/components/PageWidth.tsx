@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 // Browsing pages use the full 1280 px grid. Everything else (forms, chat,
 // orders, text pages) stays in a narrow column that reads comfortably.
-const WIDE = [/^\/$/, /^\/varer\/?$/, /^\/vare\/[^/]+\/?$/, /^\/brukt\//, /^\/selger\//, /^\/favoritter\/?$/, /^\/mine\/?$/];
+const WIDE = [/^\/$/, /^\/varer\/?$/, /^\/vare\/[^/]+\/?$/, /^\/brukt\//, /^\/selger\//, /^\/favoritter\/?$/, /^\/mine\/?$/, /^\/borte\//];
 
 export function PageWidth({ children }: { children: React.ReactNode }) {
   const path = usePathname();

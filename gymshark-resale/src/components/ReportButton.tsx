@@ -39,22 +39,22 @@ export function ReportButton({ type, targetId }: { type: ReportType; targetId: s
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-xs text-ink-3 hover:text-clay underline underline-offset-2 transition"
+        className="min-h-[36px] text-[13px] text-ink-2 underline decoration-1 underline-offset-[3px] hover:text-clay"
       >
         {label}
       </button>
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/35 sm:items-center"
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-t-sheet bg-raised p-5 sm:rounded-sm"
+            className="w-full max-w-[420px] rounded-t-sheet bg-raised p-5 pb-8 sm:rounded-sheet sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mb-1 text-base font-semibold">{label}</h2>
-            <p className="mb-4 text-xs text-ink-3">
+            <h2 className="mb-1.5 text-[26px] leading-[1.08]">{label}</h2>
+            <p className="mb-4 text-sm text-ink-2">
               {type === "listing"
                 ? "Rapporter annonser som er ulovlige, misvisende eller bryter retningslinjene."
                 : "Rapporter brukere som opptrer svindleraktig eller bryter retningslinjene."}
@@ -64,19 +64,19 @@ export function ReportButton({ type, targetId }: { type: ReportType; targetId: s
               onChange={(e) => setReason(e.target.value)}
               placeholder="Beskriv hva som er galt (valgfritt)"
               rows={3}
-              className="block w-full resize-none rounded-sm border border-line-2 bg-raised px-3 py-2 text-sm outline-none focus:border-ink"
+              className="field resize-none"
             />
-            <div className="mt-3 flex gap-2">
+            <div className="mt-4 flex items-center gap-4">
               <button
                 onClick={submit}
                 disabled={submitting}
-                className="flex-1 rounded-sm bg-clay px-4 py-2.5 text-sm font-medium text-raised hover:bg-clay disabled:opacity-50"
+                className="btn flex-1 bg-clay text-raised hover:bg-clay/90"
               >
                 {submitting ? "Sender…" : "Send rapport"}
               </button>
               <button
                 onClick={() => { setOpen(false); setReason(""); }}
-                className="rounded-sm border border-line-2 px-4 py-2.5 text-sm font-medium text-ink-2 hover:border-ink"
+                className="tbtn px-2"
               >
                 Avbryt
               </button>
