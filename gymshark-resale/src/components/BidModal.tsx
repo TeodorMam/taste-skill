@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { type Item, formatPrice } from "@/lib/supabase";
 import { Icon } from "@/components/Icon";
+import { useSwipeToClose } from "@/hooks/useSwipeToClose";
 
 export function BidModal({
   item,
@@ -17,6 +18,7 @@ export function BidModal({
 }) {
   const defaultAmount = Math.round((item.price * 0.9) / 10) * 10 || item.price;
   const [raw, setRaw] = useState(String(defaultAmount));
+  const { sheetRef, sheetStyle, backdropStyle } = useSwipeToClose(onClose);
   const amount = parseInt(raw.replace(/\D/g, ""), 10) || 0;
 
   const quickAmounts = [0.7, 0.8, 0.9]
@@ -35,8 +37,10 @@ export function BidModal({
       className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-ink/35" />
+      <div className="absolute inset-0 bg-ink/35" style={backdropStyle} />
       <div
+        ref={sheetRef}
+        style={sheetStyle}
         className="relative w-full rounded-t-sheet bg-raised px-5 pb-10 pt-3 sm:max-w-[420px] sm:rounded-sheet sm:px-6 sm:pb-6 sm:pt-6"
         onClick={(e) => e.stopPropagation()}
       >
