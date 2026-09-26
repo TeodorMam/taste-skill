@@ -7,6 +7,8 @@ import { createClient } from "@/utils/supabase/server";
 import type { Item } from "@/lib/supabase";
 import { BRAND_PAGES, brandPageBySlug } from "@/lib/brand-pages";
 import { ItemCard } from "@/components/ItemCard";
+import { Icon } from "@/components/Icon";
+import { BackLink } from "@/components/BackLink";
 
 const SITE_URL = "https://aktivbruk.com";
 
@@ -88,76 +90,67 @@ export default async function BrandPage(
 
   return (
     <section className="space-y-8">
-      {jsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      )}
-
       <div className="space-y-3">
-        <p className="text-sm text-stone-500">
-          <Link href="/varer" className="hover:text-black">← Alle varer</Link>
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">Brukt {page.brand}</h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-stone-600">{page.intro}</p>
+        <BackLink href="/varer">Alle varer</BackLink>
+        <h1 className="dsp text-[40px] lg:text-[64px]">Brukt {page.brand}</h1>
+        <p className="max-w-[62ch] text-base leading-[1.55] text-ink-2">{page.intro}</p>
       </div>
 
       {items.length > 0 ? (
         <>
-          <div className="flex items-end justify-between">
-            <p className="text-sm text-stone-500">
+          <div className="flex items-center justify-between border-t border-ink pt-2">
+            <p className="num text-sm text-ink-3">
               {items.length} plagg ute nå
             </p>
             <Link
               href={`/varer?brand=${encodeURIComponent(page.brand)}`}
-              className="text-xs font-medium text-[#5a6b32] hover:text-[#435022]"
+              className="tbtn text-sm"
             >
-              Filtrer videre →
+              Filtrer videre <Icon name="pil-h" size={16} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="item-grid">
             {items.map((item) => (
               <ItemCard key={item.id} item={item} hideSeller />
             ))}
           </div>
         </>
       ) : (
-        <div className="rounded-2xl border border-stone-200 bg-white p-6 text-center">
-          <p className="text-sm text-stone-600">
+        <div className="border-t border-ink pt-6">
+          <p className="text-base text-ink-2">
             Ingen {page.brand}-plagg er ute akkurat nå.
           </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <Link
-              href="/ny-annonse"
-              className="rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
-            >
+          <div className="mt-5 flex flex-wrap items-center gap-5">
+            <Link href="/ny-annonse" className="btn btn-ink">
               Legg ut {page.brand}
             </Link>
-            <Link
-              href="/varer"
-              className="rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-700 hover:border-stone-500"
-            >
+            <Link href="/varer" className="tbtn tbtn-u">
               Se alt annet
             </Link>
           </div>
         </div>
       )}
 
-      <div className="border-t border-stone-200 pt-5">
-        <p className="text-xs uppercase tracking-widest text-stone-500">Andre merker</p>
-        <div className="mt-2 flex flex-wrap gap-2">
+      <div className="border-t border-line pt-6">
+        <h2 className="text-[17px] font-[620] [font-stretch:100%]">Andre merker</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
           {BRAND_PAGES.filter((b) => b.slug !== page.slug).map((b) => (
             <Link
               key={b.slug}
               href={`/brukt/${b.slug}`}
-              className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500"
+              className="chip hover:shadow-[inset_0_0_0_1px_#1C1E18]"
             >
               Brukt {b.brand}
             </Link>
           ))}
         </div>
       </div>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
     </section>
   );
 }

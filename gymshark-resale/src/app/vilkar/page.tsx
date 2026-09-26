@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/BackLink";
 
 export const metadata = {
   title: "Vilkår for bruk, Aktivbruk",
@@ -9,19 +10,19 @@ export default function VilkarPage() {
   return (
     <section className="max-w-xl space-y-8">
       <div>
-        <p className="mb-4 text-sm text-stone-500">
-          <Link href="/varer" className="hover:text-black">← Tilbake</Link>
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">Vilkår for bruk</h1>
-        <p className="mt-2 text-sm text-stone-500">Sist oppdatert: september 2026</p>
+        <div className="mb-4">
+          <BackLink href="/varer">Tilbake</BackLink>
+        </div>
+        <h1 className="text-[40px] leading-none">Vilkår for bruk</h1>
+        <p className="mt-2 text-sm text-ink-3">Sist oppdatert: september 2026</p>
       </div>
 
-      <p className="text-sm leading-relaxed text-stone-600">
+      <p className="text-sm leading-relaxed text-ink-2">
         Ved å bruke Aktivbruk («tjenesten») godtar du disse vilkårene. Les dem
         nøye. Har du spørsmål, ta kontakt på{" "}
         <a
           href="mailto:kontakt@aktivbruk.com"
-          className="underline underline-offset-2 hover:text-stone-900"
+          className="underline underline-offset-2 hover:text-ink"
         >
           kontakt@aktivbruk.com
         </a>
@@ -95,7 +96,7 @@ export default function VilkarPage() {
             ansvarlig for skatterapportering. Ta kontakt på{" "}
             <a
               href="mailto:kontakt@aktivbruk.com"
-              className="underline underline-offset-2 hover:text-stone-900"
+              className="underline underline-offset-2 hover:text-ink"
             >
               kontakt@aktivbruk.com
             </a>{" "}
@@ -173,7 +174,7 @@ export default function VilkarPage() {
           parter kontakte Aktivbruk på{" "}
           <a
             href="mailto:kontakt@aktivbruk.com"
-            className="underline underline-offset-2 hover:text-stone-900"
+            className="underline underline-offset-2 hover:text-ink"
           >
             kontakt@aktivbruk.com
           </a>
@@ -271,20 +272,20 @@ export default function VilkarPage() {
         </p>
       </Block>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5">
-        <p className="text-sm font-medium text-stone-800">Spørsmål om vilkårene?</p>
-        <p className="mt-1 text-sm text-stone-600">
+      <div className="border-t border-ink pt-4">
+        <p className="text-sm font-medium text-ink">Spørsmål om vilkårene?</p>
+        <p className="mt-1 text-sm text-ink-2">
           Ta kontakt på{" "}
           <a
             href="mailto:kontakt@aktivbruk.com"
-            className="font-medium underline underline-offset-2 hover:text-stone-900"
+            className="font-medium underline underline-offset-2 hover:text-ink"
           >
             kontakt@aktivbruk.com
           </a>
         </p>
       </div>
 
-      <p className="text-xs text-stone-500">
+      <p className="text-xs text-ink-3">
         Aktivbruk drives av Teodor Mamelund som privatperson. Bruktmarked for
         treningsklær. Et uavhengig prosjekt, ikke tilknyttet noen merkevare.
       </p>
@@ -295,8 +296,8 @@ export default function VilkarPage() {
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <h2 className="text-base font-semibold tracking-tight">{title}</h2>
-      <div className="space-y-2 text-sm leading-relaxed text-stone-600">{children}</div>
+      <h2 className="text-[17px] font-[620] leading-[1.3] [font-stretch:100%]">{title}</h2>
+      <div className="space-y-2 text-sm leading-relaxed text-ink-2">{children}</div>
     </div>
   );
 }

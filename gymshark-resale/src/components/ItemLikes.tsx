@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { profileDisplayName, type Profile } from "@/lib/supabase";
+import { Icon } from "@/components/Icon";
 
 export function ItemLikes({ itemId }: { itemId: string | number }) {
   const supabase = useMemo(() => createClient(), []);
@@ -46,8 +47,8 @@ export function ItemLikes({ itemId }: { itemId: string | number }) {
   }
 
   return (
-    <p className="flex items-center gap-1.5 text-xs text-stone-500">
-      <span className="text-rose-400">♥</span>
+    <p className="flex items-center gap-1.5 text-[13px] text-ink-3">
+      <Icon name="hjerte" filled size={14} className="text-ink-2" />
       <span>{label}</span>
     </p>
   );

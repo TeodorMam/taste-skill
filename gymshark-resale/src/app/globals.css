@@ -8,9 +8,10 @@
 
 html,
 body {
-  background: #fafafa;
-  color: #0a0a0a;
+  background: #F3F2EC;
+  color: #1C1E18;
   -webkit-font-smoothing: antialiased;
+  font-kerning: normal;
 }
 
 /* Prevent iOS Safari from auto-zooming on input focus (requires !important to override Tailwind text-sm) */
@@ -18,7 +19,132 @@ input, textarea, select {
   font-size: 16px !important;
 }
 
+@layer base {
+  /* Narrow Archivo gives headings their character; body text stays at full width. */
+  h1 {
+    font-stretch: 74%;
+    font-weight: 720;
+    letter-spacing: -0.012em;
+    line-height: 1;
+  }
+  h2 {
+    font-stretch: 80%;
+    font-weight: 680;
+    letter-spacing: -0.006em;
+  }
+  :focus-visible {
+    outline: 2px solid #4B5A28;
+    outline-offset: 2px;
+  }
+  ::placeholder {
+    color: #6B675C;
+  }
+}
+
+@layer components {
+  /* Display headline: the home hero and page titles. */
+  .dsp {
+    font-stretch: 72%;
+    font-weight: 720;
+    letter-spacing: -0.012em;
+    line-height: 1;
+  }
+  /* Prices and every other figure that lines up. */
+  .num {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .price {
+    font-stretch: 82%;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.004em;
+  }
+
+  /* Buttons. One filled main action per screen (olive or ink), one secondary
+     (line), everything else is a text button. */
+  .btn {
+    @apply inline-flex h-12 shrink-0 items-center justify-center gap-2.5 whitespace-nowrap rounded-sm px-5 text-[15px] font-semibold leading-none transition-colors duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-45;
+  }
+  .btn-olive { @apply bg-olive text-raised hover:bg-olive-press; }
+  .btn-ink { @apply bg-ink text-paper hover:bg-ink/90; }
+  .btn-line { @apply text-ink shadow-[inset_0_0_0_1.5px_#1C1E18] hover:bg-ink/5; }
+  .btn-clay { @apply text-clay shadow-[inset_0_0_0_1.5px_#9A3F24] hover:bg-clay/5; }
+  .btn-clayfill { @apply bg-clay text-raised hover:bg-clay/90; }
+  /* Quiet: small utility actions inside lists and panels. */
+  .btn-quiet { @apply bg-raised text-ink shadow-[inset_0_0_0_1px_#CFCBBE] hover:shadow-[inset_0_0_0_1px_#1C1E18]; }
+  .btn-sm { @apply h-9 gap-2 px-3 text-sm; }
+  .btn-lg { @apply h-[52px] text-base; }
+  .tbtn {
+    @apply inline-flex min-h-[44px] shrink-0 items-center gap-2 whitespace-nowrap text-[15px] font-semibold text-ink;
+  }
+  .tbtn-u {
+    @apply underline decoration-1 underline-offset-4;
+  }
+
+  /* Form fields: 48 px, raised fill, 1 px edge. Focus gets an ink edge and
+     a soft olive ring. The label always sits above the field. */
+  .field {
+    @apply block h-12 w-full rounded-sm border-0 bg-raised px-3.5 text-ink shadow-[inset_0_0_0_1px_#CFCBBE] outline-none focus-visible:outline-none transition-shadow duration-150 placeholder:text-ink-3 focus:shadow-[inset_0_0_0_1.5px_#1C1E18,0_0_0_3px_rgba(75,90,40,0.25)] disabled:opacity-45;
+  }
+  :where(textarea).field {
+    @apply h-auto min-h-[112px] py-3 leading-normal;
+  }
+  .field-label {
+    @apply mb-2 block text-sm font-[620] leading-[1.3] text-ink;
+  }
+
+  /* Choice chips: selected is an ink fill. */
+  .chip {
+    @apply inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm bg-raised px-3 text-sm font-medium text-ink shadow-[inset_0_0_0_1px_#CFCBBE] transition-colors duration-150;
+  }
+  .chip-on {
+    @apply bg-ink text-paper shadow-none;
+  }
+
+  /* Item grid: 2 columns on phones, 3 from 768 px, 4 from 1024 px. The row
+     gap is wider than the column gap so two neighbours' prices never read
+     as one line. */
+  .item-grid {
+    @apply grid grid-cols-2 gap-x-3.5 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-11;
+  }
+
+  /* Option cards (delivery, package size): selected is an ink fill. */
+  .opt {
+    @apply flex w-full items-start gap-3 rounded-sm bg-raised p-3.5 text-left text-ink shadow-[inset_0_0_0_1px_#CFCBBE] transition-colors duration-150 hover:shadow-[inset_0_0_0_1px_#1C1E18];
+  }
+  .opt-on {
+    @apply bg-ink text-paper shadow-none hover:shadow-none;
+  }
+
+  /* Tabs: "where am I" is an olive bar under the active tab, the same rule
+     as the menus. */
+  .tabs {
+    @apply flex gap-6 shadow-[inset_0_-1px_0_#D6D3C7];
+  }
+  .tab {
+    @apply relative inline-flex h-11 items-center gap-2 px-0.5 text-[15px] font-[550] text-ink-3 transition-colors hover:text-ink;
+  }
+  .tab-on {
+    @apply font-[650] text-ink after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-olive;
+  }
+
+  /* Small ink square used for unread counts. */
+  .count {
+    @apply inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-sm bg-ink px-[5px] text-[11px] font-semibold leading-none text-paper;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

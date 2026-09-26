@@ -65,28 +65,22 @@ export default async function BortePage({ params }: { params: Promise<{ id: stri
       : "/varer";
 
   return (
-    <section className="space-y-8 py-10">
-      <div className="space-y-4 text-center">
-        <p className="text-sm font-medium uppercase tracking-widest text-[#5a6b32]">Borte</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Denne varen er borte</h1>
-        <p className="mx-auto max-w-md text-sm leading-relaxed text-stone-600">
+    <section className="space-y-12 py-6 lg:py-10">
+      <div className="space-y-4">
+        <p className="text-sm font-[620] text-olive">Borte</p>
+        <h1 className="dsp text-[40px] lg:text-[64px]">Denne varen er borte</h1>
+        <p className="max-w-[62ch] text-base leading-[1.55] text-ink-2">
           {tomb?.title
             ? `«${tomb.title}» er slettet av selgeren og finnes ikke lenger.`
             : "Varen er slettet av selgeren og finnes ikke lenger."}{" "}
           {similar.length > 0 ? "Se lignende her:" : "Se hva som ligger ute nå:"}
         </p>
-        <div className="flex flex-wrap justify-center gap-2 pt-1">
-          <Link
-            href="/varer"
-            className="rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
-          >
+        <div className="flex flex-wrap items-center gap-5 pt-1">
+          <Link href="/varer" className="btn btn-ink">
             Utforsk varer
           </Link>
           {seeAll !== "/varer" && (
-            <Link
-              href={seeAll}
-              className="rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-700 hover:border-stone-500"
-            >
+            <Link href={seeAll} className="tbtn tbtn-u">
               {tomb?.brand ? `Alt fra ${tomb.brand}` : "Samme kategori"}
             </Link>
           )}
@@ -94,7 +88,7 @@ export default async function BortePage({ params }: { params: Promise<{ id: stri
       </div>
 
       {similar.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="item-grid">
           {similar.map((s) => (
             <ItemCard key={s.id} item={s} hideSeller />
           ))}

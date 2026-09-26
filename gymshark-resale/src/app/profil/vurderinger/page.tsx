@@ -4,14 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { type Review, averageRating } from "@/lib/supabase";
+import { Icon } from "@/components/Icon";
 
 function Stars({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={n <= rating ? "text-amber-400" : "text-stone-200"}>
-          ★
-        </span>
+        <Icon key={n} name="stjerne" filled={n <= rating} size={16} className={n <= rating ? "text-ink" : "text-[#A9A597]"} />
       ))}
     </div>
   );
@@ -52,7 +51,7 @@ export default function VurderingerPage() {
 
   const rated = reviews ? averageRating(reviews) : null;
 
-  if (loading) return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+  if (loading) return <p className="py-6 text-sm text-ink-3">Laster…</p>;
 
   return (
     <section className="space-y-5 py-4">
@@ -60,48 +59,46 @@ export default function VurderingerPage() {
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-full p-1.5 text-stone-500 hover:bg-stone-100 hover:text-stone-700"
+          className="-ml-3 flex h-11 w-11 items-center justify-center text-ink hover:bg-ink/5"
           aria-label="Tilbake"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
+          <Icon name="pil-v" size={20} />
         </button>
-        <h1 className="text-2xl font-semibold tracking-tight">Mine vurderinger</h1>
+        <h1 className="text-[32px] leading-none">Mine vurderinger</h1>
       </div>
 
       {rated && (
-        <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white px-5 py-4">
-          <span className="text-4xl font-semibold tracking-tight">{rated.avg.toFixed(1)}</span>
+        <div className="flex items-center gap-4 border-y border-line py-4">
+          <span className="price text-[44px] leading-none">{rated.avg.toFixed(1)}</span>
           <div>
             <div className="flex gap-0.5">
               {[1,2,3,4,5].map((n) => (
-                <span key={n} className={n <= Math.round(rated.avg) ? "text-amber-400 text-lg" : "text-stone-200 text-lg"}>★</span>
+                <Icon key={n} name="stjerne" filled={n <= Math.round(rated.avg)} size={18} className={n <= Math.round(rated.avg) ? "text-ink" : "text-[#A9A597]"} />
               ))}
             </div>
-            <p className="mt-0.5 text-sm text-stone-500">{rated.total} vurdering{rated.total !== 1 ? "er" : ""}</p>
+            <p className="mt-0.5 text-sm text-ink-3">{rated.total} vurdering{rated.total !== 1 ? "er" : ""}</p>
           </div>
         </div>
       )}
 
       {reviews && reviews.length === 0 ? (
-        <p className="text-sm text-stone-500">Ingen vurderinger ennå.</p>
+        <p className="text-sm text-ink-3">Ingen vurderinger ennå.</p>
       ) : (
-        <div className="space-y-3">
+        <div className="border-t border-line">
           {reviews?.map((r) => (
-            <div key={r.id} className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+            <div key={r.id} className="border-b border-line py-3.5">
               <div className="flex items-center justify-between gap-2">
                 {r.rating != null ? (
                   <Stars rating={r.rating} />
                 ) : (
-                  <span className={`text-xs font-medium ${r.is_positive ? "text-emerald-600" : "text-red-500"}`}>
+                  <span className={`text-[13px] font-[620] ${r.is_positive ? "text-olive" : "text-clay"}`}>
                     {r.is_positive ? "Positiv" : "Negativ"}
                   </span>
                 )}
-                <span className="text-xs text-stone-500">{timeAgo(r.created_at)}</span>
+                <span className="text-xs text-ink-3">{timeAgo(r.created_at)}</span>
               </div>
               {r.comment && (
-                <p className="mt-2 text-sm text-stone-700">{r.comment}</p>
+                <p className="mt-2 text-[15px] text-ink-2">{r.comment}</p>
               )}
             </div>
           ))}

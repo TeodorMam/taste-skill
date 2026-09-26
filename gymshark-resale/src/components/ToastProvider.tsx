@@ -34,8 +34,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             style={{ animation: "toast-in 0.2s ease-out" }}
-            className={`rounded-full px-5 py-2.5 text-sm font-medium text-white shadow-lg ${
-              t.type === "error" ? "bg-red-600" : "bg-stone-900"
+            className={`rounded-sm px-5 py-2.5 text-sm font-medium text-raised ${
+              t.type === "error" ? "bg-clay" : "bg-ink"
             }`}
           >
             {t.message}

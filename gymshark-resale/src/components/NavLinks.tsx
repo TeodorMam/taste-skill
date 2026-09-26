@@ -29,27 +29,31 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
     })();
   }, [isLoggedIn, path]);
 
+  // "Where am I" is an olive bar along the bottom of the header plus full
+  // weight. Filled ink is reserved for things the user has chosen.
   function textCls(href: string) {
     const active = path === href || (href !== "/" && path.startsWith(href));
-    return `text-sm font-medium transition ${
-      active ? "text-black underline underline-offset-4 decoration-[#5a6b32] decoration-2" : "text-stone-500 hover:text-black"
+    return `relative flex items-center text-sm transition-colors lg:text-[15px] ${
+      active
+        ? "font-[650] text-ink after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-olive"
+        : "font-medium text-ink-2 hover:text-ink"
     }`;
   }
 
   return (
-    <nav className="flex items-center gap-4 text-sm">
+    <nav aria-label="Hovedmeny" className="flex items-stretch gap-4 md:gap-6 lg:gap-7">
       <Link href="/varer" className={textCls("/varer")}>
         Utforsk
       </Link>
-      <Link href={authHref(isLoggedIn, "/varsler")} className={`relative ${textCls("/varsler")}`}>
+      <Link href={authHref(isLoggedIn, "/varsler")} className={textCls("/varsler")}>
         Varsler
         {varsler > 0 && <Badge count={varsler} />}
       </Link>
-      <Link href={authHref(isLoggedIn, "/meldinger")} className={`relative ${textCls("/meldinger")}`}>
+      <Link href={authHref(isLoggedIn, "/meldinger")} className={textCls("/meldinger")}>
         Innboks
         {inbox > 0 && <Badge count={inbox} />}
       </Link>
-      <Link href={authHref(isLoggedIn, "/ordre")} className={`relative ${textCls("/ordre")}`}>
+      <Link href={authHref(isLoggedIn, "/ordre")} className={textCls("/ordre")}>
         Ordre
         {orders > 0 && <Badge count={orders} />}
       </Link>
@@ -57,23 +61,21 @@ export function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
         Selg
       </Link>
       {isLoggedIn ? (
-        <Link href="/profil" className={`flex items-center gap-2 ${textCls("/profil")}`}>
+        <Link href="/profil" className={`gap-2.5 ${textCls("/profil")}`}>
           Min profil
           <Avatar profile={profile} size="sm" />
         </Link>
       ) : (
-        <Link href={`/logg-inn?next=${encodeURIComponent("/profil")}`} className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-black">
-          Logg inn
-        </Link>
+        <span className="flex items-center">
+          <Link href={`/logg-inn?next=${encodeURIComponent("/profil")}`} className="btn btn-ink btn-sm ml-1">
+            Logg inn
+          </Link>
+        </span>
       )}
     </nav>
   );
 }
 
 function Badge({ count }: { count: number }) {
-  return (
-    <span className="absolute -right-3 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
-      {count > 9 ? "9+" : count}
-    </span>
-  );
+  return <span className="count ml-1.5">{count > 9 ? "9+" : count}</span>;
 }

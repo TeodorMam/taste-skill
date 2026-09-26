@@ -2,25 +2,25 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <section className="space-y-6 py-16 text-center">
-      <p className="text-sm font-medium uppercase tracking-widest text-[#5a6b32]">
+    <section className="space-y-6 py-12">
+      <p className="text-sm font-[620] text-olive">
         404
       </p>
-      <h1 className="text-4xl font-semibold tracking-tight">Ikke funnet</h1>
-      <p className="mx-auto max-w-md text-sm text-stone-600">
+      <h1 className="text-[40px] leading-none">Ikke funnet</h1>
+      <p className="max-w-md text-base text-ink-2">
         Siden du leter etter finnes ikke, den er kanskje solgt, slettet, eller
         så har lenken en skrivefeil.
       </p>
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap items-center gap-5">
         <Link
           href="/varer"
-          className="rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+          className="btn btn-ink"
         >
           Utforsk varer
         </Link>
         <Link
           href="/"
-          className="rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-700 hover:border-stone-500"
+          className="tbtn tbtn-u"
         >
           Til forsiden
         </Link>

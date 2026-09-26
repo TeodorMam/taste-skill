@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { type Item, type SavedSearch, formatPrice, itemImages, PRICE_BUCKETS, CATEGORY_TREE } from "@/lib/supabase";
+import { Icon } from "@/components/Icon";
 
 type SearchWithCount = SavedSearch & { newCount: number };
 type FavItem = Item & { priceWhenFavorited: number | null };
@@ -118,16 +119,16 @@ export default function VarslerPage() {
   const soldFavs = (favItems ?? []).filter((f) => f.is_sold);
   const favAlertCount = priceDrop.length + soldFavs.length;
 
-  if (userId === undefined) return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+  if (userId === undefined) return <p className="py-6 text-sm text-ink-3">Laster…</p>;
 
   if (userId === null) {
     return (
       <section className="space-y-3 py-10">
-        <h1 className="text-3xl font-semibold tracking-tight">Varsler</h1>
-        <p className="text-sm text-stone-600">Logg inn for å bruke varsler.</p>
+        <h1 className="text-[40px] leading-none">Varsler</h1>
+        <p className="text-sm text-ink-2">Logg inn for å bruke varsler.</p>
         <Link
           href="/logg-inn?next=/varsler"
-          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+          className="btn btn-ink"
         >
           Logg inn
         </Link>
@@ -137,36 +138,28 @@ export default function VarslerPage() {
 
   return (
     <section className="space-y-5">
-      <h1 className="text-3xl font-semibold tracking-tight">Varsler</h1>
+      <h1 className="text-[40px] leading-none">Varsler</h1>
 
       {/* Tab switcher */}
-      <div className="flex gap-1 rounded-xl bg-stone-100 p-1">
+      <div className="tabs">
         <button
           onClick={() => setTab("searches")}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
-            tab === "searches"
-              ? "bg-white text-stone-900 shadow-sm"
-              : "text-stone-500 hover:text-stone-700"
-          }`}
+          className={`tab ${tab === "searches" ? "tab-on" : ""}`}
         >
           Lagrede søk
           {searches !== null && searches.some((s) => s.newCount > 0) && (
-            <span className="rounded-full bg-[#5a6b32] px-1.5 py-0.5 text-[10px] font-semibold text-white">
+            <span className="count">
               {searches.reduce((acc, s) => acc + (s.newCount > 0 ? 1 : 0), 0)}
             </span>
           )}
         </button>
         <button
           onClick={() => setTab("favorites")}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
-            tab === "favorites"
-              ? "bg-white text-stone-900 shadow-sm"
-              : "text-stone-500 hover:text-stone-700"
-          }`}
+          className={`tab ${tab === "favorites" ? "tab-on" : ""}`}
         >
           Favoritter
           {favAlertCount > 0 && (
-            <span className="rounded-full bg-[#5a6b32] px-1.5 py-0.5 text-[10px] font-semibold text-white">
+            <span className="count">
               {favAlertCount}
             </span>
           )}
@@ -176,13 +169,13 @@ export default function VarslerPage() {
       {/* Saved searches tab */}
       {tab === "searches" && (
         <>
-          {searches === null && <p className="text-sm text-stone-500">Laster…</p>}
+          {searches === null && <p className="text-sm text-ink-3">Laster…</p>}
           {searches !== null && searches.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center space-y-2">
-              <p className="font-medium text-stone-700">Ingen lagrede søk enda</p>
-              <p className="text-sm text-stone-500">
+            <div className="border-t border-line pt-5 space-y-2">
+              <p className="font-medium text-ink-2">Ingen lagrede søk enda</p>
+              <p className="text-sm text-ink-3">
                 Sett filtre på{" "}
-                <Link href="/varer" className="text-[#5a6b32] underline underline-offset-2">
+                <Link href="/varer" className="font-semibold text-ink underline underline-offset-2">
                   Utforsk
                 </Link>{" "}
                 og trykk «Lagre søk».
@@ -190,22 +183,22 @@ export default function VarslerPage() {
             </div>
           )}
           {searches !== null && searches.length > 0 && (
-            <ul className="space-y-2">
+            <ul className="border-t border-line">
               {searches.map((s) => (
                 <li
                   key={s.id}
-                  className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4"
+                  className="flex items-center gap-3 border-b border-line py-3.5"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="truncate text-sm font-medium text-stone-900">{s.label}</p>
+                      <p className="truncate text-[15px] font-[620] text-ink">{s.label}</p>
                       {s.newCount > 0 && (
-                        <span className="shrink-0 rounded-full bg-[#5a6b32] px-2 py-0.5 text-[10px] font-semibold text-white">
+                        <span className="count shrink-0">
                           {s.newCount} ny{s.newCount === 1 ? "" : "e"}
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 text-[11px] text-stone-500">
+                    <p className="mt-0.5 text-xs text-ink-3">
                       Sist sjekket{" "}
                       {new Date(s.last_seen_at).toLocaleDateString("no-NO", {
                         day: "numeric",
@@ -215,18 +208,16 @@ export default function VarslerPage() {
                   </div>
                   <button
                     onClick={() => openSearch(s)}
-                    className="shrink-0 rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-black"
+                    className="btn btn-ink btn-sm shrink-0"
                   >
                     Utforsk
                   </button>
                   <button
                     onClick={() => deleteSearch(s.id)}
-                    className="shrink-0 text-stone-300 hover:text-red-500 transition"
+                    className="-mr-3 flex h-11 w-11 shrink-0 items-center justify-center text-ink-2 hover:text-clay"
                     title="Slett søk"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M18 6 6 18M6 6l12 12" />
-                    </svg>
+                    <Icon name="kryss" size={18} />
                   </button>
                 </li>
               ))}
@@ -238,17 +229,17 @@ export default function VarslerPage() {
       {/* Favorites tab */}
       {tab === "favorites" && (
         <>
-          {favItems === null && <p className="text-sm text-stone-500">Laster…</p>}
+          {favItems === null && <p className="text-sm text-ink-3">Laster…</p>}
 
           {favItems !== null && favItems.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center space-y-2">
-              <p className="font-medium text-stone-700">Ingen favoritter enda</p>
-              <p className="text-sm text-stone-500">
+            <div className="border-t border-line pt-5 space-y-2">
+              <p className="font-medium text-ink-2">Ingen favoritter enda</p>
+              <p className="text-sm text-ink-3">
                 Trykk hjertet på en vare for å følge med på prisfall og tilgjengelighet.
               </p>
               <Link
                 href="/varer"
-                className="mt-2 inline-block rounded-full bg-stone-900 px-5 py-2.5 text-xs font-medium text-stone-50 hover:bg-black"
+                className="btn btn-ink btn-sm mt-2"
               >
                 Utforsk varer
               </Link>
@@ -256,9 +247,9 @@ export default function VarslerPage() {
           )}
 
           {favItems !== null && favItems.length > 0 && priceDrop.length === 0 && soldFavs.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-stone-300 p-8 text-center">
-              <p className="font-medium text-stone-700">Ingen endringer enda</p>
-              <p className="mt-1 text-sm text-stone-500">
+            <div className="border-t border-line pt-5">
+              <p className="font-medium text-ink-2">Ingen endringer enda</p>
+              <p className="mt-1 text-sm text-ink-3">
                 Du følger {favItems.length} vare{favItems.length !== 1 ? "r" : ""}. Vi varsler deg om prisfall og om varer blir solgt.
               </p>
             </div>
@@ -266,44 +257,44 @@ export default function VarslerPage() {
 
           {priceDrop.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
+              <p className="text-sm font-[620] text-ink">
                 Prisfall
               </p>
-              <ul className="space-y-2">
+              <ul className="border-t border-line">
                 {priceDrop.map((item) => {
                   const cover = itemImages(item)[0];
                   const drop = Math.round((1 - item.price / item.priceWhenFavorited!) * 100);
                   return (
-                    <li key={item.id} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3">
+                    <li key={item.id} className="flex items-center gap-3 border-b border-line py-3.5">
                       <Link href={`/vare/${item.id}`} className="shrink-0">
                         {cover ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={cover}
                             alt={item.title}
-                            className="h-14 w-14 rounded-lg object-cover"
+                            className="h-[74px] w-14 bg-sunk object-cover"
                           />
                         ) : (
-                          <div className="h-14 w-14 rounded-lg bg-stone-100" />
+                          <div className="h-[74px] w-14 bg-sunk" />
                         )}
                       </Link>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{item.title}</p>
+                        <p className="truncate text-[15px] font-[620]">{item.title}</p>
                         <div className="mt-0.5 flex items-center gap-1.5">
-                          <span className="text-xs text-stone-500 line-through">
+                          <span className="text-xs text-ink-3 line-through">
                             {formatPrice(item.priceWhenFavorited!)}
                           </span>
-                          <span className="text-xs font-semibold text-[#5a6b32]">
+                          <span className="price text-sm text-ink">
                             {formatPrice(item.price)}
                           </span>
-                          <span className="rounded-full bg-[#5a6b32]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#5a6b32]">
+                          <span className="num text-xs font-semibold text-olive">
                             −{drop}%
                           </span>
                         </div>
                       </div>
                       <Link
                         href={`/vare/${item.id}`}
-                        className="shrink-0 rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-black"
+                        className="btn btn-ink btn-sm shrink-0"
                       >
                         Se annonse
                       </Link>
@@ -316,36 +307,36 @@ export default function VarslerPage() {
 
           {soldFavs.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
+              <p className="text-sm font-[620] text-ink">
                 Solgte favoritter
               </p>
-              <ul className="space-y-2">
+              <ul className="border-t border-line">
                 {soldFavs.map((item) => {
                   const cover = itemImages(item)[0];
                   return (
-                    <li key={item.id} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3 opacity-70">
+                    <li key={item.id} className="flex items-center gap-3 border-b border-line py-3.5 opacity-70">
                       <div className="relative shrink-0">
                         {cover ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={cover}
                             alt={item.title}
-                            className="h-14 w-14 rounded-lg object-cover grayscale"
+                            className="h-[74px] w-14 bg-sunk object-cover grayscale"
                           />
                         ) : (
-                          <div className="h-14 w-14 rounded-lg bg-stone-100" />
+                          <div className="h-[74px] w-14 bg-sunk" />
                         )}
-                        <span className="absolute -bottom-1 -right-1 rounded-full bg-stone-800 px-1.5 py-px text-[8px] font-bold uppercase tracking-wide text-white">
+                        <span className="absolute -bottom-1 -right-1 rounded-sm bg-ink px-1.5 py-px text-xs font-bold text-raised">
                           Solgt
                         </span>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-stone-500">{item.title}</p>
-                        <p className="text-xs text-stone-500">{formatPrice(item.price)}</p>
+                        <p className="truncate text-sm font-medium text-ink-3">{item.title}</p>
+                        <p className="text-xs text-ink-3">{formatPrice(item.price)}</p>
                       </div>
                       <button
                         onClick={() => removeFavorite(item.id)}
-                        className="shrink-0 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-500 hover:border-red-300 hover:text-red-500 transition"
+                        className="btn btn-quiet btn-sm shrink-0"
                       >
                         Fjern
                       </button>

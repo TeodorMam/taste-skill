@@ -27,42 +27,43 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="space-y-14 py-10 sm:py-16">
+    <div>
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="flex flex-col items-start gap-6">
-        <h1 className="text-5xl font-semibold tracking-tight text-stone-900 sm:text-6xl">
-          Brukte treningsklær, <br className="hidden sm:inline" />
-          <span className="text-[#5a6b32]">bedre priser.</span>
+      {/* Headline, lead and buttons share one left edge, on phones and on
+          desktop. No image: the grid right below is the picture, so the hero
+          is sized to leave the first row of items peeking into the first
+          screen. On desktop the headline also scales with the window height
+          (up to 120 px), so short laptop screens still show items. On phones
+          the headline keeps its three lines and never meets the margin. */}
+      <section className="-mt-2 flex flex-col items-start pb-8 sm:mt-0 sm:pb-10 sm:pt-2">
+        <h1 className="dsp text-[clamp(40px,12.5vw,56px)] leading-[0.9] tracking-[-0.022em] sm:text-[clamp(56px,min(11.5vw,12.5vh),120px)] sm:leading-[0.88] sm:tracking-[-0.024em]">
+          Brukte<br className="sm:hidden" /> treningsklær,
+          <br />
+          bedre priser.
         </h1>
-        <p className="max-w-xl text-base text-stone-600 sm:text-lg">
+        <p className="mt-4 max-w-[560px] text-base leading-[1.5] text-ink-2 sm:mt-6 sm:text-lg">
           Kjøp og selg brukte treningsklær fra Gymshark, Nike, YoungLA, Craft,
           DFYNE og mange flere. Ett minutt å legge ut, gratis å bruke.
         </p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/varer"
-            className="rounded-full bg-stone-900 px-6 py-3 text-sm font-medium text-stone-50 hover:bg-black"
-          >
+        <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 sm:mt-6 sm:gap-x-6">
+          <Link href="/varer" className="btn btn-ink px-9 sm:btn-lg sm:px-10">
             Utforsk
           </Link>
-          <Link
-            href="/ny-annonse"
-            className="rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-medium text-stone-900 hover:border-stone-500"
-          >
+          <Link href="/ny-annonse" className="tbtn tbtn-u">
             Legg ut vare
           </Link>
+          <p className="basis-full text-[13px] text-ink-3 sm:basis-auto">Gratis å bruke – ingen skjulte gebyrer</p>
         </div>
-        <p className="text-xs text-stone-500">Gratis å bruke – ingen skjulte gebyrer</p>
       </section>
 
       {/* ── Nytt inne ─────────────────────────────────────────────────────── */}
       {/* Rendered unconditionally. An empty grid is a far smaller failure
           than the whole section vanishing, which is what a guard here did
           when the query silently returned nothing. */}
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">Nytt inne</h2>
-          <p className="mt-0.5 text-sm text-stone-500">Nylig lagt ut treningsklær</p>
+      <section className="border-t border-ink pb-4 sm:pb-10">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 pb-4 pt-3 sm:gap-x-5 sm:pb-6 sm:pt-4">
+          <h2 className="text-[26px] leading-[1.08] sm:text-[32px]">Nytt inne</h2>
+          <p className="text-[13px] text-ink-3 sm:text-[15px]">Nylig lagt ut treningsklær</p>
         </div>
         <ItemsWithLoadMore
           initialItems={items}

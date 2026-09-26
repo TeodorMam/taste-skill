@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { Icon, type IconName } from "@/components/Icon";
 
 export function FirstListingSuccess({
   itemId,
@@ -65,100 +66,82 @@ export function FirstListingSuccess({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/35 p-0 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       onClick={close}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl"
+        className="w-full max-w-[420px] overflow-hidden rounded-t-sheet bg-raised sm:rounded-sheet"
       >
-        <div className="bg-gradient-to-br from-[#5a6b32] to-[#3d4720] px-6 py-8 text-center text-white">
-          <div className="text-5xl">🎉</div>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+        <div className="px-5 pb-2 pt-6 sm:px-6">
+          <Icon name="feiring" size={28} className="text-olive" />
+          <h2 className="mt-3 text-[32px] leading-none">
             Annonsen er ute!
           </h2>
-          <p className="mt-1.5 text-sm opacity-90">
+          <p className="mt-2 text-[15px] text-ink-2">
             «{itemTitle}» er nå synlig for alle på Aktivbruk.
           </p>
         </div>
 
-        <div className="space-y-3 px-5 py-5">
-          <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
+        <div className="px-5 pb-2 pt-4 sm:px-6">
+          <h3 className="pb-2 text-sm font-[620] text-ink">
             Neste steg
-          </p>
+          </h3>
 
+          <div className="border-t border-line">
           <button
             type="button"
             onClick={copyLink}
-            className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 text-left transition hover:border-[#5a6b32]"
+            className="flex min-h-[64px] w-full items-center gap-3 border-b border-line py-3 text-left hover:bg-ink/5"
           >
-            <span className="flex items-center gap-3">
-              <span className="text-xl">🔗</span>
-              <span>
-                <span className="block text-sm font-medium text-stone-900">
-                  {copied ? "Lenke kopiert!" : "Del lenken"}
-                </span>
-                <span className="block text-xs text-stone-500">
-                  Send til venner eller del på Stories
-                </span>
-              </span>
-            </span>
-            <span className="text-stone-500">›</span>
+            <NextStep icon="lenke" title={copied ? "Lenke kopiert!" : "Del lenken"} sub="Send til venner eller del på Stories" />
           </button>
 
           {!profileComplete && (
             <Link
               href="/profil"
               onClick={close}
-              className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 transition hover:border-[#5a6b32]"
+              className="flex min-h-[64px] w-full items-center gap-3 border-b border-line py-3 text-left hover:bg-ink/5"
             >
-              <span className="flex items-center gap-3">
-                <span className="text-xl">👤</span>
-                <span>
-                  <span className="block text-sm font-medium text-stone-900">
-                    Fyll ut profilen
-                  </span>
-                  <span className="block text-xs text-stone-500">
-                    Navn og bilde gir kjøpere mer tillit
-                  </span>
-                </span>
-              </span>
-              <span className="text-stone-500">›</span>
+              <NextStep icon="profil" title="Fyll ut profilen" sub="Navn og bilde gir kjøpere mer tillit" />
             </Link>
           )}
 
           <Link
             href="/meldinger"
             onClick={close}
-            className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 transition hover:border-[#5a6b32]"
+            className="flex min-h-[64px] w-full items-center gap-3 border-b border-line py-3 text-left hover:bg-ink/5"
           >
-            <span className="flex items-center gap-3">
-              <span className="text-xl">💬</span>
-              <span>
-                <span className="block text-sm font-medium text-stone-900">
-                  Hold øye med innboksen
-                </span>
-                <span className="block text-xs text-stone-500">
-                  Raske svar = raske salg, du får også e-postvarsler
-                </span>
-              </span>
-            </span>
-            <span className="text-stone-500">›</span>
+            <NextStep icon="chat" title="Hold øye med innboksen" sub="Raske svar = raske salg, du får også e-postvarsler" />
           </Link>
+          </div>
         </div>
 
-        <div className="border-t border-stone-100 bg-stone-50 px-5 py-3">
+        <div className="px-5 pb-8 pt-4 sm:px-6 sm:pb-6">
           <button
             type="button"
             onClick={close}
-            className="w-full rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-black"
+            className="btn btn-ink w-full"
           >
             Til annonsen
           </button>
         </div>
       </div>
     </div>
+  );
+}
+
+function NextStep({ icon, title, sub }: { icon: IconName; title: string; sub: string }) {
+  return (
+    <>
+      <Icon name={icon} size={20} className="text-ink-2" />
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] font-[620] text-ink">{title}</span>
+        <span className="block text-[13px] text-ink-3">{sub}</span>
+      </span>
+      <Icon name="chevron-h" size={18} className="text-ink-3" />
+    </>
   );
 }

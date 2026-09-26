@@ -7,6 +7,8 @@ import { formatPrice } from "@/lib/supabase";
 import { getPackageOption } from "@/lib/shipping";
 import { ReviewForm } from "@/components/ReviewForm";
 import { useToast } from "@/components/ToastProvider";
+import { Icon, type IconName } from "@/components/Icon";
+import { Sep } from "@/components/Sep";
 
 type OrderStatus =
   | "pending" | "paid" | "shipped" | "delivered"
@@ -51,16 +53,18 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   refunded: "Refundert",
 };
 
-const STATUS_COLOR: Record<OrderStatus, string> = {
-  pending: "bg-stone-100 text-stone-600",
-  paid: "bg-amber-100 text-amber-800",
-  shipped: "bg-blue-100 text-blue-800",
-  delivered: "bg-indigo-100 text-indigo-800",
-  confirmed: "bg-emerald-100 text-emerald-800",
-  disputed: "bg-red-100 text-red-700",
-  paid_out: "bg-emerald-100 text-emerald-800",
-  cancelled: "bg-stone-100 text-stone-500",
-  refunded: "bg-stone-100 text-stone-500",
+// Status is an icon and a word, not a coloured pill. Only a dispute gets
+// colour, because it is the one state that needs attention.
+const STATUS_ICON: Record<OrderStatus, IconName> = {
+  pending: "betaling",
+  paid: "betaling",
+  shipped: "sendt",
+  delivered: "pakke",
+  confirmed: "hake",
+  disputed: "advarsel",
+  paid_out: "utbetaling",
+  cancelled: "kryss",
+  refunded: "utbetaling",
 };
 
 function Countdown({ deadline }: { deadline: string }) {
@@ -77,7 +81,7 @@ function Countdown({ deadline }: { deadline: string }) {
     const t = setInterval(calc, 60000);
     return () => clearInterval(t);
   }, [deadline]);
-  return <span className="text-xs text-stone-500">{left}</span>;
+  return <span className="num text-[13px] font-[620] text-ochre">{left}</span>;
 }
 
 function OrderCard({ order, role, onAction }: {
@@ -106,29 +110,30 @@ function OrderCard({ order, role, onAction }: {
   }
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white overflow-hidden">
-      <div className="flex gap-3 p-4">
+    <div className="border-t border-ink">
+      <div className="flex gap-3.5 py-4">
         {imgSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imgSrc} alt="" loading="lazy" decoding="async" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+          <img src={imgSrc} alt="" loading="lazy" decoding="async" className="h-[86px] w-16 shrink-0 bg-sunk object-cover" />
         ) : (
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-2xl">📦</div>
+          <div className="flex h-[86px] w-16 shrink-0 items-center justify-center bg-sunk text-ink-3"><Icon name="pakke" size={22} /></div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-stone-900">
+          <p className="truncate text-[17px] font-[620] leading-[1.3] text-ink">
             {order.item ? (
               <Link href={`/vare/${order.item.id}`} className="hover:underline">{order.item.title}</Link>
             ) : order.item_title ? (
               <span>{order.item_title}</span>
             ) : (
-              <span className="text-stone-500">Annonse slettet</span>
+              <span className="text-ink-3">Annonse slettet</span>
             )}
           </p>
-          <p className="text-sm text-stone-700">
-            {formatPrice(order.amount_nok + (order.shipping_cost_nok ?? 0))}
-            {order.shipping_cost_nok > 0 && <span className="ml-1 text-xs text-stone-500">inkl. frakt</span>}
+          <p className="mt-0.5 text-[15px] text-ink">
+            <span className="price">{formatPrice(order.amount_nok + (order.shipping_cost_nok ?? 0))}</span>
+            {order.shipping_cost_nok > 0 && <span className="ml-1.5 text-xs text-ink-3">inkl. frakt</span>}
           </p>
-          <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLOR[order.status]}`}>
+          <span className={`mt-1.5 flex items-center gap-1.5 text-sm font-[550] ${order.status === "disputed" ? "text-clay" : "text-ink"}`}>
+            <Icon name={STATUS_ICON[order.status]} size={16} />
             {STATUS_LABEL[order.status]}
           </span>
         </div>
@@ -139,7 +144,7 @@ function OrderCard({ order, role, onAction }: {
           so nobody was ever asked. A finished order is the moment people have
           an opinion, and this is the page they are already on. */}
       {(order.status === "confirmed" || order.status === "paid_out") && order.item && (
-        <div className="border-t border-stone-100 bg-stone-50/60 px-4 py-3">
+        <div>
           <ReviewForm
             itemId={String(order.item.id)}
             reviewerId={role === "buyer" ? order.buyer_id : order.seller_id}
@@ -150,16 +155,16 @@ function OrderCard({ order, role, onAction }: {
       )}
 
       {order.tracking_info && (
-        <div className="border-t border-stone-100 px-4 py-2">
-          <p className="text-xs text-stone-500">
+        <div className="border-t border-line py-2.5">
+          <p className="text-xs text-ink-3">
             Sporing:{" "}
             <a
               href={`https://sporing.posten.no/sporing/${order.tracking_info}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+              className="inline-flex items-center gap-1 font-semibold text-ink underline underline-offset-2 hover:text-olive"
             >
-              {order.tracking_info} ↗
+              {order.tracking_info} <Icon name="ekstern" size={14} />
             </a>
           </p>
         </div>
@@ -169,42 +174,42 @@ function OrderCard({ order, role, onAction }: {
       {role === "seller" && order.status === "paid" && order.delivery_method !== "meetup" && (() => {
         const pkg = getPackageOption(order.item?.package_size);
         return (
-        <div className="border-t border-stone-100 p-4 space-y-4">
+        <div className="space-y-4 border-t border-line py-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-stone-800">Send pakken</p>
-            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">Send innen 7 dager</span>
+            <p className="text-sm font-semibold text-ink">Send pakken</p>
+            <span className="text-[13px] font-[620] text-ochre">Send innen 7 dager</span>
           </div>
 
           {pkg && (
-            <div className="rounded-xl border border-[#5a6b32]/30 bg-[#5a6b32]/5 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5a6b32]">Kjøp denne pakken</p>
-              <p className="mt-0.5 text-sm font-semibold text-stone-900">Posten {pkg.label}, {pkg.price} kr</p>
-              <p className="text-[11px] text-stone-500">Inntil {pkg.maxWeight} · {pkg.dimensions}</p>
-              <p className="mt-1.5 text-[11px] text-stone-500">Ikke velg noen annen størrelse, kjøper har betalt for akkurat denne.</p>
+            <div className="rounded-sm bg-olive-soft p-3">
+              <p className="text-[13px] font-[620] text-olive">Kjøp denne pakken</p>
+              <p className="mt-0.5 text-sm font-semibold text-ink">Posten {pkg.label}, {pkg.price} kr</p>
+              <p className="text-xs text-ink-2">Inntil {pkg.maxWeight}<Sep />{pkg.dimensions}</p>
+              <p className="mt-1.5 text-xs text-ink-2">Ikke velg noen annen størrelse, kjøper har betalt for akkurat denne.</p>
             </div>
           )}
 
           <div className="flex gap-4">
             <div className="flex-1 space-y-3">
-              <ol className="space-y-1.5 text-xs text-stone-600">
-                <li className="flex gap-2"><span className="font-semibold text-stone-800">1.</span><span>Gå til posten.no og velg «Send i Norge»</span></li>
-                <li className="flex gap-2"><span className="font-semibold text-stone-800">2.</span><span>{pkg ? <>Trykk «Kjøp sendekode» og velg <strong>{pkg.label} ({pkg.price} kr)</strong></> : <>Velg pakkestørrelse ved å trykke «Kjøp sendekode»</>}</span></li>
-                <li className="flex gap-2"><span className="font-semibold text-stone-800">3.</span><span>Fyll inn avsender- og mottakerinformasjon, og innleveringsmåte</span></li>
-                <li className="flex gap-2"><span className="font-semibold text-stone-800">4.</span><span>Betal frakt og send inn</span></li>
+              <ol className="space-y-1.5 text-xs text-ink-2">
+                <li className="flex gap-2"><span className="font-semibold text-ink">1.</span><span>Gå til posten.no og velg «Send i Norge»</span></li>
+                <li className="flex gap-2"><span className="font-semibold text-ink">2.</span><span>{pkg ? <>Trykk «Kjøp sendekode» og velg <strong>{pkg.label} ({pkg.price} kr)</strong></> : <>Velg pakkestørrelse ved å trykke «Kjøp sendekode»</>}</span></li>
+                <li className="flex gap-2"><span className="font-semibold text-ink">3.</span><span>Fyll inn avsender- og mottakerinformasjon, og innleveringsmåte</span></li>
+                <li className="flex gap-2"><span className="font-semibold text-ink">4.</span><span>Betal frakt og send inn</span></li>
               </ol>
-              <div className="space-y-0.5 text-xs text-stone-500">
+              <div className="space-y-0.5 text-xs text-ink-3">
                 <p>Frakten er allerede betalt av kjøper, du får dette tilbake i utbetalingen.</p>
                 <p>Levering tar vanligvis 2–5 virkedager.</p>
               </div>
             </div>
 
             {order.buyer_name && (
-              <div className="w-40 shrink-0 rounded-xl border border-stone-200 bg-stone-50 p-3">
-                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-500">Mottaker</p>
-                <p className="text-xs font-medium text-stone-900">{order.buyer_name}</p>
-                <p className="text-xs text-stone-700">{order.buyer_address}</p>
-                <p className="text-xs text-stone-700">{order.buyer_postal_code} {order.buyer_city}</p>
-                {order.buyer_phone && <p className="text-xs text-stone-700">{order.buyer_phone}</p>}
+              <div className="w-40 shrink-0 border-l border-line pl-4">
+                <p className="mb-1.5 text-[13px] font-[620] text-ink-2">Mottaker</p>
+                <p className="text-xs font-medium text-ink">{order.buyer_name}</p>
+                <p className="text-xs text-ink-2">{order.buyer_address}</p>
+                <p className="text-xs text-ink-2">{order.buyer_postal_code} {order.buyer_city}</p>
+                {order.buyer_phone && <p className="text-xs text-ink-2">{order.buyer_phone}</p>}
                 <button
                   type="button"
                   onClick={() => {
@@ -212,7 +217,7 @@ function OrderCard({ order, role, onAction }: {
                     void navigator.clipboard.writeText(text);
                     toast("Kopiert!");
                   }}
-                  className="mt-2 text-[10px] font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]"
+                  className="mt-2 text-[13px] font-semibold text-ink underline underline-offset-2 hover:text-olive"
                 >
                   Kopier alt
                 </button>
@@ -226,14 +231,14 @@ function OrderCard({ order, role, onAction }: {
               value={trackingInput}
               onChange={(e) => setTrackingInput(e.target.value)}
               placeholder="Sporingsnummer (påkrevd)"
-              className="block w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-sm outline-none focus:border-[#5a6b32] focus:ring-1 focus:ring-[#5a6b32]/30"
+              className="field"
             />
             <button
               onClick={() => act("ship", { tracking_info: trackingInput })}
               disabled={!!busy || !trackingInput.trim()}
-              className="w-full rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+              className="btn btn-olive w-full"
             >
-              {busy === "ship" ? "Lagrer…" : "Marker som sendt →"}
+              {busy === "ship" ? "Lagrer…" : <>Marker som sendt <Icon name="pil-h" size={16} /></>}
             </button>
           </div>
         </div>
@@ -241,58 +246,58 @@ function OrderCard({ order, role, onAction }: {
       })()}
 
       {role === "seller" && order.status === "paid" && order.delivery_method === "meetup" && (
-        <div className="border-t border-stone-100 p-4 space-y-3">
-          <p className="text-xs text-stone-600">Avtal tid og sted med kjøper i chatten, og bekreft overlevering når dere møtes.</p>
+        <div className="space-y-3 border-t border-line py-4">
+          <p className="text-xs text-ink-2">Avtal tid og sted med kjøper i chatten, og bekreft overlevering når dere møtes.</p>
           <button
             onClick={() => act("handover")}
             disabled={!!busy}
-            className="w-full rounded-full bg-[#5a6b32] px-4 py-2 text-sm font-medium text-white hover:bg-[#435022] disabled:opacity-50"
+            className="btn btn-olive w-full"
           >
-            {busy === "handover" ? "Lagrer…" : "Bekreft overlevering →"}
+            {busy === "handover" ? "Lagrer…" : <>Bekreft overlevering <Icon name="pil-h" size={16} /></>}
           </button>
         </div>
       )}
 
       {role === "seller" && order.status === "shipped" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-stone-500">Vi sporer pakken automatisk og varsler kjøper ved levering.</p>
+        <div className="border-t border-line py-3">
+          <p className="text-xs text-ink-3">Vi sporer pakken automatisk og varsler kjøper ved levering.</p>
         </div>
       )}
 
       {role === "seller" && order.status === "delivered" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-stone-500">
+        <div className="border-t border-line py-3">
+          <p className="text-xs text-ink-3">
             Kjøper har mottatt varen og har {order.review_deadline && <><Countdown deadline={order.review_deadline} /></>} på å bekrefte. Betaling frigjøres automatisk etter fristen.
           </p>
         </div>
       )}
 
       {role === "seller" && order.status === "confirmed" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-emerald-700 font-medium">✓ Kjøper bekreftet, betaling overføres til deg</p>
+        <div className="border-t border-line py-3">
+          <p className="flex items-center gap-1.5 text-sm font-[620] text-ink"><Icon name="hake" size={16} />Kjøper bekreftet, betaling overføres til deg</p>
         </div>
       )}
 
       {role === "seller" && order.status === "paid_out" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-emerald-700 font-medium">✓ Utbetalt {order.payout_amount_nok ? formatPrice(order.payout_amount_nok) : ""}</p>
-          <a href="https://dashboard.stripe.com/express" target="_blank" rel="noopener noreferrer" className="mt-1 block text-xs font-medium text-[#5a6b32] underline underline-offset-2 hover:text-[#435022]">
-            Åpne Stripe-dashboard ↗
+        <div className="border-t border-line py-3">
+          <p className="flex items-center gap-1.5 text-sm font-[620] text-ink"><Icon name="hake" size={16} />Utbetalt {order.payout_amount_nok ? formatPrice(order.payout_amount_nok) : ""}</p>
+          <a href="https://dashboard.stripe.com/express" target="_blank" rel="noopener noreferrer" className="mt-1.5 inline-flex items-center gap-1 text-[13px] font-semibold text-ink underline underline-offset-2 hover:text-olive">
+            Åpne Stripe-dashboard <Icon name="ekstern" size={14} />
           </a>
         </div>
       )}
 
       {role === "seller" && order.status === "disputed" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs font-medium text-red-700">⚠ Kjøper har meldt problem, betaling er satt på vent</p>
-          <p className="mt-1 text-xs text-stone-500">Aktivbruk behandler saken. Ingen automatisk refusjon skjer.</p>
+        <div className="border-t border-line py-3">
+          <p className="flex items-center gap-1.5 text-sm font-[620] text-clay"><Icon name="advarsel" size={16} />Kjøper har meldt problem, betaling er satt på vent</p>
+          <p className="mt-1 text-xs text-ink-3">Aktivbruk behandler saken. Ingen automatisk refusjon skjer.</p>
         </div>
       )}
 
       {/* Buyer actions */}
       {role === "buyer" && order.status === "paid" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-stone-500">
+        <div className="border-t border-line py-3">
+          <p className="text-xs text-ink-3">
             {order.delivery_method === "meetup"
               ? "Betalt, avtal tid og sted med selger i chatten."
               : "Betalt og bekreftet, venter på at selger sender varen."}
@@ -301,16 +306,16 @@ function OrderCard({ order, role, onAction }: {
       )}
 
       {role === "buyer" && order.status === "shipped" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-stone-500">Varen er sendt, vi følger pakken og varsler deg når den er levert.</p>
+        <div className="border-t border-line py-3">
+          <p className="text-xs text-ink-3">Varen er sendt, vi følger pakken og varsler deg når den er levert.</p>
         </div>
       )}
 
       {role === "buyer" && order.status === "delivered" && (
-        <div className="border-t border-stone-100 p-4 space-y-3">
+        <div className="space-y-3 border-t border-line py-4">
           {order.review_deadline && (
             <div className="flex items-center justify-between">
-              <p className="text-xs text-stone-600">Bekreft mottak eller meld problem</p>
+              <p className="text-xs text-ink-2">Bekreft mottak eller meld problem</p>
               <Countdown deadline={order.review_deadline} />
             </div>
           )}
@@ -321,17 +326,17 @@ function OrderCard({ order, role, onAction }: {
                 onChange={(e) => setDisputeReason(e.target.value)}
                 rows={3}
                 placeholder="Beskriv problemet (valgfritt men anbefalt)"
-                className="block w-full resize-none rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-red-400 focus:ring-1 focus:ring-red-300"
+                className="field resize-none"
               />
               <div className="flex gap-2">
                 <button
                   onClick={() => act("dispute", disputeReason ? { reason: disputeReason } : {})}
                   disabled={!!busy}
-                  className="flex-1 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                  className="btn btn-clayfill flex-1"
                 >
                   {busy === "dispute" ? "Sender…" : "Send tvist"}
                 </button>
-                <button onClick={() => setShowDispute(false)} className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 hover:border-stone-500">
+                <button onClick={() => setShowDispute(false)} className="tbtn px-3">
                   Avbryt
                 </button>
               </div>
@@ -341,13 +346,13 @@ function OrderCard({ order, role, onAction }: {
               <button
                 onClick={() => act("confirm")}
                 disabled={!!busy}
-                className="flex-1 rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="btn btn-olive flex-1"
               >
-                {busy === "confirm" ? "Bekrefter…" : "Alt OK ✓"}
+                {busy === "confirm" ? "Bekrefter…" : <>Alt OK <Icon name="hake" size={16} /></>}
               </button>
               <button
                 onClick={() => setShowDispute(true)}
-                className="flex-1 rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:border-red-400 hover:bg-red-50"
+                className="btn btn-clay flex-1"
               >
                 Meld problem
               </button>
@@ -357,21 +362,21 @@ function OrderCard({ order, role, onAction }: {
       )}
 
       {role === "buyer" && order.status === "confirmed" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-emerald-700 font-medium">✓ Du bekreftet mottak, betaling er frigjort til selger</p>
+        <div className="border-t border-line py-3">
+          <p className="flex items-center gap-1.5 text-sm font-[620] text-ink"><Icon name="hake" size={16} />Du bekreftet mottak, betaling er frigjort til selger</p>
         </div>
       )}
 
       {role === "buyer" && order.status === "paid_out" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs text-emerald-700 font-medium">✓ Ordre fullført</p>
+        <div className="border-t border-line py-3">
+          <p className="flex items-center gap-1.5 text-sm font-[620] text-ink"><Icon name="hake" size={16} />Ordre fullført</p>
         </div>
       )}
 
       {role === "buyer" && order.status === "disputed" && (
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="text-xs font-medium text-red-700">⚠ Tvist åpnet, betaling er satt på vent</p>
-          <p className="mt-1 text-xs text-stone-500">Vi behandler saken og tar kontakt. Ingen automatisk refusjon skjer.</p>
+        <div className="border-t border-line py-3">
+          <p className="flex items-center gap-1.5 text-sm font-[620] text-clay"><Icon name="advarsel" size={16} />Tvist åpnet, betaling er satt på vent</p>
+          <p className="mt-1 text-xs text-ink-3">Vi behandler saken og tar kontakt. Ingen automatisk refusjon skjer.</p>
         </div>
       )}
     </div>
@@ -428,13 +433,13 @@ export default function OrdersPage() {
     toast(messages[action] ?? "Oppdatert");
   }
 
-  if (userId === undefined) return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+  if (userId === undefined) return <p className="py-6 text-sm text-ink-3">Laster…</p>;
   if (userId === null) {
     return (
       <section className="space-y-3 py-10">
-        <h1 className="text-3xl font-semibold tracking-tight">Mine ordre</h1>
-        <p className="text-sm text-stone-600">Logg inn for å se dine ordre.</p>
-        <Link href="/logg-inn?next=/ordre" className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black">
+        <h1 className="text-[40px] leading-none">Mine ordre</h1>
+        <p className="text-sm text-ink-2">Logg inn for å se dine ordre.</p>
+        <Link href="/logg-inn?next=/ordre" className="btn btn-ink">
           Logg inn
         </Link>
       </section>
@@ -451,42 +456,43 @@ export default function OrdersPage() {
   return (
     <section className="space-y-5">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Mine ordre</h1>
-        <p className="mt-1 text-sm text-stone-500">Oversikt over kjøp og salg.</p>
+        <h1 className="text-[40px] leading-none">Mine ordre</h1>
+        <p className="mt-1 text-sm text-ink-3">Oversikt over kjøp og salg.</p>
       </div>
 
-      <div className="flex gap-2">
+      <div className="tabs">
         <button
           onClick={() => setTab("buyer")}
-          className={`relative rounded-full border px-4 py-1.5 text-xs font-medium transition ${tab === "buyer" ? "border-[#5a6b32] bg-[#5a6b32] text-white" : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"}`}
+          className={`tab num ${tab === "buyer" ? "tab-on" : ""}`}
         >
           Kjøp ({buyerOrders.length})
           {activeCount(buyerOrders) > 0 && tab !== "buyer" && (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{activeCount(buyerOrders)}</span>
+            <span className="count">{activeCount(buyerOrders)}</span>
           )}
         </button>
         <button
           onClick={() => setTab("seller")}
-          className={`relative rounded-full border px-4 py-1.5 text-xs font-medium transition ${tab === "seller" ? "border-[#5a6b32] bg-[#5a6b32] text-white" : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"}`}
+          className={`tab num ${tab === "seller" ? "tab-on" : ""}`}
         >
           Salg ({sellerOrders.length})
           {activeCount(sellerOrders) > 0 && tab !== "seller" && (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{activeCount(sellerOrders)}</span>
+            <span className="count">{activeCount(sellerOrders)}</span>
           )}
         </button>
       </div>
 
       {orders === null && (
         <div className="space-y-3">
-          {[1, 2].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-stone-100" />)}
+          {[1, 2].map((i) => <div key={i} className="h-28 bg-sunk" />)}
         </div>
       )}
 
       {orders !== null && shown.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
-          <p className="font-medium text-stone-700">{tab === "buyer" ? "Ingen kjøp enda" : "Ingen salg via Aktivbruk enda"}</p>
+        <div className="border-t border-ink pt-6 text-sm text-ink-3">
+          <Icon name="pakke" size={28} className="text-ink-3" />
+          <p className="mt-3 text-[17px] font-[620] text-ink">{tab === "buyer" ? "Ingen kjøp enda" : "Ingen salg via Aktivbruk enda"}</p>
           {tab === "buyer" && (
-            <Link href="/varer" className="mt-4 inline-block rounded-full bg-stone-900 px-5 py-2.5 text-xs font-medium text-stone-50 hover:bg-black">
+            <Link href="/varer" className="btn btn-ink mt-5">
               Utforsk varer
             </Link>
           )}
@@ -494,7 +500,7 @@ export default function OrdersPage() {
       )}
 
       {shown.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-6">
           {shown.map((order) => (
             <OrderCard key={order.id} order={order} role={tab} onAction={handleAction} />
           ))}

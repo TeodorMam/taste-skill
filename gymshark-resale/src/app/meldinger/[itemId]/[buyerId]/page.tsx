@@ -16,6 +16,7 @@ import {
 } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 import { BidModal } from "@/components/BidModal";
+import { Icon, type IconName } from "@/components/Icon";
 import { prepareImageForUpload } from "@/lib/image";
 
 function fmtTime(iso: string): string {
@@ -51,20 +52,28 @@ function jumboEmojiCount(text: string): 0 | 1 | 2 | 3 {
 
 // ─── Event card config ────────────────────────────────────────────────────────
 
-const EVENT_CONFIGS: Partial<Record<MessageType, { icon: string; title: string; sub: string }>> = {
-  bid_accepted: { icon: "🎉", title: "Bud akseptert!", sub: "Kjøper kan nå gå til annonsen for å betale" },
-  payment:      { icon: "✅", title: "Betaling gjennomført", sub: "🔒 Pengene holdes trygt til varen er mottatt" },
-  shipped:      { icon: "📦", title: "Varen er sendt", sub: "Du får beskjed når varen er registrert levert" },
-  delivered:    { icon: "📬", title: "Varen er levert", sub: "Kjøper har bekreftet mottak" },
-  payout:       { icon: "💰", title: "Utbetaling sendt", sub: "Pengene er overført til selger" },
+// `locked` puts a padlock in front of the subtitle, where the text used to
+// start with a padlock emoji.
+type EventConfig = { icon: IconName; title: string; sub: string; locked?: boolean };
+
+const EVENT_CONFIGS: Partial<Record<MessageType, EventConfig>> = {
+  bid_accepted: { icon: "feiring",    title: "Bud akseptert!", sub: "Kjøper kan nå gå til annonsen for å betale" },
+  payment:      { icon: "betaling",   title: "Betaling gjennomført", sub: "Pengene holdes trygt til varen er mottatt", locked: true },
+  shipped:      { icon: "sendt",      title: "Varen er sendt", sub: "Du får beskjed når varen er registrert levert" },
+  delivered:    { icon: "levert",     title: "Varen er levert", sub: "Kjøper har bekreftet mottak" },
+  payout:       { icon: "utbetaling", title: "Utbetaling sendt", sub: "Pengene er overført til selger" },
 };
+
+// Older system notes were stored with a "🚫 " prefix. The stored text is left
+// alone; the prefix is drawn as the cross icon when shown.
+const CANCEL_PREFIX = "🚫 ";
 
 function eventCardConfig(type: MessageType, metadata: Record<string, unknown> | null) {
   const base = EVENT_CONFIGS[type];
   if (!base) return null;
   const isMeetup = metadata?.delivery_method === "meetup";
   if (type === "payment" && isMeetup) {
-    return { ...base, sub: "🔒 Pengene holdes trygt til dere har møttes" };
+    return { ...base, sub: "Pengene holdes trygt til dere har møttes" };
   }
   return base;
 }
@@ -350,7 +359,7 @@ export default function ChatPage() {
     }).then(() => null);
     setShowBidModal(false);
     setSubmittingBid(false);
-    toast("💸 Bud sendt");
+    toast("Bud sendt");
   }
 
   async function respondOffer(offerId: string, amount: number, status: "accepted" | "declined") {
@@ -373,7 +382,7 @@ export default function ChatPage() {
         message_type: "bid_accepted",
         metadata: { offer_id: offerId, amount },
       }).then(() => null);
-      toast("Bud godtatt ✓");
+      toast("Bud godtatt");
     } else {
       toast("Bud avslått");
     }
@@ -449,15 +458,15 @@ export default function ChatPage() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
-  if (meId === undefined) return <p className="py-6 text-sm text-stone-500">Laster…</p>;
+  if (meId === undefined) return <p className="py-6 text-sm text-ink-3">Laster…</p>;
 
   if (meId === null) {
     return (
       <section className="space-y-3 py-10">
-        <p className="text-sm text-stone-600">Logg inn for å se chatten.</p>
+        <p className="text-sm text-ink-2">Logg inn for å se chatten.</p>
         <Link
           href={`/logg-inn?next=/meldinger/${itemId}/${buyerId}`}
-          className="inline-block rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 hover:bg-black"
+          className="btn btn-ink"
         >
           Logg inn
         </Link>
@@ -467,43 +476,41 @@ export default function ChatPage() {
 
   return (
     <div
-      className="-mx-4 -mt-6 flex flex-col bg-white"
+      className="-mx-4 -mt-6 flex flex-col bg-paper"
       style={{ height: "calc(100dvh - 3.5rem)" }}
     >
       {/* ── Top bar ──────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-stone-200 px-4 py-3">
+      <div className="flex shrink-0 items-center gap-2 border-b border-line py-2 pl-2 pr-4">
         <button
           onClick={() => router.push("/meldinger")}
-          className="shrink-0 rounded-full p-1 text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+          className="flex h-11 w-11 shrink-0 items-center justify-center text-ink hover:bg-ink/5"
           aria-label="Tilbake til innboks"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 5l-7 7 7 7" />
-          </svg>
+          <Icon name="pil-v" size={20} />
         </button>
         {otherId ? (
           <Link
             href={`/selger/${otherId}`}
-            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg -mx-1 px-1 py-1 transition hover:bg-stone-100"
+            className="flex min-w-0 flex-1 items-center gap-2.5 py-1 hover:underline"
             aria-label={`Se profil til ${otherName}`}
           >
             <OtherAvatar profile={otherProfile} name={otherName} />
-            <p className="truncate text-sm font-semibold text-stone-900">{otherName}</p>
+            <p className="truncate text-[17px] font-[620] text-ink">{otherName}</p>
           </Link>
         ) : (
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <OtherAvatar profile={otherProfile} name={otherName} />
-            <p className="truncate text-sm font-semibold text-stone-900">{otherName}</p>
+            <p className="truncate text-[17px] font-[620] text-ink">{otherName}</p>
           </div>
         )}
         {item && (
           <Link href={`/vare/${itemId}`} className="shrink-0" aria-label="Gå til annonse">
-            <div className="h-10 w-10 overflow-hidden rounded-xl bg-stone-100">
+            <div className="h-12 w-9 overflow-hidden bg-sunk">
               {cover ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={cover} alt="" className="h-full w-full object-cover" />
               ) : (
-                <div className="h-full w-full bg-stone-200" />
+                <div className="h-full w-full bg-line" />
               )}
             </div>
           </Link>
@@ -513,7 +520,7 @@ export default function ChatPage() {
       {/* ── Messages ─────────────────────────────────────────────────────── */}
       <div ref={listRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
         {messages.length === 0 && (
-          <p className="py-10 text-center text-xs text-stone-500">
+          <p className="py-10 text-center text-[13px] text-ink-3">
             {isSeller
               ? "Ingen meldinger fra denne kjøperen enda."
               : "Si hei, spør om størrelse, henting eller tilstand."}
@@ -532,9 +539,8 @@ export default function ChatPage() {
           // ── Lifecycle event cards (centered) ──
           if (type in EVENT_CONFIGS) {
             return (
-              <div key={m.id} className="flex flex-col items-center py-3">
-                <EventCard type={type as MessageType} metadata={m.metadata} />
-                <span className="mt-1 text-[10px] text-stone-500">{fmtTime(m.created_at)}</span>
+              <div key={m.id} className="py-2">
+                <EventCard type={type as MessageType} metadata={m.metadata} time={fmtTime(m.created_at)} />
               </div>
             );
           }
@@ -563,7 +569,7 @@ export default function ChatPage() {
                   onCancel={meta?.offer_id ? () => cancelAcceptedOffer(meta.offer_id) : undefined}
                   onWithdraw={meta?.offer_id ? () => withdrawPendingOffer(meta.offer_id) : undefined}
                 />
-                <span className="mt-0.5 px-1 text-[10px] text-stone-500">{fmtTime(m.created_at)}</span>
+                <span className="mt-0.5 px-1 text-xs text-ink-3">{fmtTime(m.created_at)}</span>
               </div>
             );
           }
@@ -574,9 +580,9 @@ export default function ChatPage() {
               <div key={m.id} className={`flex flex-col pb-1 ${mine ? "items-end" : "items-start"}`}>
                 <a href={m.image_url!} target="_blank" rel="noopener noreferrer" className="max-w-[75%]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.image_url!} alt="" className="max-h-56 w-full rounded-2xl object-cover" />
+                  <img src={m.image_url!} alt="" className="max-h-56 w-full rounded-chat object-cover" />
                 </a>
-                <span className="mt-0.5 px-1 text-[10px] text-stone-500">
+                <span className="mt-0.5 px-1 text-xs text-ink-3">
                   {fmtTime(m.created_at)}{isSeen ? " · Sett" : ""}
                 </span>
               </div>
@@ -603,13 +609,13 @@ export default function ChatPage() {
                     }}
                     rows={1}
                     autoFocus
-                    className="w-full resize-none rounded-2xl border border-[#5a6b32] bg-white px-3 py-2 text-sm leading-snug text-stone-900 outline-none"
+                    className="field min-h-12 resize-none py-3"
                   />
                   <div className="mt-1 flex justify-end gap-2">
                     <button
                       type="button"
                       onClick={cancelEdit}
-                      className="rounded-full px-3 py-1 text-xs font-medium text-stone-500 hover:text-stone-900"
+                      className="tbtn px-2 text-sm font-medium text-ink-2"
                     >
                       Avbryt
                     </button>
@@ -617,7 +623,7 @@ export default function ChatPage() {
                       type="button"
                       onClick={() => saveEdit(m.id)}
                       disabled={!editingText.trim()}
-                      className="rounded-full bg-[#5a6b32] px-3 py-1 text-xs font-semibold text-white hover:bg-[#435022] disabled:opacity-40"
+                      className="btn btn-olive btn-sm"
                     >
                       Lagre
                     </button>
@@ -642,7 +648,7 @@ export default function ChatPage() {
                 {mine && menuOpen && (
                   <MessageMenu onEdit={() => beginEdit(m)} onDelete={() => deleteMessage(m.id)} />
                 )}
-                <span className="mt-1 px-1 text-[10px] text-stone-500">
+                <span className="mt-1 px-1 text-xs text-ink-3">
                   {fmtTime(m.created_at)}{wasEdited ? " · Redigert" : ""}{isSeen ? " · Sett" : ""}
                 </span>
               </div>
@@ -654,17 +660,19 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={mine ? (e) => { e.stopPropagation(); setOpenMenuId(menuOpen ? null : m.id); } : undefined}
-                className={`max-w-[75%] text-left whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm ${
-                  mine ? "bg-stone-900 text-stone-50 cursor-pointer" : "bg-stone-100 text-stone-900 cursor-default"
+                className={`max-w-[75%] whitespace-pre-wrap break-words rounded-chat px-3.5 py-2.5 text-left text-[15px] leading-[1.45] ${
+                  mine ? "cursor-pointer rounded-br-sm bg-ink text-paper" : "cursor-default rounded-bl-sm bg-raised text-ink shadow-[inset_0_0_0_1px_#D6D3C7]"
                 }`}
                 aria-label={mine ? "Meldingsvalg" : undefined}
               >
-                {m.body}
+                {m.body.startsWith(CANCEL_PREFIX) ? (
+                  <span className="inline-flex items-start gap-1.5"><Icon name="kryss" size={16} className="mt-0.5" />{m.body.slice(CANCEL_PREFIX.length)}</span>
+                ) : m.body}
               </button>
               {mine && menuOpen && (
                 <MessageMenu onEdit={() => beginEdit(m)} onDelete={() => deleteMessage(m.id)} />
               )}
-              <span className="mt-0.5 px-1 text-[10px] text-stone-500">
+              <span className="mt-0.5 px-1 text-xs text-ink-3">
                 {fmtTime(m.created_at)}{wasEdited ? " · Redigert" : ""}{isSeen ? " · Sett" : ""}
               </span>
             </div>
@@ -673,24 +681,16 @@ export default function ChatPage() {
       </div>
 
       {/* ── Input bar ────────────────────────────────────────────────────── */}
-      <div className="shrink-0 border-t border-stone-200 bg-white">
-        <form onSubmit={send} className="flex items-end gap-2 p-2">
+      <div className="shrink-0 border-t border-line bg-raised">
+        <form onSubmit={send} className="flex items-end gap-2 px-2 py-3 pr-4">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || sending}
-            className="shrink-0 rounded-full p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-700 disabled:opacity-40"
+            className="flex h-12 w-11 shrink-0 items-center justify-center text-ink hover:bg-ink/5 disabled:opacity-45"
             aria-label="Send bilde"
           >
-            {uploading ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-              </svg>
-            )}
+            <Icon name="kamera" size={20} className={uploading ? "animate-pulse" : ""} />
           </button>
           <input
             ref={fileInputRef}
@@ -705,12 +705,12 @@ export default function ChatPage() {
             onChange={(e) => setBody(e.target.value)}
             placeholder="Skriv en melding…"
             rows={1}
-            className="min-w-0 flex-1 resize-none rounded-2xl border border-stone-300 bg-white px-3 py-2 text-sm leading-snug outline-none focus:border-[#5a6b32]"
+            className="field min-h-12 min-w-0 flex-1 resize-none py-3"
           />
           <button
             type="submit"
             disabled={sending || !body.trim()}
-            className="shrink-0 rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-black disabled:opacity-40"
+            className="btn btn-ink shrink-0"
           >
             Send
           </button>
@@ -719,12 +719,13 @@ export default function ChatPage() {
           <button
             type="button"
             onClick={() => setShowBidModal(true)}
-            className="w-full pb-2 text-center text-xs font-medium text-stone-500 hover:text-stone-700"
+            className="tbtn -mt-2 w-full justify-center text-sm"
           >
-            💸 Gi bud
+            <Icon name="bud" size={18} />
+            Gi bud
           </button>
         )}
-        {error && <p className="px-3 pb-2 text-xs text-red-700">{error}</p>}
+        {error && <p className="px-3 pb-2 text-xs text-clay">{error}</p>}
       </div>
 
       {showBidModal && item && (
@@ -748,30 +749,22 @@ function MessageMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () =>
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute right-0 top-full z-10 mt-1 min-w-[140px] overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg"
+      className="absolute right-0 top-full z-10 mt-1 min-w-[140px] overflow-hidden rounded-sm border border-line bg-raised"
     >
       <button
         type="button"
         onClick={onEdit}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-stone-800 hover:bg-stone-100"
+        className="flex min-h-[44px] w-full items-center gap-2.5 px-3 text-left text-sm font-medium text-ink hover:bg-ink/5"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-          <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-        </svg>
+        <Icon name="rediger" size={16} />
         Rediger
       </button>
       <button
         type="button"
         onClick={onDelete}
-        className="flex w-full items-center gap-2 border-t border-stone-100 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+        className="flex min-h-[44px] w-full items-center gap-2.5 border-t border-line px-3 text-left text-sm font-medium text-clay hover:bg-clay-soft"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="3 6 5 6 21 6" />
-          <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6" />
-          <path d="M10 11v6M14 11v6" />
-          <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-        </svg>
+        <Icon name="slett" size={16} />
         Slett
       </button>
     </div>
@@ -795,24 +788,24 @@ function BidCard({
 }) {
 
   return (
-    <div className="w-56 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 text-sm shadow-sm transition-all">
-      <div className="px-4 pt-3 pb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-500">Bud</p>
-        <p className="mt-0.5 text-xl font-semibold text-stone-900">{formatPrice(amount)}</p>
+    <div className="w-60 overflow-hidden rounded-sm bg-raised text-sm shadow-[inset_0_0_0_1.5px_#1C1E18]">
+      <div className="px-4 pb-2.5 pt-3">
+        <p className="flex items-center gap-1.5 text-[13px] font-[620] text-ink-2"><Icon name="bud" size={16} />Bud</p>
+        <p className="price mt-1 text-[26px] leading-none text-ink">{formatPrice(amount)}</p>
       </div>
 
-      <div className="border-t border-stone-200 px-4 py-2.5">
+      <div className="border-t border-line px-4 py-2.5">
         {status === "pending" && isSeller && (
           <div className="flex gap-2">
             <button
               onClick={() => onRespond("accepted")}
-              className="flex-1 rounded-full bg-[#5a6b32] py-1.5 text-xs font-semibold text-white transition hover:bg-[#435022] active:scale-95"
+              className="btn btn-olive btn-sm flex-1"
             >
               Godta
             </button>
             <button
               onClick={() => onRespond("declined")}
-              className="flex-1 rounded-full border border-stone-300 bg-white py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-500 active:scale-95"
+              className="btn btn-line btn-sm flex-1"
             >
               Avslå
             </button>
@@ -820,11 +813,11 @@ function BidCard({
         )}
         {status === "pending" && !isSeller && (
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-stone-500">Venter på svar…</p>
+            <p className="text-[13px] text-ink-3">Venter på svar…</p>
             {onWithdraw && (
               <button
                 onClick={onWithdraw}
-                className="text-[11px] text-stone-500 underline underline-offset-2 hover:text-red-600"
+                className="text-xs text-ink-3 underline underline-offset-2 hover:text-clay"
               >
                 Trekk tilbake
               </button>
@@ -833,11 +826,11 @@ function BidCard({
         )}
         {status === "accepted" && (
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-semibold text-[#5a6b32]">✓ Godtatt</p>
+            <p className="flex items-center gap-1.5 text-sm font-[620] text-ink"><Icon name="hake" size={16} />Godtatt</p>
             {onCancel && (
               <button
                 onClick={onCancel}
-                className="text-[11px] text-stone-500 underline underline-offset-2 hover:text-red-600"
+                className="text-xs text-ink-3 underline underline-offset-2 hover:text-clay"
               >
                 Avbryt bud
               </button>
@@ -845,21 +838,33 @@ function BidCard({
           </div>
         )}
         {status === "declined" && (
-          <p className="text-xs text-stone-500">Avbrutt</p>
+          <p className="text-[13px] text-ink-3">Avbrutt</p>
         )}
       </div>
     </div>
   );
 }
 
-function EventCard({ type, metadata }: { type: MessageType; metadata: Record<string, unknown> | null }) {
+// System events are left-aligned rows between hairlines: a framed icon,
+// title, subtitle and the time.
+function EventCard({ type, metadata, time }: { type: MessageType; metadata: Record<string, unknown> | null; time: string }) {
   const cfg = eventCardConfig(type, metadata);
   if (!cfg) return null;
   return (
-    <div className="mx-auto max-w-xs rounded-2xl border border-stone-200 bg-stone-50 px-5 py-3 text-center">
-      <p className="text-xl">{cfg.icon}</p>
-      <p className="mt-1 text-xs font-semibold text-stone-800">{cfg.title}</p>
-      <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500">{cfg.sub}</p>
+    <div className="flex items-start gap-3 border-y border-line py-3.5">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm text-ink shadow-[inset_0_0_0_1px_#1C1E18]">
+        <Icon name={cfg.icon} size={18} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-[15px] font-[620] text-ink">{cfg.title}</p>
+          <span className="num shrink-0 text-xs text-ink-3">{time}</span>
+        </div>
+        <p className="mt-0.5 flex items-center gap-1.5 text-[13px] leading-snug text-ink-2">
+          {cfg.locked && <Icon name="laas" size={14} />}
+          {cfg.sub}
+        </p>
+      </div>
     </div>
   );
 }
@@ -868,7 +873,7 @@ function OtherAvatar({ profile, name }: { profile: Profile | null; name: string 
   if (profile?.avatar_url) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={profile.avatar_url} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+      <img src={profile.avatar_url} alt="" className="h-9 w-9 shrink-0 rounded-circle object-cover" />
     );
   }
   const initials = name
@@ -880,14 +885,11 @@ function OtherAvatar({ profile, name }: { profile: Profile | null; name: string 
     .join("")
     .toUpperCase();
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-200">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-circle bg-[#DCD8CC]">
       {initials ? (
-        <span className="text-xs font-semibold text-stone-600">{initials}</span>
+        <span className="text-xs font-semibold text-ink-2">{initials}</span>
       ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
+        <Icon name="profil" size={16} className="text-ink-3" />
       )}
     </div>
   );

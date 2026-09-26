@@ -17,6 +17,8 @@ import { ItemCardSkeleton } from "@/components/ItemCardSkeleton";
 import { ReviewList } from "@/components/ReviewList";
 import { Avatar } from "@/components/Avatar";
 import { ReportButton } from "@/components/ReportButton";
+import { BackLink } from "@/components/BackLink";
+import { Sep } from "@/components/Sep";
 
 function fmtLastSeen(iso: string | null | undefined): string | null {
   if (!iso) return null;
@@ -96,42 +98,40 @@ export default function SellerPage() {
 
   return (
     <section className="space-y-5">
-      <Link href="/varer" className="text-sm text-stone-500 hover:text-black">
-        ← Tilbake
-      </Link>
+      <BackLink href="/varer">Tilbake</BackLink>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6">
+      <div className="border-t border-ink pt-5">
         <div className="flex items-center gap-3">
           <Avatar profile={profile} size="lg" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-lg font-semibold tracking-tight">
+            <p className="truncate text-[26px] font-[680] leading-[1.08] [font-stretch:80%]">
               {displayName}
             </p>
-            <p className="text-xs text-stone-500">
+            <p className="mt-1 text-[13px] text-ink-3">
               {firstDate
                 ? `Medlem siden ${firstDate.toLocaleDateString("no-NO", {
                     month: "short",
                     year: "numeric",
                   })}`
                 : "Ny selger"}
-              {profile?.location ? ` · ${profile.location}` : ""}
-              {fmtLastSeen(profile?.last_seen_at) ? ` · ${fmtLastSeen(profile?.last_seen_at)}` : ""}
+              {profile?.location ? <><Sep />{profile.location}</> : ""}
+              {fmtLastSeen(profile?.last_seen_at) ? <><Sep />{fmtLastSeen(profile?.last_seen_at)}</> : ""}
             </p>
           </div>
           {summary && summary.total > 0 && (
             <div className="text-right">
               <p
-                className={`text-lg font-semibold ${
+                className={`price text-2xl leading-none ${
                   summary.pct >= 80
-                    ? "text-emerald-700"
+                    ? "text-olive"
                     : summary.pct >= 50
-                      ? "text-amber-700"
-                      : "text-red-700"
+                      ? "text-ochre"
+                      : "text-clay"
                 }`}
               >
                 {summary.pct}%
               </p>
-              <p className="text-[10px] text-stone-500">
+              <p className="mt-1 text-xs text-ink-3">
                 {summary.total} vurdering{summary.total === 1 ? "" : "er"}
               </p>
             </div>
@@ -139,23 +139,23 @@ export default function SellerPage() {
         </div>
 
         {profile?.bio && (
-          <p className="mt-3 whitespace-pre-line text-sm text-stone-700">
+          <p className="mt-4 max-w-[62ch] whitespace-pre-line text-[15px] leading-[1.55] text-ink-2">
             {profile.bio}
           </p>
         )}
 
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="mt-5 grid grid-cols-3 divide-x divide-line border-y border-line">
           <Stat label="Aktive" value={counts.active} />
           <Stat label="Solgt" value={counts.sold} />
           <Stat label="Omsetning" value={formatPrice(counts.revenue)} />
         </div>
 
-        <div className="mt-3 border-t border-stone-100 pt-3">
+        <div className="mt-2">
           <ReportButton type="user" targetId={params.id} />
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="tabs">
         <TabChip active={tab === "active"} onClick={() => setTab("active")}>
           Aktive ({counts.active})
         </TabChip>
@@ -168,30 +168,30 @@ export default function SellerPage() {
       </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{error}</p>
       )}
 
       {tab === "reviews" ? (
         reviews === null ? (
-          <p className="text-sm text-stone-500">Laster…</p>
+          <p className="text-sm text-ink-3">Laster…</p>
         ) : (
           <ReviewList reviews={reviews} />
         )
       ) : filteredItems === null && !error ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="item-grid">
           {Array.from({ length: 3 }).map((_, i) => (
             <ItemCardSkeleton key={i} />
           ))}
         </div>
       ) : filteredItems && filteredItems.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
+        <div className="border-t border-line pt-5 text-sm text-ink-3">
           {tab === "active"
             ? "Ingen aktive annonser."
             : "Ingen solgte annonser enda."}
         </div>
       ) : (
         filteredItems && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="item-grid">
             {filteredItems.map((item) => (
               <ItemCard key={item.id} item={item} hideSeller />
             ))}
@@ -204,11 +204,11 @@ export default function SellerPage() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-xl bg-stone-50 p-3">
-      <p className="text-[10px] font-medium uppercase tracking-wider text-stone-500">
+    <div className="px-3 py-3 first:pl-0 sm:px-5 sm:py-4">
+      <p className="text-[13px] font-medium text-ink-3">
         {label}
       </p>
-      <p className="mt-0.5 text-base font-semibold tracking-tight sm:text-lg">
+      <p className="price mt-1 text-2xl leading-none sm:text-[34px]">
         {value}
       </p>
     </div>
@@ -227,11 +227,7 @@ function TabChip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full border px-4 py-1.5 text-xs font-medium transition ${
-        active
-          ? "border-[#5a6b32] bg-[#5a6b32] text-white"
-          : "border-stone-300 bg-white text-stone-700 hover:border-stone-500"
-      }`}
+      className={`tab ${active ? "tab-on" : ""}`}
     >
       {children}
     </button>

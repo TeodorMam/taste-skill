@@ -26,10 +26,12 @@ export type Item = {
 // Order matters: the first entry is the default on the post form.
 // "Begge" is default because it gives buyers the most flexibility and
 // sellers the widest possible pool of interested buyers.
+// `icons` are names from components/Icon; the label carries no emoji. The
+// value is what gets stored, so existing listings are unaffected.
 export const SHIPPING_OPTIONS = [
-  { value: "Begge", label: "📦🤝 Begge", hint: "Fleksibel" },
-  { value: "Kun henting", label: "🤝 Kun henting", hint: "Møtes lokalt" },
-  { value: "Kan sendes", label: "📦 Kan sendes", hint: "Kjøper betaler frakt" },
+  { value: "Begge", label: "Begge", icons: ["pakke", "moetes"], hint: "Fleksibel" },
+  { value: "Kun henting", label: "Kun henting", icons: ["moetes"], hint: "Møtes lokalt" },
+  { value: "Kan sendes", label: "Kan sendes", icons: ["pakke"], hint: "Kjøper betaler frakt" },
 ] as const;
 
 export type MessageType =
