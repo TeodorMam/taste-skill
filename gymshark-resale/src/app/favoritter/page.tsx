@@ -88,7 +88,7 @@ export default function FavorittePage() {
       )}
 
       {items === null && !error && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="item-grid">
           {Array.from({ length: 3 }).map((_, i) => (
             <ItemCardSkeleton key={i} />
           ))}
@@ -111,7 +111,7 @@ export default function FavorittePage() {
       )}
 
       {items && items.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="item-grid">
           {items.map((item) => (
             <ItemCard
               key={item.id}

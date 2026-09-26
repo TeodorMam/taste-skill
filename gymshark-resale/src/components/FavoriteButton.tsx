@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/components/ToastProvider";
+import { Icon } from "@/components/Icon";
 
 export function FavoriteButton({
   itemId,
@@ -88,9 +89,9 @@ export function FavoriteButton({
         onClick={toggle}
         aria-label={ariaLabel}
         disabled={busy}
-        className="inline-flex items-center gap-1.5 rounded-sm border border-line-2 bg-raised px-3 py-1.5 text-xs font-medium text-ink-2 hover:border-ink disabled:opacity-50"
+        className="tbtn disabled:opacity-45"
       >
-        <Heart filled={!!favorited} />
+        <Icon name="hjerte" filled={!!favorited} size={18} />
         {favorited ? "Favoritt" : "Legg til"}
       </button>
     );
@@ -102,27 +103,9 @@ export function FavoriteButton({
       onClick={toggle}
       aria-label={ariaLabel}
       disabled={busy}
-      className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-sm bg-raised/90 text-ink-2 transition hover:bg-raised disabled:opacity-50"
+      className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-sm bg-raised text-ink disabled:opacity-45"
     >
-      <Heart filled={!!favorited} />
+      <Icon name="hjerte" filled={!!favorited} size={18} />
     </button>
-  );
-}
-
-function Heart({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill={filled ? "#dc2626" : "none"}
-      stroke={filled ? "#dc2626" : "currentColor"}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
   );
 }

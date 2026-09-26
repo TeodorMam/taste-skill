@@ -206,7 +206,7 @@ export default function MinePage() {
       )}
 
       {filtered === null && !error && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="item-grid">
           {Array.from({ length: 3 }).map((_, i) => (
             <ItemCardSkeleton key={i} />
           ))}
@@ -233,7 +233,7 @@ export default function MinePage() {
       )}
 
       {filtered && filtered.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="item-grid">
           {filtered.map((item) => (
             <div key={item.id} className="space-y-2">
               <ItemCard item={item} hideSeller />

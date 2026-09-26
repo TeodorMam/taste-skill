@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { type Review, averageRating, summarizeReviews } from "@/lib/supabase";
+import { Icon } from "@/components/Icon";
 
 export function SellerRating({
   sellerId,
@@ -30,39 +31,29 @@ export function SellerRating({
 
   const star = averageRating(reviews);
   const { total, pct } = summarizeReviews(reviews);
-  const textSize = size === "md" ? "text-xs" : "text-[10px]";
+  const textSize = size === "md" ? "text-sm" : "text-[13px]";
 
+  // A plain text row, no coloured pill: a star (or a tick / warning / cross
+  // for the older thumbs reviews), the score, and the count in grey.
   let content: React.ReactNode;
 
   if (star) {
-    const color =
-      star.avg >= 4
-        ? "border-olive/30 bg-olive-soft text-olive"
-        : star.avg >= 3
-          ? "border-ochre/30 bg-ochre-soft text-ochre"
-          : "border-clay/40 bg-clay-soft text-clay";
     content = (
-      <span className={`inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 font-medium ${color} ${textSize}`}>
-        <span className="text-ochre">★</span>
-        {star.avg.toFixed(1)} ({star.total})
+      <span className={`num inline-flex items-center gap-[5px] font-[620] text-ink ${textSize}`}>
+        <Icon name="stjerne" filled size={14} />
+        {star.avg.toFixed(1)} <span className="font-medium text-ink-3">({star.total})</span>
       </span>
     );
   } else if (total > 0) {
-    const color =
-      pct >= 80
-        ? "border-olive/30 bg-olive-soft text-olive"
-        : pct >= 50
-          ? "border-ochre/30 bg-ochre-soft text-ochre"
-          : "border-clay/40 bg-clay-soft text-clay";
     content = (
-      <span className={`inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 font-medium ${color} ${textSize}`}>
-        <span aria-hidden>{pct >= 80 ? "👍" : pct >= 50 ? "⚠️" : "👎"}</span>
-        {pct}% ({total})
+      <span className={`num inline-flex items-center gap-[5px] font-[620] text-ink ${textSize}`}>
+        <Icon name={pct >= 80 ? "hake" : pct >= 50 ? "advarsel" : "kryss"} size={14} className={pct >= 50 ? "" : "text-clay"} />
+        {pct}% <span className="font-medium text-ink-3">({total})</span>
       </span>
     );
   } else {
     content = (
-      <span className={`inline-flex items-center gap-1 rounded-sm border border-line bg-paper px-2 py-0.5 font-medium text-ink-3 ${textSize}`}>
+      <span className={`inline-flex items-center font-[550] text-ink-2 ${textSize}`}>
         Ny selger
       </span>
     );
@@ -70,7 +61,7 @@ export function SellerRating({
 
   if (linkToProfile) {
     return (
-      <Link href={`/selger/${sellerId}`} className="hover:opacity-80">
+      <Link href={`/selger/${sellerId}`} className="hover:underline">
         {content}
       </Link>
     );

@@ -81,7 +81,7 @@ export function ItemsWithLoadMore({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="item-grid">
         {items.map((item) => (
           <ItemCard
             key={item.id}
@@ -94,12 +94,8 @@ export function ItemsWithLoadMore({
       {error && <p className="pt-3 text-center text-sm text-ink-3">{error}</p>}
 
       {hasMore && (
-        <div className="flex justify-center pt-4">
-          <button
-            onClick={loadMore}
-            disabled={loading}
-            className="rounded-sm bg-olive px-6 py-2.5 text-sm font-semibold text-raised transition hover:bg-olive-press disabled:opacity-50"
-          >
+        <div className="flex justify-center pt-10 lg:pt-14">
+          <button type="button" onClick={loadMore} disabled={loading} className="btn btn-line px-10">
             {loading ? "Laster…" : "Se flere"}
           </button>
         </div>

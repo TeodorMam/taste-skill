@@ -86,6 +86,13 @@ input, textarea, select {
     @apply bg-ink text-paper shadow-none;
   }
 
+  /* Item grid: 2 columns on phones, 3 from 768 px, 4 from 1024 px. The row
+     gap is wider than the column gap so two neighbours' prices never read
+     as one line. */
+  .item-grid {
+    @apply grid grid-cols-2 gap-x-3.5 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-11;
+  }
+
   /* Small ink square used for unread counts. */
   .count {
     @apply inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-sm bg-ink px-[5px] text-[11px] font-semibold leading-none text-paper;

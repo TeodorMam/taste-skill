@@ -658,7 +658,7 @@ if (error) return <p className="rounded-sm bg-clay-soft p-3 text-sm text-clay">{
               <Link href={brandPageFor(item.brand) ? `/brukt/${brandPageFor(item.brand)!.slug}` : item.brand ? `/varer?brand=${encodeURIComponent(item.brand)}` : `/varer?sub=${encodeURIComponent(item.category!)}`} className="text-xs font-medium text-olive hover:text-olive-press">Se alle →</Link>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="item-grid">
             {similar.map((s) => <ItemCard key={s.id} item={s} seller={s.seller_id ? similarSellers[s.seller_id] : null} />)}
           </div>
         </section>

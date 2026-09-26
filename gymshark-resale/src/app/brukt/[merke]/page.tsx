@@ -116,7 +116,7 @@ export default async function BrandPage(
               Filtrer videre →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="item-grid">
             {items.map((item) => (
               <ItemCard key={item.id} item={item} hideSeller />
             ))}

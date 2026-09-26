@@ -9,6 +9,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { ClientProviders } from "@/components/ClientProviders";
 import { SearchButton } from "@/components/SearchButton";
 import { Analytics } from "@/components/Analytics";
+import { PageWidth } from "@/components/PageWidth";
 
 // Archivo is variable in both width and weight. Headings and prices use the
 // narrow end of the width axis; body text stays at 100 %.
@@ -116,54 +117,53 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
         <ClientProviders>
         <Analytics />
-        <header className="sticky top-0 z-10 border-b border-line bg-paper/80">
-          <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-            <Link href="/" className="text-base font-semibold tracking-tight">
+        <header className="sticky top-0 z-10 border-b border-line bg-paper">
+          <div className="mx-auto flex h-14 max-w-[1280px] items-center gap-8 pl-4 pr-2 sm:h-16 sm:pr-4 lg:px-10">
+            <Link href="/" className="text-[22px] font-[760] leading-none tracking-[-0.01em] [font-stretch:76%] sm:text-[26px]">
               aktivbruk
               <span className="text-olive">.</span>
             </Link>
-            <div className="hidden sm:block">
+            <div className="hidden self-stretch sm:ml-auto sm:flex">
               <NavLinks isLoggedIn={!!user} />
             </div>
-            <SearchButton />
-            {!user && (
-              <Link
-                href="/logg-inn"
-                className="rounded-sm bg-ink px-3 py-1.5 text-xs font-medium text-paper hover:bg-ink sm:hidden"
-              >
-                Logg inn
-              </Link>
-            )}
-            {user && (
-              <form action="/auth/signout" method="post" className="sm:hidden">
-                <button
-                  type="submit"
-                  className="text-xs text-ink-3 hover:text-ink"
-                >
-                  Logg ut
-                </button>
-              </form>
-            )}
+            <div className="ml-auto flex items-center gap-1 sm:-mr-3 sm:ml-0">
+              <SearchButton />
+              {!user && (
+                <Link href="/logg-inn" className="btn btn-ink btn-sm sm:hidden">
+                  Logg inn
+                </Link>
+              )}
+              {user && (
+                <form action="/auth/signout" method="post" className="sm:hidden">
+                  <button
+                    type="submit"
+                    className="flex h-11 items-center px-1 text-sm font-[550] text-ink-2 hover:text-ink"
+                  >
+                    Logg ut
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </header>
-        <main className="mx-auto max-w-3xl px-4 pb-24 pt-6 sm:pb-10">{children}</main>
-        <footer className="mx-auto max-w-3xl px-4 pb-24 pt-4 text-xs text-ink-3 sm:pb-10">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p>
+        <PageWidth>{children}</PageWidth>
+        <footer className="border-t border-line pb-20 sm:pb-0">
+          <div className="mx-auto flex max-w-[1280px] flex-col gap-2.5 px-4 pb-6 pt-5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8 sm:pb-8 sm:pt-7 lg:px-10">
+            <p className="max-w-[52ch] text-[13px] leading-normal text-ink-3 sm:text-sm">
               Aktivbruk, bruktmarked for treningsklær. Et uavhengig prosjekt, ikke
               tilknyttet noen merkevare.
             </p>
-            <div className="flex items-center gap-4">
-              <a href="mailto:kontakt@aktivbruk.com" className="text-ink-3 hover:text-ink">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-ink-2 sm:justify-end sm:gap-x-6 sm:gap-y-2 sm:text-sm">
+              <a href="mailto:kontakt@aktivbruk.com" className="underline decoration-1 underline-offset-[3px] hover:text-ink">
                 kontakt@aktivbruk.com
               </a>
-              <Link href="/om" className="text-ink-3 underline hover:text-ink">
+              <Link href="/om" className="underline decoration-1 underline-offset-[3px] hover:text-ink">
                 Om & FAQ
               </Link>
-              <Link href="/vilkar" className="text-ink-3 underline hover:text-ink">
+              <Link href="/vilkar" className="underline decoration-1 underline-offset-[3px] hover:text-ink">
                 Vilkår
               </Link>
-              <Link href="/personvern" className="text-ink-3 underline hover:text-ink">
+              <Link href="/personvern" className="underline decoration-1 underline-offset-[3px] hover:text-ink">
                 Personvern
               </Link>
             </div>

@@ -377,7 +377,7 @@ function BrowseInner() {
 
         {items.length > 0 && (
           <>
-            <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 transition-opacity duration-200 ${initialLoading && !isFirstLoad.current ? "opacity-40 pointer-events-none" : ""}`}>
+            <div className={`item-grid transition-opacity duration-200 ${initialLoading && !isFirstLoad.current ? "opacity-40 pointer-events-none" : ""}`}>
               {items.map((item) => (
                 <ItemCard key={item.id} item={item} seller={item.seller_id ? sellers[item.seller_id] : null} />
               ))}
@@ -724,7 +724,7 @@ function OptionRow({ label, active, onClick, indented = false }: {
 
 function SkeletonGrid() {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div className="item-grid">
       {Array.from({ length: 6 }).map((_, i) => <ItemCardSkeleton key={i} />)}
     </div>
   );

@@ -94,7 +94,7 @@ export default async function BortePage({ params }: { params: Promise<{ id: stri
       </div>
 
       {similar.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="item-grid">
           {similar.map((s) => (
             <ItemCard key={s.id} item={s} hideSeller />
           ))}
