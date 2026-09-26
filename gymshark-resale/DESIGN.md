@@ -76,8 +76,9 @@ Oliven er gjort litt mørkere enn den gamle #5a6b32 slik at hvit tekst og oliven
 ## 5b. Forside og bunntekst
 
 - Heroen er bare overskrift, ingress og knapper, i én farge og uten bilde. Ingen vare løftes over de andre, og «Nytt inne» kommer rett etter.
-- Mobil: overskriften står i tre linjer («Brukte / treningsklær, / bedre priser.»), venstrestilt, med `font-size: clamp(48px, 17vw, 64px)`. Målt: på 360 px er det 35 px luft mellom lengste linje og sidemargen, så teksten kuttes aldri. Klemmen tar seg av 320 px-skjermer.
-- Desktop: samme prinsipp som mobil. Overskrift, ingress og knapper står under hverandre med én felles venstrekant. Overskriften er 120 px i to linjer uten innrykk, ingressen er maks 560 px bred, og knappene står rett under ingressen. Det er ingen kolonner eller innrykk i heroen.
+- Mobil: overskriften står i tre linjer («Brukte / treningsklær, / bedre priser.»), venstrestilt, med `font-size: clamp(40px, 12.5vw, 56px)`. Den kuttes aldri, heller ikke på 320 px.
+- Desktop: samme prinsipp som mobil. Overskrift, ingress og knapper står under hverandre med én felles venstrekant, uten kolonner eller innrykk. Overskriften står i to linjer og følger vindushøyden, opptil 120 px (`clamp(56px, min(11.5vw, 12.5vh), 120px)`). Ingressen er maks 560 px bred, og knappene står rett under den med «Gratis å bruke» på samme linje.
+- Første rad med varer skal alltid synes i første skjerm: målt er det 100–140 px av bildene på 375–390 px mobil og på en 1280 × 610 laptop, og mer på større skjermer.
 - Bunnteksten er lys og lav både på mobil og desktop: papirbakgrunn, hårstrek over og 13–14 px tekst. Den mørke varianten ligger på lerretet til sammenligning.
 
 ## 6. Ikoner
